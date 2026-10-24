@@ -6,8 +6,8 @@ import { displayedPosition, secondsSince, type Playback } from './playback'
 // Sprites are larger than the collision circle: a crowd that overlaps a little reads better than tiny figures.
 const SPRITE_SIZE_UNITS = 1.8
 const FEET_OFFSET_UNITS = 0.45
-const RING_RADIUS_X_UNITS = 0.62
-const RING_RADIUS_Y_UNITS = 0.24
+const RING_RADIUS_X_UNITS = 0.7
+const RING_RADIUS_Y_UNITS = 0.27
 const HEALTH_BAR_WIDTH_UNITS = 1.2
 const HEALTH_BAR_HEIGHT = 7
 const HEALTH_BAR_GAP = 6
