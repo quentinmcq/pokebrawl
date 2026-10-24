@@ -11,9 +11,14 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 - `bun dev` : l'application sur http://localhost:5173/ (composition d'équipe), ou un combat direct avec
   `?a=gen1&b=gen3&seed=42&terrain=grass` (`&same=0` pour garder tous les Pokémon des deux équipes). Clavier : Espace pause, 1/2/4 vitesse, R nouveau combat,
   F plein écran ; au toucher, une barre de contrôle apparaît. `bun dev --host` pour tester sur le téléphone (Wi-Fi).
+- `bun run dev:api` (dans un second terminal) : le Worker et une base D1 locale sur le port 8787, pour le classement
+  en développement (`bun dev` lui transmet `/api` par un proxy, voir `vite.config.ts`).
 - `bun run build` puis `bun run preview` : version de production, la seule où le service worker (PWA) s'active.
-- `bun run deploy` : vérifications, sprites, build, puis mise en ligne sur Cloudflare (Worker `pokebrawl`, fichiers
-  statiques seuls, même compte que PokéDate ; cache long sur `/assets/*`, jamais sur `sw.js`, via `public/_headers`).
+- `bun run deploy` : vérifications, sprites, build, mise en ligne sur Cloudflare (Worker `pokebrawl`, même compte
+  que PokéDate, plan gratuit), puis migrations de la base D1 `pokebrawl`. Cache long sur `/assets/*`, jamais sur
+  `sw.js` (`public/_headers`).
+- `bun run verify-daily [--day 2026-10-25] [--apply] [--local]` : rejoue tous les scores d'un jour du classement et
+  liste ceux dont l'équipe ne bat pas vraiment la horde ; `--apply` les supprime.
 - `bun run sprites` : télécharge les 1025 sprites et les rassemble dans `public/sprites.webp` + `.json`
   (non versionnés, à lancer une fois avant `bun dev` ; les téléchargements restent en cache dans `.cache/`)
 - `bun run icons` : régénère les icônes de l'application (`public/icons/`, versionnées) depuis ce cache
@@ -82,6 +87,12 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   - `endScreen.ts` : vainqueur, durée, meilleur Pokémon en grand (sprite agrandi sans lissage), les trois suivants,
     survivants ; mis en page à taille fixe puis réduit pour tenir dans l'arène, dans les deux formats.
   - `params.ts` : équipes, graine, terrain et option « même nombre » lus dans l'URL et réécrits dedans.
+- `src/leaderboard.ts`, `src/nickname.ts` : types du classement, validation des équipes envoyées (points recalculés,
+  budget, taille) et des pseudos (règles de PokéDate : 2 à 20 caractères, insultes refusées même déguisées).
+- `worker/index.ts` : le Worker. Sert le site et répond à `GET`/`POST /api/daily/:jour` (base D1 `daily_scores`,
+  `migrations/`). Un score par joueur et par jour, le meilleur ; l'identifiant du joueur, aléatoire et gardé dans le
+  navigateur, n'est stocké que haché. Équipes révélées une fois le jour fini. Plan gratuit (10 ms de calcul) : pas
+  de rejeu du combat au serveur, d'où `bun run verify-daily` ; envois limités à 10 par minute et par IP.
 - `src/daily.ts` : défi du jour. À minuit heure de Paris, une horde de 1 000 points (`horde:gen8:1000:2026-10-24`,
   différente de la horde d'entraînement) et une graine sont tirées de la date, les mêmes pour tous : le résultat ne
   dépend que de l'équipe, c'est une énigme. Score : le moins de points pour gagner ; série de jours réussis.
@@ -90,7 +101,9 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   Difficile 1 250 points) et de l'équipe (doublons permis), catalogue filtrable
   avec sprites découpés en CSS dans la planche (`sprites.ts`), dernière équipe et hordes battues retenues dans le
   navigateur (`storage.ts`) ; après un défi, « Modifier mon équipe », « Revanche » (entraînement) ou « Partager »
-  (défi du jour réussi : score, série et lien, par le partage du téléphone ou le presse-papier). Menu spectateur (`menu.ts`,
+  (défi du jour réussi : score, série et lien, par le partage du téléphone ou le presse-papier). Classement du jour
+  et de la veille (`ranking.ts`) : pseudo demandé à la première victoire puis publication automatique, rang affiché
+  en fin de combat, « Voir » rejoue l'équipe d'un joueur de la veille. Menu spectateur (`menu.ts`,
   aperçu des équipes derrière), barre de contrôle qui s'efface pendant le combat (`controls.ts`), installation
   de la PWA (`install.ts`), enregistrement vidéo (`recorder.ts`, `videoPanel.ts`) : le bouton ● rejoue le combat
   depuis le début en 1080 × 1920 quel que soit l'écran, s'arrête 4,5 s après la fin, puis propose de télécharger la
@@ -119,8 +132,8 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
    Effets d'attaque par type, noms d'attaque, « super efficace », écran de fin complet (fait).
 4. Export vidéo vertical (fait, secondaire). Mise en ligne sur Cloudflare (fait).
 5. Composer son équipe contre une horde (fait). Défi du jour avec record, série et partage (fait).
-6. Ensuite : classement du défi du jour entre joueurs (base de données), défi entre amis par lien (image
-   d'aperçu des équipes), liens depuis pokedate.fr, pages « Gen 1 contre Gen 3 : qui gagne ? » pour le référencement,
+   Classement du défi du jour (fait). Coûts mesurés au combat : à refaire (une espèce seule surévalue les puissants).
+6. Ensuite : défi entre amis par lien (image d'aperçu des équipes), liens depuis pokedate.fr, pages « Gen 1 contre Gen 3 : qui gagne ? » pour le référencement,
    domaine pokebrawl.fr ; plus tard pronostic, Méga-Évolutions, statuts et talents.
 
 Les sprites et le Pokédex de PokéDate (`../pokedate/scripts/fetch-sprites.ts`) peuvent servir de modèle.
