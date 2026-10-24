@@ -1,12 +1,13 @@
 import { parseArgs } from 'node:util'
 import { pokedex } from '../src/pokedex'
-import { runBattle } from '../src/simulation/battle'
-import { selectTeam } from '../src/simulation/teams'
+import { runBattle, type TeamSetup } from '../src/simulation/battle'
+import { selectTeam, trimToSameSize } from '../src/simulation/teams'
 
 const { values: options } = parseArgs({
   options: {
     a: { type: 'string', default: 'gen1' },
     b: { type: 'string', default: 'gen3' },
+    same: { type: 'boolean', default: false },
     runs: { type: 'string', default: '100' },
     'first-seed': { type: 'string', default: '1' },
   },
@@ -14,7 +15,7 @@ const { values: options } = parseArgs({
 
 const runs = Number(options.runs)
 const firstSeed = Number(options['first-seed'])
-const teams = [selectTeam(pokedex, options.a), selectTeam(pokedex, options.b)] as const
+const teams = [selectTeam(pokedex, options.a), selectTeam(pokedex, options.b)] as [TeamSetup, TeamSetup]
 const TOP_SPECIES_SHOWN = 10
 
 const wins = { 0: 0, 1: 0, draw: 0 }
@@ -23,7 +24,8 @@ const knockOutsBySpecies = new Map<string, number>()
 const startedAt = performance.now()
 
 for (let run = 0; run < runs; run++) {
-  const { battle, result } = runBattle({ teams: [teams[0], teams[1]], seed: firstSeed + run })
+  const seed = firstSeed + run
+  const { battle, result } = runBattle({ teams: options.same ? trimToSameSize(teams, seed) : teams, seed })
   wins[result.outcome]++
   totalSeconds += result.durationSeconds
   for (const fighter of battle.fighters) {

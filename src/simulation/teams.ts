@@ -1,4 +1,5 @@
 import type { FighterSetup, TeamSetup } from './battle'
+import { createRandom } from './random'
 import type { Pokedex, Species, TypeKey } from './types'
 
 export const TEAM_SELECTOR_EXAMPLES = ['gen1', 'type:fire', 'legendaries', 'ids:25,6,150']
@@ -45,6 +46,13 @@ const TYPE_NAMES_FR: Record<TypeKey, string> = {
   fairy: 'Fée',
 }
 
+/** Every ready-made team, in the order a menu lists them. */
+export const TEAM_SELECTORS = [
+  ...Array.from({ length: 9 }, (_, index) => `gen${index + 1}`),
+  'legendaries',
+  ...Object.keys(TYPE_NAMES_FR).map((type) => `type:${type}`),
+]
+
 /** The name shown on screen for a team selector: `gen1` becomes « Gen 1 », `type:fire` becomes « Type Feu ». */
 export function teamTitle(selector: string) {
   const generation = /^gen([1-9])$/.exec(selector)?.[1]
@@ -63,6 +71,21 @@ export function toFighterSetup(species: Species, pokedex: Pokedex): FighterSetup
     return move
   })
   return { species, moves }
+}
+
+// Its own random stream, so that trimming the teams leaves the rest of the battle as the seed dictates.
+const SAME_SIZE_SEED_OFFSET = 0x5a3e
+
+/** Keeps as many Pokémon on each side as on the smaller one, picked at random but kept in Pokédex order. */
+export function trimToSameSize(teams: [TeamSetup, TeamSetup], seed: number): [TeamSetup, TeamSetup] {
+  const size = Math.min(teams[0].fighters.length, teams[1].fighters.length)
+  const random = createRandom(seed ^ SAME_SIZE_SEED_OFFSET)
+  const trim = (team: TeamSetup): TeamSetup => {
+    if (team.fighters.length === size) return team
+    const kept = new Set(random.shuffle(team.fighters).slice(0, size))
+    return { ...team, fighters: team.fighters.filter((fighter) => kept.has(fighter)) }
+  }
+  return [trim(teams[0]), trim(teams[1])]
 }
 
 export function selectTeam(pokedex: Pokedex, selector: string): TeamSetup {

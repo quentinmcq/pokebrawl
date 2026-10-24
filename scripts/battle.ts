@@ -1,19 +1,28 @@
 import { parseArgs } from 'node:util'
 import { pokedex } from '../src/pokedex'
-import { runBattle, secondsAt, type Battle, type BattleEvent, type Fighter } from '../src/simulation/battle'
-import { selectTeam } from '../src/simulation/teams'
+import {
+  runBattle,
+  secondsAt,
+  type Battle,
+  type BattleEvent,
+  type Fighter,
+  type TeamSetup,
+} from '../src/simulation/battle'
+import { selectTeam, trimToSameSize } from '../src/simulation/teams'
 
 const { values: options } = parseArgs({
   options: {
     a: { type: 'string', default: 'gen1' },
     b: { type: 'string', default: 'gen3' },
+    same: { type: 'boolean', default: false },
     seed: { type: 'string', default: String(Date.now() % 1_000_000) },
     log: { type: 'boolean', default: false },
   },
 })
 
 const seed = Number(options.seed)
-const teams = [selectTeam(pokedex, options.a), selectTeam(pokedex, options.b)] as const
+const selectedTeams = [selectTeam(pokedex, options.a), selectTeam(pokedex, options.b)] as [TeamSetup, TeamSetup]
+const teams = options.same ? trimToSameSize(selectedTeams, seed) : selectedTeams
 const TIMELINE_INTERVAL_SECONDS = 10
 const LAST_KNOCK_OUTS_SHOWN = 5
 
@@ -55,7 +64,7 @@ let firstKnockOutShown = false
 let nextTimelineSeconds = TIMELINE_INTERVAL_SECONDS
 const startedAt = performance.now()
 
-const { battle, result } = runBattle({ teams: [teams[0], teams[1]], seed }, (events, ongoingBattle) => {
+const { battle, result } = runBattle({ teams, seed }, (events, ongoingBattle) => {
   for (const event of events) {
     const line = `  ${clock(event.tick)}  ${describe(event, ongoingBattle)}`
     if (options.log) console.info(line)

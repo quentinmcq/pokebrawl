@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { pokedex } from '../src/pokedex'
-import { selectTeam, teamTitle } from '../src/simulation/teams'
+import type { TeamSetup } from '../src/simulation/battle'
+import { selectTeam, teamTitle, trimToSameSize } from '../src/simulation/teams'
 
 const namesOf = (selector: string) => selectTeam(pokedex, selector).fighters.map(({ species }) => species.names.en)
 
@@ -32,5 +33,22 @@ describe('teamTitle', () => {
     expect(teamTitle('type:fire')).toBe('Type Feu')
     expect(teamTitle('legendaries')).toBe('Légendaires')
     expect(teamTitle('ids:25,6')).toBe('Sélection')
+  })
+})
+
+const gen1AndGen3 = () => [selectTeam(pokedex, 'gen1'), selectTeam(pokedex, 'gen3')] as [TeamSetup, TeamSetup]
+const keptIds = (seed: number) => trimToSameSize(gen1AndGen3(), seed)[0].fighters.map(({ species }) => species.id)
+
+describe('trimToSameSize', () => {
+  it('keeps as many Pokémon on each side as on the smaller one', () => {
+    const [first, second] = trimToSameSize(gen1AndGen3(), 42)
+    expect(first.fighters).toHaveLength(135)
+    expect(second.fighters).toHaveLength(135)
+  })
+
+  it('picks the same Pokémon for the same seed, and others for another seed', () => {
+    expect(keptIds(42)).toEqual(keptIds(42))
+    expect(keptIds(42)).not.toEqual(keptIds(43))
+    expect(keptIds(42)).toEqual(keptIds(42).toSorted((a, b) => a - b))
   })
 })
