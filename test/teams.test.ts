@@ -32,7 +32,7 @@ describe('teamTitle', () => {
     expect(teamTitle('gen1')).toBe('Gen 1')
     expect(teamTitle('type:fire')).toBe('Type Feu')
     expect(teamTitle('legendaries')).toBe('Légendaires')
-    expect(teamTitle('ids:25,6')).toBe('Sélection')
+    expect(teamTitle('ids:25,6')).toBe('Ton équipe')
   })
 })
 

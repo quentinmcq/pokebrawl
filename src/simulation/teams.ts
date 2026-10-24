@@ -1,8 +1,9 @@
 import type { FighterSetup, TeamSetup } from './battle'
+import { costOf, MAX_TEAM_SIZE, MIN_COST } from './cost'
 import { createRandom } from './random'
 import type { Pokedex, Species, TypeKey } from './types'
 
-export const TEAM_SELECTOR_EXAMPLES = ['gen1', 'type:fire', 'legendaries', 'ids:25,6,150']
+export const TEAM_SELECTOR_EXAMPLES = ['gen1', 'type:fire', 'legendaries', 'ids:25,6*3,150', 'horde:gen1:1000']
 
 function speciesMatching(pokedex: Pokedex, selector: string): Species[] {
   const generation = /^gen([1-9])$/.exec(selector)?.[1]
@@ -13,12 +14,17 @@ function speciesMatching(pokedex: Pokedex, selector: string): Species[] {
 
   if (selector === 'legendaries') return pokedex.pokemon.filter((species) => species.rarity !== null)
 
-  const ids = /^ids:([\d,]+)$/.exec(selector)?.[1]
+  // `ids:66*10,6*2` fields ten Machop and two Charizard.
+  const ids = /^ids:([\d,*]+)$/.exec(selector)?.[1]
   if (ids) {
-    return ids.split(',').map((id) => {
+    return ids.split(',').flatMap((entry) => {
+      const [id, count = '1'] = entry.split('*')
       const species = pokedex.pokemon[Number(id) - 1]
       if (!species) throw new Error(`Pokémon inconnu : ${id}`)
-      return species
+      const copies = Number(count)
+      if (!Number.isInteger(copies) || copies < 1 || copies > MAX_TEAM_SIZE)
+        throw new Error(`Nombre invalide pour #${id} : ${count}`)
+      return Array.from({ length: copies }, () => species)
     })
   }
 
@@ -53,14 +59,40 @@ export const TEAM_SELECTORS = [
   ...Object.keys(TYPE_NAMES_FR).map((type) => `type:${type}`),
 ]
 
+const hashOf = (text: string) =>
+  [...text].reduce((hash, character) => Math.imul(hash ^ character.charCodeAt(0), 16_777_619), 2_166_136_261)
+
+/**
+ * A horde worth `value` points drawn from a ready-made team, the same every time for the same selector so that a
+ * player can study it and come back with a better answer. Small pools repeat their Pokémon to reach the value.
+ */
+export function hordeOf(pokedex: Pokedex, selector: string, value: number): FighterSetup[] {
+  const pool = speciesMatching(pokedex, selector).map((species) => toFighterSetup(species, pokedex))
+  const random = createRandom(hashOf(`${selector}:${value}`))
+  const horde: FighterSetup[] = []
+  let left = value
+  while (left >= MIN_COST && horde.length < MAX_TEAM_SIZE) {
+    const affordable = random.shuffle(pool).filter((fighter) => costOf(fighter) <= left)
+    if (affordable.length === 0) break
+    for (const fighter of affordable) {
+      if (costOf(fighter) > left || horde.length === MAX_TEAM_SIZE) continue
+      horde.push(fighter)
+      left -= costOf(fighter)
+    }
+  }
+  return horde.toSorted((a, b) => a.species.id - b.species.id)
+}
+
 /** The name shown on screen for a team selector: `gen1` becomes « Gen 1 », `type:fire` becomes « Type Feu ». */
-export function teamTitle(selector: string) {
+export function teamTitle(selector: string): string {
   const generation = /^gen([1-9])$/.exec(selector)?.[1]
   if (generation) return `Gen ${generation}`
   const type = /^type:([a-z]+)$/.exec(selector)?.[1]
   if (type && type in TYPE_NAMES_FR) return `Type ${TYPE_NAMES_FR[type as TypeKey]}`
   if (selector === 'legendaries') return 'Légendaires'
-  if (selector.startsWith('ids:')) return 'Sélection'
+  if (selector.startsWith('ids:')) return 'Ton équipe'
+  const horde = /^horde:(.+):\d+$/.exec(selector)?.[1]
+  if (horde) return `Horde ${teamTitle(horde)}`
   return selector
 }
 
@@ -89,6 +121,8 @@ export function trimToSameSize(teams: [TeamSetup, TeamSetup], seed: number): [Te
 }
 
 export function selectTeam(pokedex: Pokedex, selector: string): TeamSetup {
+  const horde = /^horde:(.+):(\d+)$/.exec(selector)
+  if (horde) return { label: selector, fighters: hordeOf(pokedex, horde[1]!, Number(horde[2])) }
   const species = speciesMatching(pokedex, selector)
   if (species.length === 0) throw new Error(`Aucun Pokémon pour « ${selector} »`)
   return { label: selector, fighters: species.map((candidate) => toFighterSetup(candidate, pokedex)) }

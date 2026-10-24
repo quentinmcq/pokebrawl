@@ -12,6 +12,7 @@
     "icons": "bun scripts/app-icons.ts",
     "battle": "bun scripts/battle.ts",
     "stats": "bun scripts/stats.ts",
+    "balance": "bun scripts/balance.ts",
     "postinstall": "lefthook install",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",

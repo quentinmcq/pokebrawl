@@ -98,6 +98,10 @@ export const isAlive = (fighter: Fighter) => fighter.hp > 0
 const reachOf = (move: Move) => (move.category === 'special' ? SPECIAL_REACH : MELEE_REACH)
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 
+/** Fast Pokémon attack up to a third more often than the average, slow ones a quarter less. */
+export const attackIntervalSecondsOf = (baseSpeed: number) =>
+  BASE_ATTACK_INTERVAL_SECONDS * clamp(1.25 - baseSpeed / 400, 0.75, 1.25)
+
 function spawnPositions(count: number, team: TeamIndex, random: Random) {
   const usableWidth = ARENA_WIDTH - 2 * SPAWN_MARGIN
   const columns = Math.max(1, Math.ceil(Math.sqrt((count * usableWidth) / SPAWN_ZONE_HEIGHT)))
@@ -129,7 +133,7 @@ function createFighter(
 ): Fighter {
   const stats = battleStatsOf(setup.species.stats)
   const baseSpeed = setup.species.stats.speed
-  const attackIntervalSeconds = BASE_ATTACK_INTERVAL_SECONDS * clamp(1.25 - baseSpeed / 400, 0.75, 1.25)
+  const attackIntervalSeconds = attackIntervalSecondsOf(baseSpeed)
   return {
     index,
     team,
