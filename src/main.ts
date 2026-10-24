@@ -2,7 +2,8 @@ import './ui/style.css'
 import { Application, Assets, type Spritesheet } from 'pixi.js'
 import { COLORS, createLayout, orientationOf, type Layout } from './render/layout'
 import { battleSearch, describesBattle, randomSeed, readBattleParams, type BattleParams } from './render/params'
-import { createScene, type Scene } from './render/scene'
+import { buildTeams, createScene, type Scene } from './render/scene'
+import { battleReport } from './report'
 import { terrainForSeed } from './render/terrain'
 import { readFriendChallenge } from './friend'
 import { createComposer, isChallenge } from './ui/composer'
@@ -136,6 +137,7 @@ async function start() {
 
   const shareButton = endActions.querySelector<HTMLButtonElement>('[data-action="share"]')!
   const resultLine = endActions.querySelector<HTMLElement>('[data-role="result"]')!
+  const reportList = endActions.querySelector<HTMLElement>('[data-role="report"]')!
   const publishForm = endActions.querySelector<HTMLFormElement>('[data-role="publish"]')!
   const publishError = publishForm.querySelector<HTMLElement>('[data-role="publish-error"]')!
   let publishable: { day: string; team: string } | null = null
@@ -176,6 +178,11 @@ async function start() {
     publishForm.hidden = publishable === null || nickname !== null
     if (publishable && nickname) void publish(nickname)
     resultLine.hidden = result.message === null
+    const report = battleReport({ teams: buildTeams(params), seed: params.seed })
+    reportList.replaceChildren(
+      ...report.map((line) => Object.assign(document.createElement('li'), { textContent: line })),
+    )
+    reportList.hidden = report.length === 0
     shareButton.hidden = share === null
     shareButton.textContent = params.opponentName ? 'Renvoyer le défi' : 'Partager'
     // The daily seed is fixed: the same team would only replay the same battle.

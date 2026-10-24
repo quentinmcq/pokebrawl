@@ -888,3 +888,15 @@ button.type-chip {
   cursor: pointer;
   box-shadow: 0 0 0 0.4cqmin rgb(255 255 255 / 0.25) inset;
 }
+
+.report {
+  display: grid;
+  gap: 1cqmin;
+  max-width: 86cqmin;
+  margin: 0;
+  padding: 2.5cqmin 3cqmin 2.5cqmin 6cqmin;
+  border-radius: 3cqmin;
+  background: var(--surface);
+  font-size: 3.2cqmin;
+  line-height: 1.35;
+}
