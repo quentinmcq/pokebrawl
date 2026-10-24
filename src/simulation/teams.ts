@@ -66,9 +66,9 @@ const hashOf = (text: string) =>
  * A horde worth `value` points drawn from a ready-made team, the same every time for the same selector so that a
  * player can study it and come back with a better answer. Small pools repeat their Pokémon to reach the value.
  */
-export function hordeOf(pokedex: Pokedex, selector: string, value: number): FighterSetup[] {
+export function hordeOf(pokedex: Pokedex, selector: string, value: number, variant = ''): FighterSetup[] {
   const pool = speciesMatching(pokedex, selector).map((species) => toFighterSetup(species, pokedex))
-  const random = createRandom(hashOf(`${selector}:${value}`))
+  const random = createRandom(hashOf(`${selector}:${value}${variant && `:${variant}`}`))
   const horde: FighterSetup[] = []
   let left = value
   while (left >= MIN_COST && horde.length < MAX_TEAM_SIZE) {
@@ -83,6 +83,15 @@ export function hordeOf(pokedex: Pokedex, selector: string, value: number): Figh
   return horde.toSorted((a, b) => a.species.id - b.species.id)
 }
 
+/**
+ * `horde:gen1:1000` is the training horde of Gen 1 worth 1 000 points; `horde:gen1:1000:2026-10-25` draws another
+ * one, the horde of that day's challenge.
+ */
+export function parseHorde(selector: string) {
+  const match = /^horde:(.+):(\d+)(?::([\w-]+))?$/.exec(selector)
+  return match ? { pool: match[1]!, value: Number(match[2]), variant: match[3] ?? '' } : null
+}
+
 /** The name shown on screen for a team selector: `gen1` becomes « Gen 1 », `type:fire` becomes « Type Feu ». */
 export function teamTitle(selector: string): string {
   const generation = /^gen([1-9])$/.exec(selector)?.[1]
@@ -91,8 +100,8 @@ export function teamTitle(selector: string): string {
   if (type && type in TYPE_NAMES_FR) return `Type ${TYPE_NAMES_FR[type as TypeKey]}`
   if (selector === 'legendaries') return 'Légendaires'
   if (selector.startsWith('ids:')) return 'Ton équipe'
-  const horde = /^horde:(.+):\d+$/.exec(selector)?.[1]
-  if (horde) return `Horde ${teamTitle(horde)}`
+  const horde = parseHorde(selector)
+  if (horde) return `Horde ${teamTitle(horde.pool)}`
   return selector
 }
 
@@ -121,8 +130,8 @@ export function trimToSameSize(teams: [TeamSetup, TeamSetup], seed: number): [Te
 }
 
 export function selectTeam(pokedex: Pokedex, selector: string): TeamSetup {
-  const horde = /^horde:(.+):(\d+)$/.exec(selector)
-  if (horde) return { label: selector, fighters: hordeOf(pokedex, horde[1]!, Number(horde[2])) }
+  const horde = parseHorde(selector)
+  if (horde) return { label: selector, fighters: hordeOf(pokedex, horde.pool, horde.value, horde.variant) }
   const species = speciesMatching(pokedex, selector)
   if (species.length === 0) throw new Error(`Aucun Pokémon pour « ${selector} »`)
   return { label: selector, fighters: species.map((candidate) => toFighterSetup(candidate, pokedex)) }
