@@ -1,3 +1,4 @@
+import { analyseHorde, fillAtRandom } from '../advice'
 import {
   currentStreak,
   dailyChallenge,
@@ -52,6 +53,7 @@ const normalized = (text: string) =>
     .toLowerCase()
 const hordeSelector = (horde: string, level: number) => `horde:${horde}:${level}`
 const today = () => dayOf(new Date())
+const typeHex = (type: TypeKey) => `#${typeColor(type).toString(16).padStart(6, '0')}`
 // « 1 000 », as French writes thousands.
 const BUDGET_TEXT = TEAM_BUDGET.toLocaleString('fr-FR')
 const plural = (count: number, word: string) => `${count} ${word}${count > 1 ? 's' : ''}`
@@ -70,6 +72,14 @@ const previousDayOf = (day: string) => {
   const date = new Date(`${day}T12:00:00Z`)
   date.setUTCDate(date.getUTCDate() - 1)
   return date.toISOString().slice(0, 10)
+}
+
+const typeChip = (type: TypeKey, tag: 'span' | 'button') => {
+  const chip = document.createElement(tag)
+  chip.className = 'type-chip'
+  chip.textContent = TYPE_NAMES_FR[type]
+  chip.style.background = typeHex(type)
+  return chip
 }
 
 /** `ids:25*3,6` back into how many of each Pokémon; anything malformed gives an empty team. */
@@ -213,6 +223,32 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     query('[data-role="horde-summary"]').textContent =
       `${horde.length} Pokémon · ${teamCost(horde)} points${beaten ? ' · déjà battue ✓' : ''}`
     query('[data-role="horde"]').replaceChildren(...horde.map(({ species }) => spriteOf(species.id)))
+    renderAdvice(horde)
+  }
+
+  // Clicking a type worth aiming at filters the catalogue on it, the quickest way to a counter.
+  function renderAdvice(horde: ReturnType<typeof selectTeam>['fighters']) {
+    const { dominant, targets } = analyseHorde(horde)
+    const advice = query('[data-role="advice"]')
+    advice.replaceChildren()
+    if (dominant.length === 0) return
+    advice.append(
+      'Surtout ',
+      ...dominant.flatMap((type, index) => [...(index > 0 ? [' et '] : []), typeChip(type, 'span')]),
+    )
+    if (targets.length === 0) return
+    advice.append(' · Vise :')
+    for (const type of targets) {
+      const chip = typeChip(type, 'button') as HTMLButtonElement
+      chip.type = 'button'
+      chip.title = `Montrer les Pokémon de type ${TYPE_NAMES_FR[type]}`
+      chip.addEventListener('click', () => {
+        typeSelect.value = type
+        renderCards()
+        query('.catalog').scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+      advice.append(chip)
+    }
   }
 
   function renderTeam() {
@@ -257,7 +293,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     types.className = 'card-types'
     for (const type of species.types) {
       const dot = document.createElement('i')
-      dot.style.background = `#${typeColor(type).toString(16).padStart(6, '0')}`
+      dot.style.background = typeHex(type)
       dot.title = TYPE_NAMES_FR[type]
       types.append(dot)
     }
@@ -312,6 +348,12 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     const count = (team.get(id) ?? 0) - 1
     if (count > 0) team.set(id, count)
     else team.delete(id)
+    saveTeam()
+    renderTeam()
+  })
+  query('[data-action="fill"]').addEventListener('click', () => {
+    const catalogue = entries.map(({ species, cost }) => ({ id: species.id, cost }))
+    team = fillAtRandom(team, catalogue, TEAM_BUDGET - spent(), MAX_TEAM_SIZE - teamSize(), Math.random)
     saveTeam()
     renderTeam()
   })

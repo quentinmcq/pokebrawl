@@ -610,7 +610,7 @@ input {
   position: sticky;
   bottom: 0;
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto auto 1fr;
   gap: 2cqmin;
   margin: 0 -4cqmin;
   padding: 3cqmin 4cqmin;
@@ -864,4 +864,27 @@ input {
   background: rgb(255 210 63 / 0.15);
   color: var(--accent);
   font-weight: 700;
+}
+
+.advice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.2cqmin;
+  margin: 0;
+  color: var(--muted);
+}
+
+.type-chip {
+  padding: 0.6cqmin 2cqmin;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 3cqmin;
+  font-weight: 800;
+}
+
+button.type-chip {
+  cursor: pointer;
+  box-shadow: 0 0 0 0.4cqmin rgb(255 255 255 / 0.25) inset;
 }
