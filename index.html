@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PokéBrawl</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #0a0b12;
+        color: #f4f3ff;
+        font-family: system-ui, sans-serif;
+      }
+      body {
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        width: min(100vw, calc(100dvh * 9 / 16));
+        height: auto;
+      }
+      .error {
+        max-width: 32rem;
+        padding: 1.5rem;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <p>Chargement de l'arène…</p>
+    <script type="module" src="/src/render/main.ts"></script>
+  </body>
+</html>

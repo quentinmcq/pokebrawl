@@ -24,6 +24,38 @@ function speciesMatching(pokedex: Pokedex, selector: string): Species[] {
   throw new Error(`Équipe inconnue : « ${selector} » (exemples : ${TEAM_SELECTOR_EXAMPLES.join(', ')})`)
 }
 
+const TYPE_NAMES_FR: Record<TypeKey, string> = {
+  normal: 'Normal',
+  fire: 'Feu',
+  water: 'Eau',
+  electric: 'Électrik',
+  grass: 'Plante',
+  ice: 'Glace',
+  fighting: 'Combat',
+  poison: 'Poison',
+  ground: 'Sol',
+  flying: 'Vol',
+  psychic: 'Psy',
+  bug: 'Insecte',
+  rock: 'Roche',
+  ghost: 'Spectre',
+  dragon: 'Dragon',
+  dark: 'Ténèbres',
+  steel: 'Acier',
+  fairy: 'Fée',
+}
+
+/** The name shown on screen for a team selector: `gen1` becomes « Gen 1 », `type:fire` becomes « Type Feu ». */
+export function teamTitle(selector: string) {
+  const generation = /^gen([1-9])$/.exec(selector)?.[1]
+  if (generation) return `Gen ${generation}`
+  const type = /^type:([a-z]+)$/.exec(selector)?.[1]
+  if (type && type in TYPE_NAMES_FR) return `Type ${TYPE_NAMES_FR[type as TypeKey]}`
+  if (selector === 'legendaries') return 'Légendaires'
+  if (selector.startsWith('ids:')) return 'Sélection'
+  return selector
+}
+
 export function toFighterSetup(species: Species, pokedex: Pokedex): FighterSetup {
   const moves = species.moves.map((id) => {
     const move = pokedex.moves.find((candidate) => candidate.id === id)

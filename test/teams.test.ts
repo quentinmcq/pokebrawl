@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { pokedex } from '../src/pokedex'
-import { selectTeam } from '../src/simulation/teams'
+import { selectTeam, teamTitle } from '../src/simulation/teams'
 
 const namesOf = (selector: string) => selectTeam(pokedex, selector).fighters.map(({ species }) => species.names.en)
 
@@ -23,5 +23,14 @@ describe('selectTeam', () => {
   it('rejects unknown selectors', () => {
     expect(() => selectTeam(pokedex, 'gen12')).toThrow()
     expect(() => selectTeam(pokedex, 'ids:2000')).toThrow()
+  })
+})
+
+describe('teamTitle', () => {
+  it('names a team for the screen', () => {
+    expect(teamTitle('gen1')).toBe('Gen 1')
+    expect(teamTitle('type:fire')).toBe('Type Feu')
+    expect(teamTitle('legendaries')).toBe('Légendaires')
+    expect(teamTitle('ids:25,6')).toBe('Sélection')
   })
 })

@@ -5,6 +5,9 @@
     "correctness": "error",
     "suspicious": "warn"
   },
+  "rules": {
+    "unicorn/no-array-fill-with-reference-type": "off"
+  },
   "env": {
     "browser": true,
     "node": true,
