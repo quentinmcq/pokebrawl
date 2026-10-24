@@ -1,3 +1,4 @@
+import calibratedCosts from '../data/costs.json'
 import { attackIntervalSecondsOf, type FighterSetup } from './battle'
 import { battleStatsOf, LEVEL } from './damage'
 
@@ -32,7 +33,17 @@ export function strengthOf({ species, moves }: FighterSetup) {
   return offense * bulk
 }
 
-export const costOf = (fighter: FighterSetup) =>
+/** A first guess from the stats alone, before `bun run costs` measures what each Pokémon is worth in battle. */
+export const estimatedCostOf = (fighter: FighterSetup) =>
   Math.max(MIN_COST, Math.round(COST_SCALE * strengthOf(fighter) ** COST_EXPONENT))
+
+const CALIBRATED_COSTS: Record<string, number> = calibratedCosts
+
+/**
+ * The price of a Pokémon, measured in battle: a team of nothing but this Pokémon, spending the whole budget, holds
+ * its own against mixed teams of the same budget (`bun run costs`). Stats alone miss what decides a crowd fight,
+ * such as the reach of special attacks, which strike from five units away while physical ones must close in.
+ */
+export const costOf = (fighter: FighterSetup) => CALIBRATED_COSTS[fighter.species.id] ?? estimatedCostOf(fighter)
 
 export const teamCost = (fighters: FighterSetup[]) => fighters.reduce((total, fighter) => total + costOf(fighter), 0)

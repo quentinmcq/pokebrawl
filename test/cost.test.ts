@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { pokedex } from '../src/pokedex'
-import { costOf, MAX_TEAM_SIZE, MIN_COST, teamCost, TEAM_BUDGET } from '../src/simulation/cost'
+import calibratedCosts from '../src/data/costs.json'
+import { costOf, estimatedCostOf, MAX_TEAM_SIZE, MIN_COST, teamCost, TEAM_BUDGET } from '../src/simulation/cost'
 import { hordeOf, selectTeam, teamTitle, toFighterSetup } from '../src/simulation/teams'
 
 const fighter = (name: string) =>
@@ -12,13 +13,17 @@ const fighter = (name: string) =>
 const gen1HordeIds = () => hordeOf(pokedex, 'gen1', TEAM_BUDGET).map(({ species }) => species.id)
 
 describe('costOf', () => {
-  it('charges more for stronger Pokémon', () => {
-    expect(costOf(fighter('Mewtwo'))).toBeGreaterThan(costOf(fighter('Dracaufeu')))
-    expect(costOf(fighter('Dracaufeu'))).toBeGreaterThan(costOf(fighter('Pikachu')))
+  it('first estimates a higher price for stronger Pokémon', () => {
+    expect(estimatedCostOf(fighter('Mewtwo'))).toBeGreaterThan(estimatedCostOf(fighter('Dracaufeu')))
+    expect(estimatedCostOf(fighter('Dracaufeu'))).toBeGreaterThan(estimatedCostOf(fighter('Pikachu')))
+  })
+
+  it('prices every Pokémon from battle, a legendary well above a Magikarp', () => {
+    for (const species of pokedex.pokemon) expect(calibratedCosts).toHaveProperty(String(species.id))
+    expect(costOf(fighter('Mewtwo'))).toBeGreaterThan(costOf(fighter('Magicarpe')) * 2)
   })
 
   it('never goes below the floor that keeps a team inside the arena', () => {
-    expect(costOf(fighter('Magicarpe'))).toBe(MIN_COST)
     for (const species of pokedex.pokemon)
       expect(costOf(toFighterSetup(species, pokedex))).toBeGreaterThanOrEqual(MIN_COST)
     expect(TEAM_BUDGET / MIN_COST).toBe(MAX_TEAM_SIZE)

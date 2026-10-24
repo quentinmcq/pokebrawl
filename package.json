@@ -14,6 +14,7 @@
     "battle": "bun scripts/battle.ts",
     "stats": "bun scripts/stats.ts",
     "balance": "bun scripts/balance.ts",
+    "costs": "bun scripts/costs.ts",
     "postinstall": "lefthook install",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",
