@@ -131,10 +131,37 @@ async function start() {
   // After a challenge, the settings lead back to the team to improve it; after a watched battle, to its menu.
   const openMenu = () => (isChallenge(params) ? openComposer() : openSpectatorMenu())
 
+  let shareText: string | null = null
+  const shareButton = endActions.querySelector<HTMLButtonElement>('[data-action="share"]')!
+  const resultLine = endActions.querySelector<HTMLElement>('[data-role="result"]')!
+
   function finishBattle() {
     if (!scene || !params || !isChallenge(params)) return
-    if (scene.battle.outcome === 0) composer.recordWin(params)
-    if (!recording) endActions.hidden = false
+    const result = composer.finish(params, scene.battle.outcome === 0)
+    shareText = result.shareText
+    resultLine.textContent = result.message
+    resultLine.hidden = result.message === null
+    shareButton.hidden = shareText === null
+    shareButton.textContent = 'Partager'
+    // The daily seed is fixed: the same team would only replay the same battle.
+    endActions.querySelector<HTMLElement>('[data-action="rematch"]')!.hidden = result.daily
+    // The next step replaces the playback controls, which have nothing left to control.
+    if (!recording) {
+      controls.hide()
+      endActions.hidden = false
+    }
+  }
+
+  // A friend receives the score and the link; on a computer without a share sheet, it goes to the clipboard.
+  async function shareResult() {
+    if (!shareText) return
+    const url = `${location.origin}${import.meta.env.BASE_URL}`
+    if (navigator.share) {
+      await navigator.share({ text: shareText, url }).catch(() => {})
+      return
+    }
+    await navigator.clipboard.writeText(`${shareText}\n${url}`).catch(() => {})
+    shareButton.textContent = 'Copié\u00a0!'
   }
 
   const composer = createComposer(element('composer'), {
@@ -144,6 +171,7 @@ async function start() {
   })
   element('menu').querySelector('[data-action="compose"]')!.addEventListener('click', openComposer)
   endActions.querySelector('[data-action="edit"]')!.addEventListener('click', openComposer)
+  shareButton.addEventListener('click', () => void shareResult())
   endActions.querySelector('[data-action="rematch"]')!.addEventListener('click', () => {
     if (params) startBattle(withNewSeed(params))
   })
@@ -179,7 +207,10 @@ async function start() {
     videoPanel.showVideo(await finished.stop())
     applyLayout(windowLayout())
     controls.show()
-    if (scene?.isOver() && isChallenge(params)) endActions.hidden = false
+    if (scene?.isOver() && isChallenge(params)) {
+      controls.hide()
+      endActions.hidden = false
+    }
   }
 
   const videoPanel = createVideoPanel(element('recording'), element('video-ready'), () => void stopRecording())

@@ -1,15 +1,31 @@
+import {
+  currentStreak,
+  dailyChallenge,
+  dailyDayOf,
+  dayOf,
+  EMPTY_DAILY_RECORD,
+  formatDay,
+  recordDailyWin,
+  type DailyRecord,
+} from '../daily'
 import { pokedex } from '../pokedex'
 import { typeColor } from '../render/effects'
 import { randomSeed, type BattleParams } from '../render/params'
 import { terrainForSeed } from '../render/terrain'
 import { costOf, MAX_TEAM_SIZE, TEAM_BUDGET, teamCost } from '../simulation/cost'
-import { hordeOf, TEAM_SELECTORS, TYPE_NAMES_FR, teamTitle, toFighterSetup } from '../simulation/teams'
+import { parseHorde, selectTeam, TEAM_SELECTORS, TYPE_NAMES_FR, teamTitle, toFighterSetup } from '../simulation/teams'
 import type { Species, TypeKey } from '../simulation/types'
 import { readStored, writeStored } from './storage'
 
 const LEVELS = [800, 1000, 1250]
-const DEFAULT_CHALLENGE = { horde: 'gen1', level: 1000 }
-const STORAGE_KEYS = { team: 'pokebrawl.team', challenge: 'pokebrawl.challenge', wins: 'pokebrawl.wins' }
+type Mode = 'daily' | 'training'
+const DEFAULT_CHALLENGE = { mode: 'daily' as Mode, horde: 'gen1', level: 1000 }
+const STORAGE_KEYS = {
+  team: 'pokebrawl.team',
+  challenge: 'pokebrawl.challenge',
+  wins: 'pokebrawl.wins',
+  daily: 'pokebrawl.daily',
+}
 const ALL = ''
 
 interface Entry {
@@ -30,6 +46,15 @@ const normalized = (text: string) =>
     .replaceAll(/\p{Diacritic}/gu, '')
     .toLowerCase()
 const hordeSelector = (horde: string, level: number) => `horde:${horde}:${level}`
+const today = () => dayOf(new Date())
+const plural = (count: number, word: string) => `${count} ${word}${count > 1 ? 's' : ''}`
+
+/** What the end of a challenge says, and the message to share after beating the daily horde. */
+export interface ChallengeResult {
+  message: string | null
+  shareText: string | null
+  daily: boolean
+}
 
 /** `ids:25*3,6` back into how many of each Pokémon; anything malformed gives an empty team. */
 function parseTeam(selector: string | undefined) {
@@ -53,6 +78,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   const query = <Element extends HTMLElement>(selector: string) => section.querySelector<Element>(selector)!
   const hordeSelect = query<HTMLSelectElement>('select[name="horde"]')
   const levelButtons = [...section.querySelectorAll<HTMLButtonElement>('[data-level]')]
+  const modeButtons = [...section.querySelectorAll<HTMLButtonElement>('[data-mode]')]
   const searchInput = query<HTMLInputElement>('input[name="search"]')
   const typeSelect = query<HTMLSelectElement>('select[name="type"]')
   const generationSelect = query<HTMLSelectElement>('select[name="generation"]')
@@ -67,8 +93,9 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   const entryOf = (id: number) => entries[id - 1]!
 
   let team = parseTeam(readStored<string | undefined>(STORAGE_KEYS.team, undefined))
-  let challenge = readStored(STORAGE_KEYS.challenge, DEFAULT_CHALLENGE)
+  let challenge = { ...DEFAULT_CHALLENGE, ...readStored<Partial<typeof DEFAULT_CHALLENGE>>(STORAGE_KEYS.challenge, {}) }
   const wins = new Set(readStored<string[]>(STORAGE_KEYS.wins, []))
+  let dailyRecord = readStored<DailyRecord>(STORAGE_KEYS.daily, EMPTY_DAILY_RECORD)
 
   typeSelect.replaceChildren(
     new Option('Tous les types', ALL),
@@ -82,7 +109,33 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   const teamSize = () => [...team.values()].reduce((total, count) => total + count, 0)
   const spent = () => [...team].reduce((total, [id, count]) => total + entryOf(id).cost * count, 0)
 
+  /** The horde and seed to fight: today's challenge, or the chosen training horde with a fresh seed. */
+  function opponent() {
+    if (challenge.mode === 'training')
+      return { horde: hordeSelector(challenge.horde, challenge.level), seed: randomSeed() }
+    const { horde, seed } = dailyChallenge(today())
+    return { horde, seed }
+  }
+
+  function renderDaily() {
+    const day = today()
+    const { horde } = dailyChallenge(day)
+    const best = dailyRecord.bestByDay[day]
+    const streak = currentStreak(dailyRecord, day)
+    query('[data-role="daily-title"]').textContent = `Défi du ${formatDay(day)} : ${teamTitle(horde)}`
+    const goal =
+      best === undefined
+        ? 'Même combat pour tout le monde : bats-la avec le moins de points possible.'
+        : `Battue avec ${best} points : fais encore mieux\u00a0!`
+    query('[data-role="daily-status"]').textContent = `${goal}${streak > 0 ? ` · 🔥 ${plural(streak, 'jour')}` : ''}`
+  }
+
   function renderChallenge() {
+    const daily = challenge.mode === 'daily'
+    for (const button of modeButtons) button.ariaPressed = String(button.dataset.mode === challenge.mode)
+    query('[data-role="daily"]').hidden = !daily
+    query('[data-role="training"]').hidden = daily
+    if (daily) renderDaily()
     hordeSelect.replaceChildren(
       ...TEAM_SELECTORS.map((selector) => {
         const beaten = wins.has(hordeSelector(selector, challenge.level))
@@ -91,8 +144,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     )
     hordeSelect.value = challenge.horde
     for (const button of levelButtons) button.ariaPressed = String(Number(button.dataset.level) === challenge.level)
-    const horde = hordeOf(pokedex, challenge.horde, challenge.level)
-    const beaten = wins.has(hordeSelector(challenge.horde, challenge.level))
+    const horde = selectTeam(pokedex, opponent().horde).fighters
+    const beaten = !daily && wins.has(hordeSelector(challenge.horde, challenge.level))
     query('[data-role="horde-summary"]').textContent =
       `${horde.length} Pokémon · ${teamCost(horde)} points${beaten ? ' · déjà battue ✓' : ''}`
     query('[data-role="horde"]').replaceChildren(...horde.map(({ species }) => spriteOf(species.id)))
@@ -214,12 +267,14 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   hordeSelect.addEventListener('change', () => setChallenge({ ...challenge, horde: hordeSelect.value }))
   for (const button of levelButtons)
     button.addEventListener('click', () => setChallenge({ ...challenge, level: Number(button.dataset.level) }))
+  for (const button of modeButtons)
+    button.addEventListener('click', () => setChallenge({ ...challenge, mode: button.dataset.mode as Mode }))
 
   fightButton.addEventListener('click', () => {
     if (team.size === 0) return
-    const seed = randomSeed()
+    const { horde, seed } = opponent()
     onFight({
-      teams: [teamSelector(team), hordeSelector(challenge.horde, challenge.level)],
+      teams: [teamSelector(team), horde],
       seed,
       terrain: terrainForSeed(seed),
       sameSize: false,
@@ -230,23 +285,45 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   return {
     /** Reopens on the battle just fought, or on the last team and horde this browser remembers. */
     open(current: BattleParams | null) {
-      const horde = /^horde:(.+):(\d+)$/.exec(current?.teams[1] ?? '')
-      if (horde && TEAM_SELECTORS.includes(horde[1]!) && LEVELS.includes(Number(horde[2]))) {
-        challenge = { horde: horde[1]!, level: Number(horde[2]) }
-        const fought = parseTeam(current?.teams[0])
-        if (fought.size > 0) team = fought
-      }
+      const horde = parseHorde(current?.teams[1] ?? '')
+      if (horde && dailyDayOf(current!.teams[1])) challenge = { ...challenge, mode: 'daily' }
+      else if (horde && TEAM_SELECTORS.includes(horde.pool) && LEVELS.includes(horde.value))
+        challenge = { mode: 'training', horde: horde.pool, level: horde.value }
+      const fought = parseTeam(current?.teams[0])
+      if (horde && fought.size > 0) team = fought
       renderChallenge()
       renderCards()
       section.hidden = false
       section.scrollTop = 0
     },
     close: () => (section.hidden = true),
-    /** Remembers a horde beaten at its level, shown with a tick from then on. */
-    recordWin(params: BattleParams) {
-      if (!params.teams[1].startsWith('horde:')) return
-      wins.add(params.teams[1])
-      writeStored(STORAGE_KEYS.wins, [...wins])
+    /** Records the end of a challenge: a tick on a beaten training horde, the score and streak of the daily one. */
+    finish(params: BattleParams, won: boolean): ChallengeResult {
+      const day = dailyDayOf(params.teams[1])
+      if (!day) {
+        if (won) {
+          wins.add(params.teams[1])
+          writeStored(STORAGE_KEYS.wins, [...wins])
+        }
+        return { message: null, shareText: null, daily: false }
+      }
+      if (!won) return { message: 'Raté\u00a0! Change ton équipe et retente ta chance.', shareText: null, daily: true }
+      const points = teamCost(selectTeam(pokedex, params.teams[0]).fighters)
+      dailyRecord = recordDailyWin(dailyRecord, day, points)
+      writeStored(STORAGE_KEYS.daily, dailyRecord)
+      const best = dailyRecord.bestByDay[day]!
+      const streak = currentStreak(dailyRecord, day)
+      const record = best < points ? ` · record : ${best}` : ''
+      return {
+        message: `Défi réussi avec ${points} points\u00a0!${record} · 🔥 ${plural(streak, 'jour')}`,
+        shareText: [
+          `PokéBrawl · défi du ${formatDay(day)}`,
+          `${teamTitle(params.teams[1])} battue avec ${points} points 💪`,
+          `🔥 Série : ${plural(streak, 'jour')}`,
+          'Fais mieux que moi :',
+        ].join('\n'),
+        daily: true,
+      }
     },
   }
 }

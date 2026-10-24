@@ -629,14 +629,32 @@ input {
 .end-actions {
   position: absolute;
   left: 50%;
-  bottom: 20cqmin;
+  bottom: 5cqmin;
   translate: -50% 0;
+  display: grid;
+  justify-items: center;
+  gap: 2cqmin;
+}
+
+.end-buttons {
   display: flex;
   gap: 3cqmin;
 }
 
+.end-result {
+  margin: 0;
+  padding: 2cqmin 4cqmin;
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 3.6cqmin;
+  font-weight: 800;
+  text-align: center;
+  white-space: nowrap;
+}
+
 .end-actions button {
   margin: 0;
+  font-size: 4cqmin;
   padding: 3cqmin 5cqmin;
   white-space: nowrap;
 }
@@ -678,4 +696,28 @@ input {
     padding: 0 0 3cqmin;
     background: none;
   }
+}
+
+.segmented--wide button {
+  flex: 1;
+}
+
+.segmented--wide button[aria-pressed='true'] {
+  background: var(--accent);
+  color: #14162b;
+}
+
+.daily {
+  display: grid;
+  gap: 1cqmin;
+}
+
+.daily-title {
+  margin: 0;
+  font-size: 4.2cqmin;
+  font-weight: 900;
+}
+
+.daily .hint {
+  text-align: left;
 }

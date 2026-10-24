@@ -62,7 +62,15 @@
         <div class="composer-side">
           <section class="panel panel--red" aria-labelledby="opponent-title">
             <h2 id="opponent-title">Adversaire</h2>
-            <div class="row">
+            <div class="segmented segmented--wide" role="group" aria-label="Mode">
+              <button type="button" data-mode="daily">Défi du jour</button>
+              <button type="button" data-mode="training">Entraînement</button>
+            </div>
+            <div class="daily" data-role="daily">
+              <p class="daily-title" data-role="daily-title"></p>
+              <p class="hint" data-role="daily-status"></p>
+            </div>
+            <div class="row" data-role="training">
               <select name="horde" aria-label="Horde à battre"></select>
               <div class="segmented" role="group" aria-label="Difficulté">
                 <button type="button" data-level="800">Facile</button>
@@ -115,8 +123,12 @@
       </section>
 
       <div id="end-actions" class="end-actions" hidden>
-        <button class="primary" type="button" data-action="edit">Modifier mon équipe</button>
-        <button class="secondary" type="button" data-action="rematch">Revanche</button>
+        <p class="end-result" data-role="result" hidden></p>
+        <div class="end-buttons">
+          <button class="primary" type="button" data-action="edit">Modifier mon équipe</button>
+          <button class="secondary" type="button" data-action="rematch">Revanche</button>
+          <button class="secondary" type="button" data-action="share" hidden>Partager</button>
+        </div>
       </div>
 
       <nav id="controls" class="controls" aria-label="Contrôles du combat" hidden>
