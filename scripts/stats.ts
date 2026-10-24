@@ -7,7 +7,8 @@ const { values: options } = parseArgs({
   options: {
     a: { type: 'string', default: 'gen1' },
     b: { type: 'string', default: 'gen3' },
-    same: { type: 'boolean', default: false },
+    // Every Pokémon of each team, rather than as many on each side as on the smaller one.
+    full: { type: 'boolean', default: false },
     runs: { type: 'string', default: '100' },
     'first-seed': { type: 'string', default: '1' },
   },
@@ -25,7 +26,7 @@ const startedAt = performance.now()
 
 for (let run = 0; run < runs; run++) {
   const seed = firstSeed + run
-  const { battle, result } = runBattle({ teams: options.same ? trimToSameSize(teams, seed) : teams, seed })
+  const { battle, result } = runBattle({ teams: options.full ? teams : trimToSameSize(teams, seed), seed })
   wins[result.outcome]++
   totalSeconds += result.durationSeconds
   for (const fighter of battle.fighters) {

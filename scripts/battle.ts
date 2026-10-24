@@ -14,7 +14,8 @@ const { values: options } = parseArgs({
   options: {
     a: { type: 'string', default: 'gen1' },
     b: { type: 'string', default: 'gen3' },
-    same: { type: 'boolean', default: false },
+    // Every Pokémon of each team, rather than as many on each side as on the smaller one.
+    full: { type: 'boolean', default: false },
     seed: { type: 'string', default: String(Date.now() % 1_000_000) },
     log: { type: 'boolean', default: false },
   },
@@ -22,7 +23,7 @@ const { values: options } = parseArgs({
 
 const seed = Number(options.seed)
 const selectedTeams = [selectTeam(pokedex, options.a), selectTeam(pokedex, options.b)] as [TeamSetup, TeamSetup]
-const teams = options.same ? trimToSameSize(selectedTeams, seed) : selectedTeams
+const teams = options.full ? selectedTeams : trimToSameSize(selectedTeams, seed)
 const TIMELINE_INTERVAL_SECONDS = 10
 const LAST_KNOCK_OUTS_SHOWN = 5
 

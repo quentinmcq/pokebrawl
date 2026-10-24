@@ -4,7 +4,7 @@ export interface BattleParams {
   teams: [string, string]
   seed: number
   terrain: Terrain
-  /** Both sides keep as many Pokémon as the smaller one, picked at random from the seed. */
+  /** Both sides keep as many Pokémon as the smaller one, picked at random from the seed; on unless `same=0`. */
   sameSize: boolean
 }
 
@@ -17,7 +17,7 @@ export const randomSeed = () => Math.floor(Math.random() * MAX_RANDOM_SEED)
 export const describesBattle = (search: string) => new URLSearchParams(search).has('a')
 
 /**
- * Reads `?a=gen1&b=gen3&seed=42&terrain=grass&same=1`. A missing or invalid seed gets a random one and a missing
+ * Reads `?a=gen1&b=gen3&seed=42&terrain=grass&same=0`. A missing or invalid seed gets a random one and a missing
  * terrain follows from the seed, so that once written back the URL always replays the same battle.
  */
 export function readBattleParams(search: string, pickSeed = randomSeed): BattleParams {
@@ -29,12 +29,12 @@ export function readBattleParams(search: string, pickSeed = randomSeed): BattleP
     teams: [query.get('a') || DEFAULT_TEAMS[0], query.get('b') || DEFAULT_TEAMS[1]],
     seed,
     terrain: isTerrain(terrain) ? terrain : terrainForSeed(seed),
-    sameSize: query.get('same') === '1',
+    sameSize: query.get('same') !== '0',
   }
 }
 
 export function battleSearch({ teams: [first, second], seed, terrain, sameSize }: BattleParams) {
   const query = new URLSearchParams({ a: first, b: second, seed: String(seed), terrain })
-  if (sameSize) query.set('same', '1')
+  if (!sameSize) query.set('same', '0')
   return `?${query}`
 }

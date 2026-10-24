@@ -4,11 +4,11 @@ import { terrainForSeed } from '../src/render/terrain'
 
 describe('battle params', () => {
   it('reads the teams, seed, terrain and same-size option from the URL', () => {
-    expect(readBattleParams('?a=gen2&b=type:water&seed=42&terrain=snow&same=1')).toEqual({
+    expect(readBattleParams('?a=gen2&b=type:water&seed=42&terrain=snow&same=0')).toEqual({
       teams: ['gen2', 'type:water'],
       seed: 42,
       terrain: 'snow',
-      sameSize: true,
+      sameSize: false,
     })
   })
 
@@ -17,7 +17,7 @@ describe('battle params', () => {
       teams: DEFAULT_TEAMS,
       seed: 7,
       terrain: terrainForSeed(7),
-      sameSize: false,
+      sameSize: true,
     })
     expect(readBattleParams('?seed=abc', () => 7).seed).toBe(7)
     expect(readBattleParams('?seed=-3', () => 7).seed).toBe(7)
@@ -32,6 +32,8 @@ describe('battle params', () => {
       sameSize: true,
     }
     expect(readBattleParams(battleSearch(params))).toEqual(params)
+    const everyPokemon = { ...params, sameSize: false }
+    expect(readBattleParams(battleSearch(everyPokemon))).toEqual(everyPokemon)
     expect(describesBattle(battleSearch(params))).toBe(true)
     expect(describesBattle('')).toBe(false)
   })

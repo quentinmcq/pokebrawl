@@ -8,7 +8,7 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 ## Commandes
 
 - `bun dev` : l'application sur http://localhost:5173/ (menu de lancement), ou un combat direct avec
-  `?a=gen1&b=gen3&seed=42&terrain=grass&same=1`. Clavier : Espace pause, 1/2/4 vitesse, R nouveau combat,
+  `?a=gen1&b=gen3&seed=42&terrain=grass` (`&same=0` pour garder tous les Pokémon des deux équipes). Clavier : Espace pause, 1/2/4 vitesse, R nouveau combat,
   F plein écran ; au toucher, une barre de contrôle apparaît. `bun dev --host` pour tester sur le téléphone (Wi-Fi).
 - `bun run build` puis `bun run preview` : version de production, la seule où le service worker (PWA) s'active.
 - `bun run deploy` : vérifications, sprites, build, puis mise en ligne sur Cloudflare (Worker `pokebrawl`, fichiers
@@ -17,8 +17,8 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   (non versionnés, à lancer une fois avant `bun dev` ; les téléchargements restent en cache dans `.cache/`)
 - `bun run icons` : régénère les icônes de l'application (`public/icons/`, versionnées) depuis ce cache
 - `bun run battle --a gen1 --b gen3 --seed 42` : un combat raconté en texte (`--log` pour chaque attaque,
-  `--same` pour le même nombre de Pokémon par camp)
-- `bun run stats --a gen1 --b gen3 --runs 200` : taux de victoire, durée moyenne, meilleurs Pokémon (`--same` aussi)
+  `--full` pour garder tous les Pokémon au lieu du même nombre par camp)
+- `bun run stats --a gen1 --b gen3 --runs 200` : taux de victoire, durée moyenne, meilleurs Pokémon (`--full` aussi)
 - `bun run data` : régénère `src/data/pokemon.json` depuis PokéAPI (quelques minutes)
 - `bun run check` : lint, formatage, types, tests
 
@@ -90,13 +90,14 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 
 - PV ×2 (`HEALTH_MULTIPLIER`) et attaque toutes les 2,5 s environ : un combat de génération dure 35 à 50 s.
 - Rayon des Pokémon 0,8 unité pour des sprites de 1,8 : en dessous, la mêlée s'écrase en un tas illisible.
-- Gen 1 contre Gen 3 : la Gen 1 gagne presque toujours, surtout grâce au nombre (151 contre 135). Aucun biais de
-  côté : Gen 1 contre Gen 1 donne environ 50/50. Avec `--same` (135 contre 135), la Gen 3 gagne 72 % des combats.
+- Même nombre de Pokémon par camp par défaut (menu, URL, ligne de commande) : avec toutes les espèces, l'équipe la
+  plus nombreuse gagne presque toujours (Gen 1, 151, contre Gen 3, 135 : 100 % pour la Gen 1). À 135 contre 135, la
+  Gen 3 gagne 72 % des combats. Aucun biais de côté : Gen 1 contre Gen 1 donne environ 50/50.
 
 ## Feuille de route
 
 1. Simulation sans affichage (fait).
-2. Équilibrage optionnel : même nombre de Pokémon par camp (fait) ; même total de stats par camp.
+2. Équilibrage : même nombre de Pokémon par camp (fait, par défaut) ; même total de stats par camp.
 3. Rendu : Vite + PixiJS, sprites, terrains, PV, K.O., vitesse ×1/×2/×4, vainqueur, menu, plein écran, PWA (fait).
    Effets d'attaque par type, noms d'attaque, « super efficace », écran de fin complet (fait).
 4. Export vidéo vertical (fait). Mise en ligne sur Cloudflare (configurée).
