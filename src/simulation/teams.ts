@@ -31,7 +31,7 @@ function speciesMatching(pokedex: Pokedex, selector: string): Species[] {
   throw new Error(`Équipe inconnue : « ${selector} » (exemples : ${TEAM_SELECTOR_EXAMPLES.join(', ')})`)
 }
 
-const TYPE_NAMES_FR: Record<TypeKey, string> = {
+export const TYPE_NAMES_FR: Record<TypeKey, string> = {
   normal: 'Normal',
   fire: 'Feu',
   water: 'Eau',

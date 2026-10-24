@@ -45,9 +45,79 @@
           <span>Même nombre de Pokémon par camp</span>
         </label>
         <button class="primary" type="submit">Lancer le combat</button>
-        <button class="secondary" type="button" id="install" hidden>Installer l'application</button>
-        <p class="hint" id="ios-install" hidden>Pour l'installer : Partager, puis « Sur l'écran d'accueil ».</p>
+        <button class="link" type="button" data-action="compose">← Composer ton équipe</button>
       </form>
+
+      <section id="composer" class="composer" aria-label="Composer ton équipe" hidden>
+        <header class="composer-header">
+          <h1 class="logo">Poké<span>Brawl</span></h1>
+          <button class="link" type="button" data-action="spectate">Regarder un combat →</button>
+          <p class="tagline">
+            Bats la horde avec 1&nbsp;000&nbsp;points de Pokémon : beaucoup de petits, ou quelques géants&nbsp;?
+          </p>
+          <button class="secondary" type="button" id="install" hidden>Installer l'application</button>
+          <p class="hint" id="ios-install" hidden>Pour l'installer : Partager, puis « Sur l'écran d'accueil ».</p>
+        </header>
+
+        <div class="composer-side">
+          <section class="panel panel--red" aria-labelledby="opponent-title">
+            <h2 id="opponent-title">Adversaire</h2>
+            <div class="row">
+              <select name="horde" aria-label="Horde à battre"></select>
+              <div class="segmented" role="group" aria-label="Difficulté">
+                <button type="button" data-level="800">Facile</button>
+                <button type="button" data-level="1000">Normal</button>
+                <button type="button" data-level="1250">Difficile</button>
+              </div>
+            </div>
+            <p class="summary" data-role="horde-summary"></p>
+            <div class="sprite-strip" data-role="horde"></div>
+          </section>
+
+          <section class="panel panel--blue" aria-labelledby="team-title">
+            <h2 id="team-title">Ton équipe</h2>
+            <div class="budget" data-role="budget">
+              <div class="budget-bar"><div class="budget-fill"></div></div>
+              <p class="summary" data-role="budget-summary"></p>
+            </div>
+            <div class="team" data-role="team"></div>
+            <p class="hint" data-role="team-hint">
+              Touche un Pokémon du catalogue pour l'ajouter, et un Pokémon de ton équipe pour le retirer.
+            </p>
+          </section>
+        </div>
+
+        <section class="panel catalog" aria-labelledby="catalog-title">
+          <h2 id="catalog-title">Catalogue</h2>
+          <div class="filters">
+            <input
+              name="search"
+              type="search"
+              placeholder="Rechercher"
+              autocomplete="off"
+              aria-label="Rechercher un Pokémon"
+            />
+            <select name="type" aria-label="Type"></select>
+            <select name="generation" aria-label="Génération"></select>
+            <select name="sort" aria-label="Trier">
+              <option value="cost">Moins chers</option>
+              <option value="-cost">Plus chers</option>
+              <option value="id">N° du Pokédex</option>
+            </select>
+          </div>
+          <div class="cards" data-role="cards"></div>
+        </section>
+
+        <footer class="composer-footer">
+          <button class="secondary" type="button" data-action="clear">Vider</button>
+          <button class="primary" type="button" data-action="fight">Lancer le combat</button>
+        </footer>
+      </section>
+
+      <div id="end-actions" class="end-actions" hidden>
+        <button class="primary" type="button" data-action="edit">Modifier mon équipe</button>
+        <button class="secondary" type="button" data-action="rematch">Revanche</button>
+      </div>
 
       <nav id="controls" class="controls" aria-label="Contrôles du combat" hidden>
         <button type="button" data-action="toggle" aria-label="Pause"></button>

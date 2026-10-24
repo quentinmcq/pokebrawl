@@ -4,9 +4,11 @@ import { COLORS, createLayout, orientationOf, type Layout } from './render/layou
 import { battleSearch, describesBattle, randomSeed, readBattleParams, type BattleParams } from './render/params'
 import { createScene, type Scene } from './render/scene'
 import { terrainForSeed } from './render/terrain'
+import { createComposer, isChallenge } from './ui/composer'
 import { createControls } from './ui/controls'
 import { setUpInstall, isInstalled } from './ui/install'
 import { createMenu } from './ui/menu'
+import { createSpriteFactory } from './ui/sprites'
 import { canRecord, recordCanvas, videoBaseName, type Video } from './ui/recorder'
 import { createVideoPanel } from './ui/videoPanel'
 
@@ -91,24 +93,60 @@ async function start() {
     void holdScreen(!paused && scene !== null && !scene.isOver())
   }
 
+  const endActions = element('end-actions')
+
   function startBattle(next: BattleParams) {
     params = next
     history.replaceState(null, '', battleSearch(next))
     showScene(next)
     menu.close()
+    composer.close()
+    endActions.hidden = true
     controls.show()
     setPaused(false)
   }
 
   const togglePlay = () => (scene?.isOver() && params ? startBattle(params) : setPaused(!paused))
 
-  function openMenu() {
+  function leaveBattle() {
     paused = true
     void holdScreen(false)
     controls.hide()
+    endActions.hidden = true
     history.replaceState(null, '', location.pathname)
-    menu.open(params)
   }
+
+  function openComposer() {
+    leaveBattle()
+    menu.close()
+    composer.open(params)
+  }
+
+  function openSpectatorMenu() {
+    leaveBattle()
+    composer.close()
+    menu.open(isChallenge(params) ? null : params)
+  }
+
+  // After a challenge, the settings lead back to the team to improve it; after a watched battle, to its menu.
+  const openMenu = () => (isChallenge(params) ? openComposer() : openSpectatorMenu())
+
+  function finishBattle() {
+    if (!scene || !params || !isChallenge(params)) return
+    if (scene.battle.outcome === 0) composer.recordWin(params)
+    if (!recording) endActions.hidden = false
+  }
+
+  const composer = createComposer(element('composer'), {
+    spriteOf: createSpriteFactory(spritesheet),
+    onFight: startBattle,
+    onSpectate: openSpectatorMenu,
+  })
+  element('menu').querySelector('[data-action="compose"]')!.addEventListener('click', openComposer)
+  endActions.querySelector('[data-action="edit"]')!.addEventListener('click', openComposer)
+  endActions.querySelector('[data-action="rematch"]')!.addEventListener('click', () => {
+    if (params) startBattle(withNewSeed(params))
+  })
 
   const menu = createMenu(element<HTMLFormElement>('menu'), {
     onPreview: (preview) => {
@@ -141,6 +179,7 @@ async function start() {
     videoPanel.showVideo(await finished.stop())
     applyLayout(windowLayout())
     controls.show()
+    if (scene?.isOver() && isChallenge(params)) endActions.hidden = false
   }
 
   const videoPanel = createVideoPanel(element('recording'), element('video-ready'), () => void stopRecording())
@@ -161,7 +200,7 @@ async function start() {
 
   window.addEventListener('keydown', (event) => {
     const typing = event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement
-    if (typing || !params || !element('menu').hidden) return
+    if (typing || !params || !element('menu').hidden || !element('composer').hidden) return
     if (recording) {
       if (event.code === 'Escape') void stopRecording()
       return
@@ -179,14 +218,17 @@ async function start() {
     const wasOver = scene.isOver()
     const seconds = (ticker.deltaMS / 1000) * speed
     scene.advance(seconds)
-    if (!wasOver && scene.isOver()) setPaused(false)
+    if (!wasOver && scene.isOver()) {
+      setPaused(false)
+      finishBattle()
+    }
     if (recording && scene.isOver() && (recording.heldSeconds += seconds) >= END_SCREEN_HOLD_SECONDS)
       void stopRecording()
   })
 
   setUpInstall(element('install'), element('ios-install'))
   if (describesBattle(location.search)) startBattle(readBattleParams(location.search))
-  else openMenu()
+  else openComposer()
 }
 
 start().catch((error: unknown) => showError(error instanceof Error ? error.message : String(error)))

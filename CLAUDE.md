@@ -1,13 +1,14 @@
 # PokéBrawl
 
-Arène de combats de masse entre Pokémon (par exemple Gen 1 contre Gen 3), à regarder plutôt qu'à jouer, pensée
-pour produire des vidéos verticales (Reels, TikTok). Projet frère de PokéDate (`../pokedate`), volontairement
-séparé : concept, technique (rendu temps réel) et rythme de déploiement différents.
+Jeu de combats de masse entre Pokémon, en ligne sur https://pokebrawl.quentin-macq.workers.dev. Le but est de faire
+venir des joueurs sur le site et de les faire jouer (pas de produire des vidéos pour les réseaux sociaux) : on
+compose une équipe avec un budget de 1 000 points pour battre une horde, et on peut aussi regarder des combats de
+générations ou de types. Projet frère de PokéDate (`../pokedate`), volontairement séparé.
 Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 
 ## Commandes
 
-- `bun dev` : l'application sur http://localhost:5173/ (menu de lancement), ou un combat direct avec
+- `bun dev` : l'application sur http://localhost:5173/ (composition d'équipe), ou un combat direct avec
   `?a=gen1&b=gen3&seed=42&terrain=grass` (`&same=0` pour garder tous les Pokémon des deux équipes). Clavier : Espace pause, 1/2/4 vitesse, R nouveau combat,
   F plein écran ; au toucher, une barre de contrôle apparaît. `bun dev --host` pour tester sur le téléphone (Wi-Fi).
 - `bun run build` puis `bun run preview` : version de production, la seule où le service worker (PWA) s'active.
@@ -19,10 +20,13 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 - `bun run battle --a gen1 --b gen3 --seed 42` : un combat raconté en texte (`--log` pour chaque attaque,
   `--full` pour garder tous les Pokémon au lieu du même nombre par camp)
 - `bun run stats --a gen1 --b gen3 --runs 200` : taux de victoire, durée moyenne, meilleurs Pokémon (`--full` aussi)
+- `bun run balance` : armées de 1 000 points faibles, moyennes, fortes ou d'élite les unes contre les autres, pour
+  vérifier que les coûts n'avantagent aucune stratégie (35 à 65 % de victoires attendues)
 - `bun run data` : régénère `src/data/pokemon.json` depuis PokéAPI (quelques minutes)
 - `bun run check` : lint, formatage, types, tests
 
-Équipes : `gen1` à `gen9`, `type:fire`, `legendaries`, `ids:25,6,150`.
+Équipes : `gen1` à `gen9`, `type:fire`, `legendaries`, `ids:25,6*3,150` (`*3` : trois exemplaires),
+`horde:gen1:1000` (horde fixe de 1 000 points tirée de la Gen 1).
 
 ## Conventions (reprises de PokéDate)
 
@@ -46,7 +50,12 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
     critiques 1/24, aléa 85–100 %.
   - `random.ts` : générateur à graine (Mulberry32). Même graine = même combat, indispensable pour rejouer,
     partager un lien et réenregistrer une vidéo.
-  - `teams.ts` : sélection des équipes, `trimToSameSize` (même nombre par camp, tirage selon la graine).
+  - `teams.ts` : sélection des équipes, `trimToSameSize` (même nombre par camp, tirage selon la graine), `hordeOf`
+    (horde d'une valeur donnée, toujours la même pour un sélecteur, pour qu'on puisse l'étudier).
+  - `cost.ts` : coût de chaque Pokémon pour un budget de 1 000 (10 à 52 points, médiane 25, plancher à 10 pour
+    100 Pokémon au plus). Coût ≈ racine de la force (dégâts par seconde × coups encaissés) : dans une mêlée, la
+    force d'une armée croît avec le carré de son nombre (loi de Lanchester), un coût proportionnel à la force rend
+    les nuées imbattables. Exposant 0,48 réglé avec `bun run balance`.
 - `src/render/` : affichage PixiJS dans un canvas à la résolution d'une vidéo, mis à l'échelle par CSS : 1080 × 1920
   si la fenêtre est plus haute que large (téléphone, vidéo verticale), 1920 × 1080 sinon (PC). Tout ce qui doit
   apparaître dans la vidéo est dessiné dans le canvas, jamais en HTML.
@@ -73,7 +82,10 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   - `endScreen.ts` : vainqueur, durée, meilleur Pokémon en grand (sprite agrandi sans lissage), les trois suivants,
     survivants ; mis en page à taille fixe puis réduit pour tenir dans l'arène, dans les deux formats.
   - `params.ts` : équipes, graine, terrain et option « même nombre » lus dans l'URL et réécrits dedans.
-- `src/ui/` : HTML par-dessus le canvas, donc jamais dans une vidéo enregistrée : menu de lancement (`menu.ts`,
+- `src/ui/` : HTML par-dessus le canvas, donc jamais dans une vidéo enregistrée. `composer.ts` : l'accueil, choix
+  de la horde (Facile 800, Normal 1 000, Difficile 1 250 points) et de l'équipe (doublons permis), catalogue filtrable
+  avec sprites découpés en CSS dans la planche (`sprites.ts`), dernière équipe et hordes battues retenues dans le
+  navigateur (`storage.ts`) ; après un défi, « Modifier mon équipe » et « Revanche ». Menu spectateur (`menu.ts`,
   aperçu des équipes derrière), barre de contrôle qui s'efface pendant le combat (`controls.ts`), installation
   de la PWA (`install.ts`), enregistrement vidéo (`recorder.ts`, `videoPanel.ts`) : le bouton ● rejoue le combat
   depuis le début en 1080 × 1920 quel que soit l'écran, s'arrête 4,5 s après la fin, puis propose de télécharger la
@@ -100,8 +112,10 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 2. Équilibrage : même nombre de Pokémon par camp (fait, par défaut) ; même total de stats par camp.
 3. Rendu : Vite + PixiJS, sprites, terrains, PV, K.O., vitesse ×1/×2/×4, vainqueur, menu, plein écran, PWA (fait).
    Effets d'attaque par type, noms d'attaque, « super efficace », écran de fin complet (fait).
-4. Export vidéo vertical (fait). Mise en ligne sur Cloudflare (configurée).
-5. Ensuite : pronostic avant le combat, mode statistiques dans l'interface, combat du jour, Méga-Évolutions,
-   statuts et talents, cris.
+4. Export vidéo vertical (fait, secondaire). Mise en ligne sur Cloudflare (fait).
+5. Composer son équipe contre une horde (fait).
+6. Ensuite : défi du jour (horde et graine tirées de la date, série de jours), défi entre amis par lien (image
+   d'aperçu des équipes), liens depuis pokedate.fr, pages « Gen 1 contre Gen 3 : qui gagne ? » pour le référencement,
+   domaine pokebrawl.fr ; plus tard pronostic, Méga-Évolutions, statuts et talents.
 
 Les sprites et le Pokédex de PokéDate (`../pokedate/scripts/fetch-sprites.ts`) peuvent servir de modèle.

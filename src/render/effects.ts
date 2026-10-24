@@ -39,6 +39,9 @@ const TYPE_VISUALS: Record<TypeKey, TypeVisual> = {
 
 // Effects are drawn a third larger than the arena scale, so that they still read inside a dense crowd.
 const EFFECT_SCALE = 1.35
+/** The main colour of a type, also used for type badges outside the arena. */
+export const typeColor = (type: TypeKey) => TYPE_VISUALS[type].color
+
 const SUPER_EFFECTIVE_COLOR = 0xffe14a
 const KNOCK_OUT_COLOR = 0xffffff
 const OUTLINE_COLOR = 0x12131f
