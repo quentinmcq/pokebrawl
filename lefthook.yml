@@ -1,0 +1,19 @@
+# Fast checks on staged files only; slower whole-project checks before pushing.
+pre-commit:
+  piped: true
+  jobs:
+    - name: format
+      glob: '*.{ts,json,md,yml,yaml}'
+      run: bunx oxfmt {staged_files}
+      stage_fixed: true
+    - name: lint
+      glob: '*.ts'
+      run: bunx oxlint {staged_files}
+
+pre-push:
+  parallel: true
+  jobs:
+    - name: typecheck
+      run: bun run typecheck
+    - name: tests
+      run: bun run test
