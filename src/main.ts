@@ -287,7 +287,12 @@ async function start() {
 
   setUpInstall(element('install'), element('ios-install'))
   const friendChallenge = readFriendChallenge(location.search)
-  if (friendChallenge) {
+  const welcomedTeam = new URLSearchParams(location.search).get('equipe')
+  if (welcomedTeam) {
+    leaveBattle()
+    composer.open(null)
+    composer.welcome(welcomedTeam)
+  } else if (friendChallenge) {
     leaveBattle()
     composer.openFriendChallenge(friendChallenge)
   } else if (describesBattle(location.search)) startBattle(readBattleParams(location.search))

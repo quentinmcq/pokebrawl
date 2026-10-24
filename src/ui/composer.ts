@@ -386,12 +386,34 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       const fought = parseTeam(current?.teams[0])
       if ((horde || current?.opponentName) && fought.size > 0) team = fought
       challengeStatus.hidden = true
+      query('[data-role="team-notice"]').hidden = true
       renderChallenge()
       renderCards()
       section.hidden = false
       section.scrollTop = 0
     },
     close: () => (section.hidden = true),
+    /**
+     * Adds the Pokémon of a link from another site (`?equipe=ids:25`, from PokéDate) to the team, as far as the budget
+     * goes, and says so: the visitor arrives with their Pokémon already enrolled.
+     */
+    welcome(selector: string) {
+      const added: string[] = []
+      for (const [id, count] of parseTeam(selector)) {
+        for (let copy = 0; copy < count; copy++) {
+          if (spent() + entryOf(id).cost > TEAM_BUDGET || teamSize() >= MAX_TEAM_SIZE) break
+          team.set(id, (team.get(id) ?? 0) + 1)
+          if (!added.includes(entryOf(id).species.names.fr)) added.push(entryOf(id).species.names.fr)
+        }
+      }
+      if (added.length === 0) return
+      saveTeam()
+      renderTeam()
+      const notice = query('[data-role="team-notice"]')
+      const names = added.length === 1 ? added[0] : `${added.slice(0, -1).join(', ')} et ${added.at(-1)}`
+      notice.textContent = `${names} ${added.length === 1 ? 'a' : 'ont'} rejoint ton équipe : complète-la, puis bats la horde du jour\u00a0!`
+      notice.hidden = false
+    },
     /** Opens on a friend's team, received by link, to beat with the player's own. */
     openFriendChallenge(received: FriendChallenge) {
       friendChallenge = received

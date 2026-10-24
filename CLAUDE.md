@@ -118,7 +118,8 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   et de la veille (`ranking.ts`) : pseudo demandé à la première victoire puis publication automatique, rang affiché
   en fin de combat, « Voir » rejoue l'équipe d'un joueur de la veille. « Défier un ami » (panneau de l'équipe) partage
   un lien de défi (`share.ts` : feuille de partage du téléphone ou presse-papier) ; un lien reçu ouvre l'onglet
-  « Défi de Sacha », et une victoire propose de « Renvoyer le défi » avec l'équipe gagnante. Menu spectateur (`menu.ts`,
+  « Défi de Sacha », et une victoire propose de « Renvoyer le défi » avec l'équipe gagnante.
+  Un lien `?equipe=ids:25` (depuis PokéDate) ajoute ce Pokémon à l'équipe et le dit au joueur. Menu spectateur (`menu.ts`,
   aperçu des équipes derrière), barre de contrôle qui s'efface pendant le combat (`controls.ts`), installation
   de la PWA (`install.ts`), enregistrement vidéo (`recorder.ts`, `videoPanel.ts`) : le bouton ● rejoue le combat
   depuis le début en 1080 × 1920 quel que soit l'écran, s'arrête 4,5 s après la fin, puis propose de télécharger la

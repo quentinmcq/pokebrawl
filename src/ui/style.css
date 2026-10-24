@@ -856,3 +856,12 @@ input {
   margin: 0;
   text-align: left;
 }
+
+.notice {
+  margin: 0;
+  padding: 2cqmin 3cqmin;
+  border-radius: 2.5cqmin;
+  background: rgb(255 210 63 / 0.15);
+  color: var(--accent);
+  font-weight: 700;
+}
