@@ -3,10 +3,14 @@
 Arène de combats de masse entre Pokémon (par exemple Gen 1 contre Gen 3), à regarder plutôt qu'à jouer, pensée
 pour produire des vidéos verticales (Reels, TikTok). Projet frère de PokéDate (`../pokedate`), volontairement
 séparé : concept, technique (rendu temps réel) et rythme de déploiement différents.
-Bun, TypeScript, Vitest, oxlint, oxfmt, Lefthook.
+Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 
 ## Commandes
 
+- `bun dev` : l'arène dans le navigateur (http://localhost:5173/?a=gen1&b=gen3&seed=42). Espace : pause,
+  1/2/4 : vitesse, R : nouvelle graine. Sans graine dans l'URL, une graine aléatoire y est écrite.
+- `bun run sprites` : télécharge les 1025 sprites et les rassemble dans `public/sprites.webp` + `.json`
+  (non versionnés, à lancer une fois avant `bun dev` ; les téléchargements restent en cache dans `.cache/`)
 - `bun run battle --a gen1 --b gen3 --seed 42` : un combat raconté en texte (`--log` pour chaque attaque)
 - `bun run stats --a gen1 --b gen3 --runs 200` : taux de victoire, durée moyenne, meilleurs Pokémon
 - `bun run data` : régénère `src/data/pokemon.json` depuis PokéAPI (quelques minutes)
@@ -37,6 +41,14 @@ Bun, TypeScript, Vitest, oxlint, oxfmt, Lefthook.
   - `random.ts` : générateur à graine (Mulberry32). Même graine = même combat, indispensable pour rejouer,
     partager un lien et réenregistrer une vidéo.
   - `teams.ts` : sélection des équipes.
+- `src/render/` : affichage PixiJS dans un canvas 1080 × 1920 (résolution d'une vidéo verticale, mis à l'échelle
+  par CSS). Tout ce qui doit apparaître dans la vidéo est dessiné dans le canvas, jamais en HTML.
+  - `playback.ts` : avance la simulation à 20 pas par seconde et interpole les positions entre deux pas pour un
+    affichage fluide ; garde la trace des attaques et des coups reçus pour les animations.
+  - `arenaView.ts` : sol, anneau de la couleur du camp, sprite tourné vers sa cible, élan à l'attaque, flash rouge
+    quand il est touché, barre de PV dès la première blessure, chute au K.O.
+  - `hud.ts` : bandeau du haut (survivants de chaque camp, chrono, part des PV restants) ; `endBanner.ts` : vainqueur.
+  - `params.ts` : équipes et graine lues dans l'URL.
 - `src/data/pokemon.json` : 1025 Pokémon (noms fr/en, types, stats, génération, rareté) et leurs 4 attaques.
   Attaques apprises par niveau (les plus emblématiques ; les CT donneraient Hydrocanon à Magicarpe), une par
   type, triées par puissance attendue. Les attaques sans sens hors tour par tour (charge, recharge, autodestruction)
@@ -52,9 +64,9 @@ Bun, TypeScript, Vitest, oxlint, oxfmt, Lefthook.
 
 1. Simulation sans affichage (fait).
 2. Équilibrage optionnel : même nombre de Pokémon ou même total de stats par camp.
-3. Rendu : Vite + PixiJS, sprites, nom de l'attaque au-dessus du lanceur, effets « super efficace » et K.O.,
-   pause et vitesse ×1/×2/×4, écran de fin (vainqueur, survivants, meilleur Pokémon).
-4. Graine dans l'URL et export vidéo vertical (MediaRecorder sur le canvas).
+3. Rendu : Vite + PixiJS, sprites, PV, K.O., pause et vitesse ×1/×2/×4, vainqueur (fait). Reste : nom de
+   l'attaque au-dessus du lanceur, effets « super efficace », écran de fin complet (survivants, meilleur Pokémon).
+4. Export vidéo vertical (MediaRecorder sur le canvas). La graine est déjà dans l'URL.
 5. Ensuite : pronostic avant le combat, mode statistiques dans l'interface, combat du jour, Méga-Évolutions,
    statuts et talents, cris.
 
