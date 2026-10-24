@@ -3,11 +3,18 @@
   "name": "pokebrawl",
   "account_id": "ea93a11f9c4cf5128fd1deffb3908158",
   "compatibility_date": "2026-10-01",
-  // Static files only: the whole app runs in the browser.
+  // The app runs in the browser; the Worker only answers the daily ranking under /api.
+  "main": "worker/index.ts",
   "assets": {
     "directory": "./dist",
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"],
   },
+  // Created on the first deploy, without an id to copy here.
+  "d1_databases": [{ "binding": "DB", "database_name": "pokebrawl", "migrations_dir": "migrations" }],
+  "ratelimits": [{ "name": "SUBMIT_RATE_LIMITER", "namespace_id": "2001", "simple": { "limit": 10, "period": 60 } }],
+  "observability": { "enabled": true, "logs": { "enabled": true, "invocation_logs": false } },
   "workers_dev": true,
   "preview_urls": false,
 }

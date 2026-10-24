@@ -69,6 +69,17 @@
             <div class="daily" data-role="daily">
               <p class="daily-title" data-role="daily-title"></p>
               <p class="hint" data-role="daily-status"></p>
+              <div class="ranking">
+                <div class="ranking-head">
+                  <h3>Classement</h3>
+                  <div class="segmented segmented--small" role="group" aria-label="Jour du classement">
+                    <button type="button" data-ranking="today">Aujourd'hui</button>
+                    <button type="button" data-ranking="yesterday">Hier</button>
+                  </div>
+                </div>
+                <p class="hint" data-role="ranking-summary">Chargement…</p>
+                <ol class="ranking-list" data-role="ranking-list"></ol>
+              </div>
             </div>
             <div class="row" data-role="training">
               <select name="horde" aria-label="Horde à battre"></select>
@@ -124,6 +135,17 @@
 
       <div id="end-actions" class="end-actions" hidden>
         <p class="end-result" data-role="result" hidden></p>
+        <form class="publish" data-role="publish" hidden>
+          <input
+            name="nickname"
+            maxlength="20"
+            placeholder="Ton pseudo"
+            autocomplete="nickname"
+            aria-label="Ton pseudo"
+          />
+          <button class="primary" type="submit">Publier au classement</button>
+          <p class="publish-error" data-role="publish-error" hidden></p>
+        </form>
         <div class="end-buttons">
           <button class="primary" type="button" data-action="edit">Modifier mon équipe</button>
           <button class="secondary" type="button" data-action="rematch">Revanche</button>

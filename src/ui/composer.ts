@@ -15,6 +15,7 @@ import { terrainForSeed } from '../render/terrain'
 import { costOf, MAX_TEAM_SIZE, TEAM_BUDGET, teamCost } from '../simulation/cost'
 import { parseHorde, selectTeam, TEAM_SELECTORS, TYPE_NAMES_FR, teamTitle, toFighterSetup } from '../simulation/teams'
 import type { Species, TypeKey } from '../simulation/types'
+import { fetchRanking, renderRanking } from './ranking'
 import { readStored, writeStored } from './storage'
 
 const LEVELS = [800, 1000, 1250]
@@ -54,6 +55,14 @@ export interface ChallengeResult {
   message: string | null
   shareText: string | null
   daily: boolean
+  /** Today's daily horde beaten: the score can go to the ranking. */
+  publishable: { day: string; team: string } | null
+}
+
+const previousDayOf = (day: string) => {
+  const date = new Date(`${day}T12:00:00Z`)
+  date.setUTCDate(date.getUTCDate() - 1)
+  return date.toISOString().slice(0, 10)
 }
 
 /** `ids:25*3,6` back into how many of each Pokémon; anything malformed gives an empty team. */
@@ -79,6 +88,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   const hordeSelect = query<HTMLSelectElement>('select[name="horde"]')
   const levelButtons = [...section.querySelectorAll<HTMLButtonElement>('[data-level]')]
   const modeButtons = [...section.querySelectorAll<HTMLButtonElement>('[data-mode]')]
+  const rankingButtons = [...section.querySelectorAll<HTMLButtonElement>('[data-ranking]')]
+  let rankingDay: 'today' | 'yesterday' = 'today'
   const searchInput = query<HTMLInputElement>('input[name="search"]')
   const typeSelect = query<HTMLSelectElement>('select[name="type"]')
   const generationSelect = query<HTMLSelectElement>('select[name="generation"]')
@@ -128,10 +139,33 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
         ? 'Même combat pour tout le monde : bats-la avec le moins de points possible.'
         : `Battue avec ${best} points : fais encore mieux\u00a0!`
     query('[data-role="daily-status"]').textContent = `${goal}${streak > 0 ? ` · 🔥 ${plural(streak, 'jour')}` : ''}`
+    void renderRankingOf(rankingDay === 'today' ? day : previousDayOf(day))
+  }
+
+  // Answers may arrive out of order when the tabs are switched quickly: only the last request is drawn.
+  let rankingRequest = 0
+  async function renderRankingOf(day: string) {
+    for (const button of rankingButtons) button.ariaPressed = String(button.dataset.ranking === rankingDay)
+    const request = ++rankingRequest
+    query('[data-role="ranking-summary"]').textContent = 'Chargement…'
+    const ranking = await fetchRanking(day)
+    if (request !== rankingRequest) return
+    const { horde, seed } = dailyChallenge(day)
+    renderRanking(
+      query('[data-role="ranking-list"]'),
+      query('[data-role="ranking-summary"]'),
+      ranking,
+      (replayedTeam) => onFight({ teams: [replayedTeam, horde], seed, terrain: terrainForSeed(seed), sameSize: false }),
+    )
   }
 
   function renderChallenge() {
     const daily = challenge.mode === 'daily'
+    for (const button of rankingButtons)
+      button.addEventListener('click', () => {
+        rankingDay = button.dataset.ranking as typeof rankingDay
+        renderDaily()
+      })
     for (const button of modeButtons) button.ariaPressed = String(button.dataset.mode === challenge.mode)
     query('[data-role="daily"]').hidden = !daily
     query('[data-role="training"]').hidden = daily
@@ -267,6 +301,11 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   hordeSelect.addEventListener('change', () => setChallenge({ ...challenge, horde: hordeSelect.value }))
   for (const button of levelButtons)
     button.addEventListener('click', () => setChallenge({ ...challenge, level: Number(button.dataset.level) }))
+  for (const button of rankingButtons)
+    button.addEventListener('click', () => {
+      rankingDay = button.dataset.ranking as typeof rankingDay
+      renderDaily()
+    })
   for (const button of modeButtons)
     button.addEventListener('click', () => setChallenge({ ...challenge, mode: button.dataset.mode as Mode }))
 
@@ -305,9 +344,17 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
           wins.add(params.teams[1])
           writeStored(STORAGE_KEYS.wins, [...wins])
         }
-        return { message: null, shareText: null, daily: false }
+        return { message: null, shareText: null, daily: false, publishable: null }
       }
-      if (!won) return { message: 'Raté\u00a0! Change ton équipe et retente ta chance.', shareText: null, daily: true }
+      // A past day's battle, replayed from the ranking, counts for nothing.
+      if (day !== today()) return { message: null, shareText: null, daily: true, publishable: null }
+      if (!won)
+        return {
+          message: 'Raté\u00a0! Change ton équipe et retente ta chance.',
+          shareText: null,
+          daily: true,
+          publishable: null,
+        }
       const points = teamCost(selectTeam(pokedex, params.teams[0]).fighters)
       dailyRecord = recordDailyWin(dailyRecord, day, points)
       writeStored(STORAGE_KEYS.daily, dailyRecord)
@@ -323,6 +370,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
           'Fais mieux que moi :',
         ].join('\n'),
         daily: true,
+        publishable: { day, team: params.teams[0] },
       }
     },
   }

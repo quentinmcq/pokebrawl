@@ -8,6 +8,7 @@ import { createComposer, isChallenge } from './ui/composer'
 import { createControls } from './ui/controls'
 import { setUpInstall, isInstalled } from './ui/install'
 import { createMenu } from './ui/menu'
+import { ordinal, savedNickname, saveNickname, submitScore } from './ui/ranking'
 import { createSpriteFactory } from './ui/sprites'
 import { canRecord, recordCanvas, videoBaseName, type Video } from './ui/recorder'
 import { createVideoPanel } from './ui/videoPanel'
@@ -131,15 +132,47 @@ async function start() {
   // After a challenge, the settings lead back to the team to improve it; after a watched battle, to its menu.
   const openMenu = () => (isChallenge(params) ? openComposer() : openSpectatorMenu())
 
-  let shareText: string | null = null
   const shareButton = endActions.querySelector<HTMLButtonElement>('[data-action="share"]')!
   const resultLine = endActions.querySelector<HTMLElement>('[data-role="result"]')!
+  const publishForm = endActions.querySelector<HTMLFormElement>('[data-role="publish"]')!
+  const publishError = publishForm.querySelector<HTMLElement>('[data-role="publish-error"]')!
+  let publishable: { day: string; team: string } | null = null
+  let resultMessage = ''
+
+  // Sends today's win to the ranking under the saved nickname, and adds the rank to the result line.
+  async function publish(name: string) {
+    if (!publishable) return
+    publishError.hidden = true
+    const outcome = await submitScore(publishable.day, name, publishable.team)
+    if ('error' in outcome) {
+      publishError.textContent = outcome.error ?? ''
+      publishError.hidden = false
+      publishForm.hidden = false
+      return
+    }
+    saveNickname(name)
+    publishForm.hidden = true
+    const { you, total } = outcome.ranking
+    if (you) resultLine.textContent = `${resultMessage} · ${ordinal(you.rank)} sur ${total}`
+  }
+  publishForm.addEventListener('submit', (event) => {
+    event.preventDefault()
+    void publish(new FormData(publishForm).get('nickname')?.toString() ?? '')
+  })
+
+  let shareText: string | null = null
 
   function finishBattle() {
     if (!scene || !params || !isChallenge(params)) return
     const result = composer.finish(params, scene.battle.outcome === 0)
     shareText = result.shareText
+    publishable = result.publishable
+    resultMessage = result.message ?? ''
     resultLine.textContent = result.message
+    publishError.hidden = true
+    const nickname = savedNickname()
+    publishForm.hidden = publishable === null || nickname !== null
+    if (publishable && nickname) void publish(nickname)
     resultLine.hidden = result.message === null
     shareButton.hidden = shareText === null
     shareButton.textContent = 'Partager'

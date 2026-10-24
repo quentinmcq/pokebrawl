@@ -4,9 +4,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:api": "vite build && wrangler d1 migrations apply pokebrawl --local && wrangler dev --port 8787",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "bun run check && bun run sprites && vite build && wrangler deploy",
+    "deploy": "bun run check && bun run sprites && vite build && wrangler deploy && wrangler d1 migrations apply pokebrawl --remote",
     "data": "bun scripts/fetch-pokemon.ts",
     "sprites": "bun scripts/fetch-sprites.ts",
     "icons": "bun scripts/app-icons.ts",
@@ -20,7 +21,8 @@
     "fmt:check": "oxfmt --check",
     "check": "bun run lint && bun run fmt:check && bun run typecheck && bun run test",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "verify-daily": "bun scripts/verify-daily.ts"
   },
   "dependencies": {
     "pixi.js": "^8.22.0"
