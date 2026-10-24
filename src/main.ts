@@ -5,6 +5,7 @@ import { battleSearch, describesBattle, randomSeed, readBattleParams, type Battl
 import { createScene, type Scene } from './render/scene'
 import { terrainForSeed } from './render/terrain'
 import { createControls } from './ui/controls'
+import { setUpInstall, isInstalled } from './ui/install'
 import { createMenu } from './ui/menu'
 
 const SPEED_KEYS: Record<string, number> = { Digit1: 1, Digit2: 2, Digit4: 4 }
@@ -96,7 +97,7 @@ async function start() {
     onStart: startBattle,
   })
 
-  const fullscreenAvailable = document.fullscreenEnabled
+  const fullscreenAvailable = document.fullscreenEnabled && !isInstalled()
   const toggleFullscreen = () => {
     if (!fullscreenAvailable) return
     if (document.fullscreenElement) void document.exitFullscreen()
@@ -133,6 +134,7 @@ async function start() {
     if (!wasOver && scene.isOver()) setPaused(false)
   })
 
+  setUpInstall(element('install'), element('ios-install'))
   if (describesBattle(location.search)) startBattle(readBattleParams(location.search))
   else openMenu()
 }

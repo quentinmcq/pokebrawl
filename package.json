@@ -8,6 +8,7 @@
     "preview": "vite preview",
     "data": "bun scripts/fetch-pokemon.ts",
     "sprites": "bun scripts/fetch-sprites.ts",
+    "icons": "bun scripts/app-icons.ts",
     "battle": "bun scripts/battle.ts",
     "stats": "bun scripts/stats.ts",
     "postinstall": "lefthook install",

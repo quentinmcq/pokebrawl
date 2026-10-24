@@ -8,6 +8,13 @@
       content="Des centaines de Pokémon s'affrontent en même temps : choisis deux camps et regarde."
     />
     <meta name="theme-color" content="#12131f" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="PokéBrawl" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icons/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <title>PokéBrawl</title>
   </head>
   <body>
@@ -38,6 +45,8 @@
           <span>Même nombre de Pokémon par camp</span>
         </label>
         <button class="primary" type="submit">Lancer le combat</button>
+        <button class="secondary" type="button" id="install" hidden>Installer l'application</button>
+        <p class="hint" id="ios-install" hidden>Pour l'installer : Partager, puis « Sur l'écran d'accueil ».</p>
       </form>
 
       <nav id="controls" class="controls" aria-label="Contrôles du combat" hidden>
