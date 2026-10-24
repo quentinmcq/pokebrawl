@@ -11,6 +11,8 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   `?a=gen1&b=gen3&seed=42&terrain=grass&same=1`. Clavier : Espace pause, 1/2/4 vitesse, R nouveau combat,
   F plein écran ; au toucher, une barre de contrôle apparaît. `bun dev --host` pour tester sur le téléphone (Wi-Fi).
 - `bun run build` puis `bun run preview` : version de production, la seule où le service worker (PWA) s'active.
+- `bun run deploy` : vérifications, sprites, build, puis mise en ligne sur Cloudflare (Worker `pokebrawl`, fichiers
+  statiques seuls, même compte que PokéDate ; cache long sur `/assets/*`, jamais sur `sw.js`, via `public/_headers`).
 - `bun run sprites` : télécharge les 1025 sprites et les rassemble dans `public/sprites.webp` + `.json`
   (non versionnés, à lancer une fois avant `bun dev` ; les téléchargements restent en cache dans `.cache/`)
 - `bun run icons` : régénère les icônes de l'application (`public/icons/`, versionnées) depuis ce cache
@@ -67,11 +69,15 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
     canvas 2D à demi-résolution agrandi sans lissage, pour rester à l'échelle des sprites.
   - `arenaView.ts` : terrain, anneau de la couleur du camp, sprite tourné vers sa cible, élan à l'attaque, flash rouge
     quand il est touché, barre de PV dès la première blessure, chute au K.O.
-  - `hud.ts` : bandeau du haut (survivants de chaque camp, chrono, part des PV restants) ; `endBanner.ts` : vainqueur.
+  - `hud.ts` : bandeau du haut (survivants de chaque camp, chrono, part des PV restants).
+  - `endScreen.ts` : vainqueur, durée, meilleur Pokémon en grand (sprite agrandi sans lissage), les trois suivants,
+    survivants ; mis en page à taille fixe puis réduit pour tenir dans l'arène, dans les deux formats.
   - `params.ts` : équipes, graine, terrain et option « même nombre » lus dans l'URL et réécrits dedans.
 - `src/ui/` : HTML par-dessus le canvas, donc jamais dans une vidéo enregistrée : menu de lancement (`menu.ts`,
   aperçu des équipes derrière), barre de contrôle qui s'efface pendant le combat (`controls.ts`), installation
-  de la PWA (`install.ts`). Les tailles suivent le petit côté de la scène (unités `cqmin`), dans les deux formats.
+  de la PWA (`install.ts`), enregistrement vidéo (`recorder.ts`, `videoPanel.ts`) : le bouton ● rejoue le combat
+  depuis le début en 1080 × 1920 quel que soit l'écran, s'arrête 4,5 s après la fin, puis propose de télécharger la
+  vidéo (MP4 si le navigateur sait l'encoder, sinon WebM) ou, sur téléphone, de la partager vers une autre app. Les tailles suivent le petit côté de la scène (unités `cqmin`), dans les deux formats.
 - `src/main.ts` : assemble le tout ; plein écran, écran maintenu allumé pendant un combat (Wake Lock).
 - `public/` : `manifest.webmanifest` (plein écran, toutes orientations), `sw.js` (cache de l'application et des sprites,
   rafraîchi en arrière-plan : elle s'ouvre hors ligne une fois installée), icônes.
@@ -92,9 +98,8 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 1. Simulation sans affichage (fait).
 2. Équilibrage optionnel : même nombre de Pokémon par camp (fait) ; même total de stats par camp.
 3. Rendu : Vite + PixiJS, sprites, terrains, PV, K.O., vitesse ×1/×2/×4, vainqueur, menu, plein écran, PWA (fait).
-   Effets d'attaque par type, noms d'attaque, « super efficace » (fait). Reste : écran de fin complet (survivants,
-   meilleur Pokémon).
-4. Export vidéo vertical (MediaRecorder sur le canvas). La graine est déjà dans l'URL.
+   Effets d'attaque par type, noms d'attaque, « super efficace », écran de fin complet (fait).
+4. Export vidéo vertical (fait). Mise en ligne sur Cloudflare (configurée).
 5. Ensuite : pronostic avant le combat, mode statistiques dans l'interface, combat du jour, Méga-Évolutions,
    statuts et talents, cris.
 
