@@ -82,10 +82,15 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   - `endScreen.ts` : vainqueur, durée, meilleur Pokémon en grand (sprite agrandi sans lissage), les trois suivants,
     survivants ; mis en page à taille fixe puis réduit pour tenir dans l'arène, dans les deux formats.
   - `params.ts` : équipes, graine, terrain et option « même nombre » lus dans l'URL et réécrits dedans.
-- `src/ui/` : HTML par-dessus le canvas, donc jamais dans une vidéo enregistrée. `composer.ts` : l'accueil, choix
-  de la horde (Facile 800, Normal 1 000, Difficile 1 250 points) et de l'équipe (doublons permis), catalogue filtrable
+- `src/daily.ts` : défi du jour. À minuit heure de Paris, une horde de 1 000 points (`horde:gen8:1000:2026-10-24`,
+  différente de la horde d'entraînement) et une graine sont tirées de la date, les mêmes pour tous : le résultat ne
+  dépend que de l'équipe, c'est une énigme. Score : le moins de points pour gagner ; série de jours réussis.
+- `src/ui/` : HTML par-dessus le canvas, donc jamais dans une vidéo enregistrée. `composer.ts` : l'accueil, défi du
+  jour (par défaut, avec record et série) ou entraînement contre une horde au choix (Facile 800, Normal 1 000,
+  Difficile 1 250 points) et de l'équipe (doublons permis), catalogue filtrable
   avec sprites découpés en CSS dans la planche (`sprites.ts`), dernière équipe et hordes battues retenues dans le
-  navigateur (`storage.ts`) ; après un défi, « Modifier mon équipe » et « Revanche ». Menu spectateur (`menu.ts`,
+  navigateur (`storage.ts`) ; après un défi, « Modifier mon équipe », « Revanche » (entraînement) ou « Partager »
+  (défi du jour réussi : score, série et lien, par le partage du téléphone ou le presse-papier). Menu spectateur (`menu.ts`,
   aperçu des équipes derrière), barre de contrôle qui s'efface pendant le combat (`controls.ts`), installation
   de la PWA (`install.ts`), enregistrement vidéo (`recorder.ts`, `videoPanel.ts`) : le bouton ● rejoue le combat
   depuis le début en 1080 × 1920 quel que soit l'écran, s'arrête 4,5 s après la fin, puis propose de télécharger la
@@ -113,8 +118,8 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 3. Rendu : Vite + PixiJS, sprites, terrains, PV, K.O., vitesse ×1/×2/×4, vainqueur, menu, plein écran, PWA (fait).
    Effets d'attaque par type, noms d'attaque, « super efficace », écran de fin complet (fait).
 4. Export vidéo vertical (fait, secondaire). Mise en ligne sur Cloudflare (fait).
-5. Composer son équipe contre une horde (fait).
-6. Ensuite : défi du jour (horde et graine tirées de la date, série de jours), défi entre amis par lien (image
+5. Composer son équipe contre une horde (fait). Défi du jour avec record, série et partage (fait).
+6. Ensuite : classement du défi du jour entre joueurs (base de données), défi entre amis par lien (image
    d'aperçu des équipes), liens depuis pokedate.fr, pages « Gen 1 contre Gen 3 : qui gagne ? » pour le référencement,
    domaine pokebrawl.fr ; plus tard pronostic, Méga-Évolutions, statuts et talents.
 
