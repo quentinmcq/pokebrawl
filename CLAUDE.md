@@ -45,10 +45,14 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   - `random.ts` : générateur à graine (Mulberry32). Même graine = même combat, indispensable pour rejouer,
     partager un lien et réenregistrer une vidéo.
   - `teams.ts` : sélection des équipes, `trimToSameSize` (même nombre par camp, tirage selon la graine).
-- `src/render/` : affichage PixiJS dans un canvas 1080 × 1920 (résolution d'une vidéo verticale, mis à l'échelle
-  par CSS). Tout ce qui doit apparaître dans la vidéo est dessiné dans le canvas, jamais en HTML.
+- `src/render/` : affichage PixiJS dans un canvas à la résolution d'une vidéo, mis à l'échelle par CSS : 1080 × 1920
+  si la fenêtre est plus haute que large (téléphone, vidéo verticale), 1920 × 1080 sinon (PC). Tout ce qui doit
+  apparaître dans la vidéo est dessiné dans le canvas, jamais en HTML.
+  - `layout.ts` : place l'arène selon l'orientation. En paysage, l'arène est simplement tournée d'un quart (premier
+    camp à gauche) : la simulation reste 36 × 64, une graine donne le même combat dans les deux formats.
   - `scene.ts` : tout ce qui est dessiné pour un combat ; on en recrée une à chaque combat sans recharger la page
-    (recharger ferait sortir du plein écran).
+    (recharger ferait sortir du plein écran). Quand la fenêtre change d'orientation, la scène se redessine dans la
+    nouvelle disposition sans interrompre le combat.
   - `playback.ts` : avance la simulation à 20 pas par seconde et interpole les positions entre deux pas pour un
     affichage fluide ; garde la trace des attaques et des coups reçus pour les animations, et transmet les
     événements aux effets. Une attaque spéciale met distance / 30 s à arriver : le flash et la chute de la cible
@@ -67,9 +71,9 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   - `params.ts` : équipes, graine, terrain et option « même nombre » lus dans l'URL et réécrits dedans.
 - `src/ui/` : HTML par-dessus le canvas, donc jamais dans une vidéo enregistrée : menu de lancement (`menu.ts`,
   aperçu des équipes derrière), barre de contrôle qui s'efface pendant le combat (`controls.ts`), installation
-  de la PWA (`install.ts`). Les tailles suivent la largeur de la scène (unités `cqw`).
+  de la PWA (`install.ts`). Les tailles suivent le petit côté de la scène (unités `cqmin`), dans les deux formats.
 - `src/main.ts` : assemble le tout ; plein écran, écran maintenu allumé pendant un combat (Wake Lock).
-- `public/` : `manifest.webmanifest` (plein écran, portrait), `sw.js` (cache de l'application et des sprites,
+- `public/` : `manifest.webmanifest` (plein écran, toutes orientations), `sw.js` (cache de l'application et des sprites,
   rafraîchi en arrière-plan : elle s'ouvre hors ligne une fois installée), icônes.
 - `src/data/pokemon.json` : 1025 Pokémon (noms fr/en, types, stats, génération, rareté) et leurs 4 attaques.
   Attaques apprises par niveau (les plus emblématiques ; les CT donneraient Hydrocanon à Magicarpe), une par
