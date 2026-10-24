@@ -275,3 +275,73 @@ input {
     font-size: 3.6cqmin;
   }
 }
+
+.controls .record {
+  color: var(--red);
+}
+
+.recording {
+  position: absolute;
+  bottom: 4cqmin;
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  align-items: center;
+  gap: 2cqmin;
+  padding: 1.5cqmin 1.5cqmin 1.5cqmin 3cqmin;
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 3.2cqmin;
+  font-weight: 700;
+}
+
+.recording-dot {
+  width: 2.6cqmin;
+  height: 2.6cqmin;
+  border-radius: 50%;
+  background: var(--red);
+  animation: blink 1s steps(2, start) infinite;
+}
+
+@keyframes blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+.recording button {
+  padding: 1.5cqmin 3cqmin;
+  border: 0;
+  border-radius: 999px;
+  background: #2a2d47;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.video-ready {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  display: grid;
+  gap: 3cqmin;
+  width: 70cqmin;
+  padding: 5cqmin;
+  border-radius: 5cqmin;
+  background: var(--surface);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2cqmin 8cqmin rgb(0 0 0 / 0.5);
+  font-size: 3.8cqmin;
+  text-align: center;
+}
+
+.video-ready p {
+  margin: 0 0 1cqmin;
+  font-size: 5cqmin;
+  font-weight: 900;
+}
+
+.video-ready a {
+  color: inherit;
+  text-decoration: none;
+}

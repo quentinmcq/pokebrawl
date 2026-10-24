@@ -57,9 +57,23 @@
           <button type="button" data-speed="4">×4</button>
         </div>
         <button type="button" data-action="new" aria-label="Nouveau combat"></button>
+        <button type="button" data-action="record" class="record" aria-label="Enregistrer la vidéo"></button>
         <button type="button" data-action="menu" aria-label="Paramètres"></button>
         <button type="button" data-action="fullscreen" aria-label="Plein écran"></button>
       </nav>
+
+      <div id="recording" class="recording" role="status" hidden>
+        <span class="recording-dot" aria-hidden="true"></span>
+        <span>Enregistrement…</span>
+        <button type="button">Arrêter</button>
+      </div>
+
+      <div id="video-ready" class="video-ready" role="dialog" aria-label="Vidéo prête" hidden>
+        <p>Ta vidéo est prête&nbsp;!</p>
+        <button class="primary" type="button" data-action="share">Partager</button>
+        <a class="secondary" data-action="download">Télécharger</a>
+        <button class="secondary" type="button" data-action="close">Fermer</button>
+      </div>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>

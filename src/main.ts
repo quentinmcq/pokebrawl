@@ -7,9 +7,13 @@ import { terrainForSeed } from './render/terrain'
 import { createControls } from './ui/controls'
 import { setUpInstall, isInstalled } from './ui/install'
 import { createMenu } from './ui/menu'
+import { canRecord, recordCanvas, videoBaseName, type Video } from './ui/recorder'
+import { createVideoPanel } from './ui/videoPanel'
 
 const windowLayout = () => createLayout(orientationOf(window.innerWidth, window.innerHeight))
 const SPEED_KEYS: Record<string, number> = { Digit1: 1, Digit2: 2, Digit4: 4 }
+// The end screen fades in after 1.3 s; the video then holds it for a few seconds before stopping.
+const END_SCREEN_HOLD_SECONDS = 4.5
 
 const element = <Element extends HTMLElement>(id: string) => document.getElementById(id) as Element
 const stage = element<HTMLElement>('stage')
@@ -39,16 +43,20 @@ async function start() {
   stage.querySelector('.loading')?.remove()
   stage.prepend(app.canvas)
 
-  // A wide window gets the arena turned sideways rather than a narrow strip in the middle of the screen.
-  window.addEventListener('resize', () => {
-    const next = windowLayout()
+  function applyLayout(next: Layout) {
     if (next.orientation === layout.orientation) return
     layout = next
     stage.dataset.orientation = layout.orientation
     app.renderer.resize(layout.width, layout.height)
     scene?.relayout(layout)
+  }
+  // A wide window gets the arena turned sideways rather than a narrow strip in the middle of the screen; a video
+  // being recorded stays upright whatever happens to the window.
+  window.addEventListener('resize', () => {
+    if (!recording) applyLayout(windowLayout())
   })
 
+  let recording: { stop: () => Promise<Video>; heldSeconds: number } | null = null
   let scene: Scene | null = null
   let params: BattleParams | null = null
   let speed = 1
@@ -116,13 +124,35 @@ async function start() {
     if (document.fullscreenElement) void document.exitFullscreen()
     else void document.documentElement.requestFullscreen().catch(() => {})
   }
+  // A video always replays the battle from its first second, upright, at the chosen speed.
+  function startRecording() {
+    if (!params || recording) return
+    applyLayout(createLayout('portrait'))
+    startBattle(params)
+    controls.hide()
+    recording = { ...recordCanvas(app.canvas, videoBaseName(params.teams, params.seed)), heldSeconds: 0 }
+    videoPanel.showRecording()
+  }
+
+  async function stopRecording() {
+    if (!recording) return
+    const finished = recording
+    recording = null
+    videoPanel.showVideo(await finished.stop())
+    applyLayout(windowLayout())
+    controls.show()
+  }
+
+  const videoPanel = createVideoPanel(element('recording'), element('video-ready'), () => void stopRecording())
   const controls = createControls(element('controls'), stage, {
     onToggle: togglePlay,
     onSpeed: (value) => controls.setSpeed((speed = value)),
     onNewBattle: () => params && startBattle(withNewSeed(params)),
     onMenu: openMenu,
     onFullscreen: toggleFullscreen,
+    onRecord: startRecording,
   })
+  controls.setRecordingAvailable(canRecord())
   controls.setSpeed(speed)
   controls.setFullscreen(fullscreenAvailable, false)
   document.addEventListener('fullscreenchange', () =>
@@ -132,6 +162,10 @@ async function start() {
   window.addEventListener('keydown', (event) => {
     const typing = event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement
     if (typing || !params || !element('menu').hidden) return
+    if (recording) {
+      if (event.code === 'Escape') void stopRecording()
+      return
+    }
     if (event.code === 'Space') togglePlay()
     else if (event.code === 'KeyR') startBattle(withNewSeed(params))
     else if (event.code === 'KeyF') toggleFullscreen()
@@ -143,8 +177,11 @@ async function start() {
   app.ticker.add((ticker) => {
     if (!scene || paused) return
     const wasOver = scene.isOver()
-    scene.advance((ticker.deltaMS / 1000) * speed)
+    const seconds = (ticker.deltaMS / 1000) * speed
+    scene.advance(seconds)
     if (!wasOver && scene.isOver()) setPaused(false)
+    if (recording && scene.isOver() && (recording.heldSeconds += seconds) >= END_SCREEN_HOLD_SECONDS)
+      void stopRecording()
   })
 
   setUpInstall(element('install'), element('ios-install'))
