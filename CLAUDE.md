@@ -21,7 +21,8 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   liste ceux dont l'équipe ne bat pas vraiment la horde ; `--apply` les supprime.
 - `bun run sprites` : télécharge les 1025 sprites et les rassemble dans `public/sprites.webp` + `.json`
   (non versionnés, à lancer une fois avant `bun dev` ; les téléchargements restent en cache dans `.cache/`)
-- `bun run icons` : régénère les icônes de l'application (`public/icons/`, versionnées) depuis ce cache
+- `bun run icons` : régénère les icônes de l'application (`public/icons/`) et l'image d'aperçu des liens
+  (`public/og.png`), versionnées, depuis ce cache
 - `bun run battle --a gen1 --b gen3 --seed 42` : un combat raconté en texte (`--log` pour chaque attaque,
   `--full` pour garder tous les Pokémon au lieu du même nombre par camp)
 - `bun run stats --a gen1 --b gen3 --runs 200` : taux de victoire, durée moyenne, meilleurs Pokémon (`--full` aussi)
@@ -89,7 +90,12 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   - `params.ts` : équipes, graine, terrain et option « même nombre » lus dans l'URL et réécrits dedans.
 - `src/leaderboard.ts`, `src/nickname.ts` : types du classement, validation des équipes envoyées (points recalculés,
   budget, taille) et des pseudos (règles de PokéDate : 2 à 20 caractères, insultes refusées même déguisées).
-- `worker/index.ts` : le Worker. Sert le site et répond à `GET`/`POST /api/daily/:jour` (base D1 `daily_scores`,
+- `src/friend.ts` : défi entre amis. Lien `?defi=ids:66*12&de=Sacha&seed=42` : l'équipe à battre, qui l'envoie et la
+  graine, la même pour les deux joueurs. Vérifié comme un score envoyé (équipe dans les règles, pseudo accepté,
+  sinon « Un ami »). Le combat porte `nb=Sacha` dans son URL, d'où « Équipe de Sacha » à l'écran.
+- `worker/index.ts` : le Worker. Sert le site, réécrit l'aperçu de la page d'accueil pour les messageries (image
+  `og.png` en adresse absolue ; pour un lien de défi, « Sacha te défie sur PokéBrawl » et l'équipe à battre), et
+  répond à `GET`/`POST /api/daily/:jour` (base D1 `daily_scores`,
   `migrations/`). Un score par joueur et par jour, le meilleur ; l'identifiant du joueur, aléatoire et gardé dans le
   navigateur, n'est stocké que haché. Équipes révélées une fois le jour fini. Plan gratuit (10 ms de calcul) : pas
   de rejeu du combat au serveur, d'où `bun run verify-daily` ; envois limités à 10 par minute et par IP.
@@ -103,7 +109,9 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   navigateur (`storage.ts`) ; après un défi, « Modifier mon équipe », « Revanche » (entraînement) ou « Partager »
   (défi du jour réussi : score, série et lien, par le partage du téléphone ou le presse-papier). Classement du jour
   et de la veille (`ranking.ts`) : pseudo demandé à la première victoire puis publication automatique, rang affiché
-  en fin de combat, « Voir » rejoue l'équipe d'un joueur de la veille. Menu spectateur (`menu.ts`,
+  en fin de combat, « Voir » rejoue l'équipe d'un joueur de la veille. « Défier un ami » (panneau de l'équipe) partage
+  un lien de défi (`share.ts` : feuille de partage du téléphone ou presse-papier) ; un lien reçu ouvre l'onglet
+  « Défi de Sacha », et une victoire propose de « Renvoyer le défi » avec l'équipe gagnante. Menu spectateur (`menu.ts`,
   aperçu des équipes derrière), barre de contrôle qui s'efface pendant le combat (`controls.ts`), installation
   de la PWA (`install.ts`), enregistrement vidéo (`recorder.ts`, `videoPanel.ts`) : le bouton ● rejoue le combat
   depuis le début en 1080 × 1920 quel que soit l'écran, s'arrête 4,5 s après la fin, puis propose de télécharger la
@@ -133,7 +141,8 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 4. Export vidéo vertical (fait, secondaire). Mise en ligne sur Cloudflare (fait).
 5. Composer son équipe contre une horde (fait). Défi du jour avec record, série et partage (fait).
    Classement du défi du jour (fait). Coûts mesurés au combat : à refaire (une espèce seule surévalue les puissants).
-6. Ensuite : défi entre amis par lien (image d'aperçu des équipes), liens depuis pokedate.fr, pages « Gen 1 contre Gen 3 : qui gagne ? » pour le référencement,
+   Défi entre amis par lien, avec aperçu dans les messageries (fait).
+6. Ensuite : liens depuis pokedate.fr, pages « Gen 1 contre Gen 3 : qui gagne ? » pour le référencement,
    domaine pokebrawl.fr ; plus tard pronostic, Méga-Évolutions, statuts et talents.
 
 Les sprites et le Pokédex de PokéDate (`../pokedate/scripts/fetch-sprites.ts`) peuvent servir de modèle.
