@@ -50,7 +50,15 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   - `scene.ts` : tout ce qui est dessiné pour un combat ; on en recrée une à chaque combat sans recharger la page
     (recharger ferait sortir du plein écran).
   - `playback.ts` : avance la simulation à 20 pas par seconde et interpole les positions entre deux pas pour un
-    affichage fluide ; garde la trace des attaques et des coups reçus pour les animations.
+    affichage fluide ; garde la trace des attaques et des coups reçus pour les animations, et transmet les
+    événements aux effets. Une attaque spéciale met distance / 30 s à arriver : le flash et la chute de la cible
+    attendent l'impact.
+  - `effects.ts` : un style par type (18), pas par attaque. Les spéciales lancent un projectile (orbe, rayon,
+    éclair, éclats, feuilles, onde, lame d'air), toutes font un impact (gerbe, anneau, étoile, éclaboussure, nuage,
+    entaille). « Super efficace » : impact ×1,5 et anneau doré ; critique : grande étoile ; K.O. : nuage blanc. Le
+    nom de l'attaque s'élève au-dessus du lanceur pour les coups notables (super efficace, critique, K.O.), 6 à la
+    fois au plus. Au-delà de 160 attaques affichées, les coups ordinaires passent sans effet. Aléa propre à la
+    graine : une vidéo réenregistrée montre les mêmes effets.
   - `terrain.ts` : sols en pixel art générés à partir de la graine (prairie, désert, toundra, grotte), dans un
     canvas 2D à demi-résolution agrandi sans lissage, pour rester à l'échelle des sprites.
   - `arenaView.ts` : terrain, anneau de la couleur du camp, sprite tourné vers sa cible, élan à l'attaque, flash rouge
@@ -80,8 +88,8 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 1. Simulation sans affichage (fait).
 2. Équilibrage optionnel : même nombre de Pokémon par camp (fait) ; même total de stats par camp.
 3. Rendu : Vite + PixiJS, sprites, terrains, PV, K.O., vitesse ×1/×2/×4, vainqueur, menu, plein écran, PWA (fait).
-   Reste : effets d'attaque par type (projectile pour les spéciales, impact pour les physiques), nom de l'attaque
-   au-dessus du lanceur, effets « super efficace », écran de fin complet (survivants, meilleur Pokémon).
+   Effets d'attaque par type, noms d'attaque, « super efficace » (fait). Reste : écran de fin complet (survivants,
+   meilleur Pokémon).
 4. Export vidéo vertical (MediaRecorder sur le canvas). La graine est déjà dans l'URL.
 5. Ensuite : pronostic avant le combat, mode statistiques dans l'interface, combat du jour, Méga-Évolutions,
    statuts et talents, cris.
