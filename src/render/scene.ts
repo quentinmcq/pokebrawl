@@ -10,7 +10,7 @@ import { createEndScreen } from './endScreen'
 import { createHud } from './hud'
 import type { Layout } from './layout'
 import type { BattleParams } from './params'
-import { advancePlayback, createPlayback } from './playback'
+import { advancePlayback, createPlayback, takePendingEvents } from './playback'
 
 // Leaves a moment to take in both crowds before they charge.
 const START_DELAY_SECONDS = 1.5
@@ -63,6 +63,18 @@ export function createScene(params: BattleParams, spritesheet: Spritesheet, init
     parts.endScreen.update(remaining)
   }
 
+  /**
+   * Plays the rest of the battle at once, for a player who only wants the outcome: the simulation is deterministic,
+   * so the result is the very one the full playback would have shown. Its many effects are dropped, not drawn.
+   */
+  function skipToEnd() {
+    waitingSeconds = 0
+    while (battle.outcome === null) advancePlayback(playback, 1)
+    takePendingEvents(playback)
+    parts.arena.update()
+    parts.hud.update()
+  }
+
   function clear() {
     parts.arena.destroy()
     parts.endScreen.destroy()
@@ -79,5 +91,14 @@ export function createScene(params: BattleParams, spritesheet: Spritesheet, init
     view.destroy()
   }
 
-  return { view, battle, teamTitles, advance, relayout, destroy, isOver: () => battle.outcome !== null }
+  return {
+    view,
+    battle,
+    teamTitles,
+    advance,
+    skipToEnd,
+    relayout,
+    destroy,
+    isOver: () => battle.outcome !== null,
+  }
 }

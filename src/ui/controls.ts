@@ -8,6 +8,7 @@ const ICONS = {
   settings: '<path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/>',
   enterFullscreen:
     '<path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/>',
+  skip: '<path d="M5 4l10 8-10 8z"/><path d="M19 5v14"/>',
   record: '<circle cx="12" cy="12" r="7" fill="currentColor" stroke="none"/>',
   exitFullscreen:
     '<path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3"/>',
@@ -24,6 +25,7 @@ interface ControlHandlers {
   onMenu: () => void
   onFullscreen: () => void
   onRecord: () => void
+  onSkip: () => void
 }
 
 const icon = (name: keyof typeof ICONS) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`
@@ -37,6 +39,7 @@ export function createControls(nav: HTMLElement, stage: HTMLElement, handlers: C
   button('new').innerHTML = icon('shuffle')
   button('menu').innerHTML = icon('settings')
   button('record').innerHTML = icon('record')
+  button('skip').innerHTML = icon('skip')
   let state: PlayState = 'playing'
   let idleTimer: ReturnType<typeof setTimeout> | undefined
 
@@ -49,6 +52,7 @@ export function createControls(nav: HTMLElement, stage: HTMLElement, handlers: C
     else if (target.dataset.action === 'menu') handlers.onMenu()
     else if (target.dataset.action === 'fullscreen') handlers.onFullscreen()
     else if (target.dataset.action === 'record') handlers.onRecord()
+    else if (target.dataset.action === 'skip') handlers.onSkip()
     wake()
   })
 
@@ -68,6 +72,7 @@ export function createControls(nav: HTMLElement, stage: HTMLElement, handlers: C
     state = next
     toggleButton.innerHTML = icon(state === 'playing' ? 'pause' : state === 'paused' ? 'play' : 'replay')
     toggleButton.ariaLabel = state === 'playing' ? 'Pause' : state === 'paused' ? 'Reprendre' : 'Revoir le combat'
+    button('skip').hidden = state === 'over'
     wake()
   }
 

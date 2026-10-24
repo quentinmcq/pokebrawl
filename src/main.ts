@@ -13,11 +13,15 @@ import { createMenu } from './ui/menu'
 import { ordinal, savedNickname, saveNickname, submitScore } from './ui/ranking'
 import { shareLink } from './ui/share'
 import { createSpriteFactory } from './ui/sprites'
+import { readStored, writeStored } from './ui/storage'
 import { canRecord, recordCanvas, videoBaseName, type Video } from './ui/recorder'
 import { createVideoPanel } from './ui/videoPanel'
 
 const windowLayout = () => createLayout(orientationOf(window.innerWidth, window.innerHeight))
 const SPEED_KEYS: Record<string, number> = { Digit1: 1, Digit2: 2, Digit4: 4 }
+// Challenges get replayed often: they start faster than watched battles, and each remembers its own speed.
+const DEFAULT_SPEEDS = { challenge: 2, watch: 1 }
+const SPEED_STORAGE_KEY = 'pokebrawl.speeds'
 // The end screen fades in after 1.3 s; the video then holds it for a few seconds before stopping.
 const END_SCREEN_HOLD_SECONDS = 4.5
 
@@ -65,7 +69,15 @@ async function start() {
   let recording: { stop: () => Promise<Video>; heldSeconds: number } | null = null
   let scene: Scene | null = null
   let params: BattleParams | null = null
-  let speed = 1
+  const speeds = { ...DEFAULT_SPEEDS, ...readStored<Partial<typeof DEFAULT_SPEEDS>>(SPEED_STORAGE_KEY, {}) }
+  const speedMode = () => (isChallenge(params) ? 'challenge' : 'watch')
+  let speed = speeds.watch
+  function setSpeed(value: number) {
+    speed = value
+    speeds[speedMode()] = value
+    writeStored(SPEED_STORAGE_KEY, speeds)
+    controls.setSpeed(value)
+  }
   let paused = false
   let wakeLock: WakeLockSentinel | null = null
 
@@ -103,11 +115,21 @@ async function start() {
     params = next
     history.replaceState(null, '', battleSearch(next))
     showScene(next)
+    speed = speeds[speedMode()]
+    controls.setSpeed(speed)
     menu.close()
     composer.close()
     endActions.hidden = true
     controls.show()
     setPaused(false)
+  }
+
+  // The battle ends here rather than in the ticker, which would not see it change: its end is handled at once.
+  function skipToEnd() {
+    if (!scene || scene.isOver() || recording) return
+    scene.skipToEnd()
+    setPaused(false)
+    finishBattle()
   }
 
   const togglePlay = () => (scene?.isOver() && params ? startBattle(params) : setPaused(!paused))
@@ -251,11 +273,12 @@ async function start() {
   const videoPanel = createVideoPanel(element('recording'), element('video-ready'), () => void stopRecording())
   const controls = createControls(element('controls'), stage, {
     onToggle: togglePlay,
-    onSpeed: (value) => controls.setSpeed((speed = value)),
+    onSpeed: setSpeed,
     onNewBattle: () => params && startBattle(withNewSeed(params)),
     onMenu: openMenu,
     onFullscreen: toggleFullscreen,
     onRecord: startRecording,
+    onSkip: skipToEnd,
   })
   controls.setRecordingAvailable(canRecord())
   controls.setSpeed(speed)
@@ -274,7 +297,8 @@ async function start() {
     if (event.code === 'Space') togglePlay()
     else if (event.code === 'KeyR') startBattle(withNewSeed(params))
     else if (event.code === 'KeyF') toggleFullscreen()
-    else if (event.code in SPEED_KEYS) controls.setSpeed((speed = SPEED_KEYS[event.code]!))
+    else if (event.code === 'KeyS') skipToEnd()
+    else if (event.code in SPEED_KEYS) setSpeed(SPEED_KEYS[event.code]!)
     else return
     event.preventDefault()
   })
