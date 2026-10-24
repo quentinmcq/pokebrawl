@@ -31,6 +31,7 @@ const STORAGE_KEYS = {
   wins: 'pokebrawl.wins',
   daily: 'pokebrawl.daily',
   friend: 'pokebrawl.friend',
+  collection: 'pokebrawl.collection',
 }
 const ALL = ''
 
@@ -128,6 +129,10 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   if (challenge.mode === 'friend' && !friendChallenge) challenge = { ...challenge, mode: 'daily' }
   const challengerInput = query<HTMLInputElement>('input[name="challenger"]')
   const challengeStatus = query('[data-role="challenge-status"]')
+  // The Pokémon caught on PokéDate: a star on their cards and a filter, but no edge in battle, which the daily
+  // ranking could not check.
+  let collection = new Set(readStored<number[]>(STORAGE_KEYS.collection, []))
+  const collectionCheckbox = query<HTMLInputElement>('input[name="collection"]')
 
   typeSelect.replaceChildren(
     new Option('Tous les types', ALL),
@@ -297,6 +302,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       dot.title = TYPE_NAMES_FR[type]
       types.append(dot)
     }
+    if (collection.has(species.id))
+      card.append(Object.assign(document.createElement('span'), { className: 'card-star', textContent: '★' }))
     card.append(
       spriteOf(species.id),
       Object.assign(document.createElement('span'), { className: 'card-name', textContent: species.names.fr }),
@@ -316,6 +323,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       .filter(({ species, searchName }) => {
         if (search && !searchName.includes(search)) return false
         if (type && !species.types.includes(type)) return false
+        if (collectionCheckbox.checked && !collection.has(species.id)) return false
         return !generation || species.generation === generation
       })
       .toSorted((a, b) =>
@@ -362,7 +370,14 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     saveTeam()
     renderTeam()
   })
-  for (const control of [searchInput, typeSelect, generationSelect, sortSelect])
+  function renderCollection() {
+    query('[data-role="collection-filter"]').hidden = collection.size === 0
+    query('[data-role="collection-import"]').hidden = collection.size > 0
+    query('[data-role="collection-count"]').textContent = String(collection.size)
+  }
+  renderCollection()
+
+  for (const control of [searchInput, typeSelect, generationSelect, sortSelect, collectionCheckbox])
     control.addEventListener('input', renderCards)
 
   function setChallenge(next: typeof challenge) {
@@ -454,6 +469,23 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       const notice = query('[data-role="team-notice"]')
       const names = added.length === 1 ? added[0] : `${added.slice(0, -1).join(', ')} et ${added.at(-1)}`
       notice.textContent = `${names} ${added.length === 1 ? 'a' : 'ont'} rejoint ton équipe : complète-la, puis bats la horde du jour\u00a0!`
+      notice.hidden = false
+    },
+    /** Keeps the Pokémon caught on PokéDate, received by link, and says how to find them. */
+    importCollection(ids: number[]) {
+      collection = new Set(ids)
+      writeStored(STORAGE_KEYS.collection, ids)
+      for (const [id, card] of cards) {
+        card.querySelector('.card-star')?.remove()
+        if (collection.has(id))
+          card.prepend(Object.assign(document.createElement('span'), { className: 'card-star', textContent: '★' }))
+      }
+      renderCollection()
+      const notice = query('[data-role="team-notice"]')
+      notice.textContent =
+        ids.length === 0
+          ? 'Aucun Pokémon attrapé sur PokéDate pour l’instant : entre des dates là-bas pour en attraper.'
+          : `${ids.length} Pokémon attrapé${ids.length > 1 ? 's' : ''} sur PokéDate : ils portent une ★, et le filtre du catalogue les regroupe.`
       notice.hidden = false
     },
     /** Opens on a friend's team, received by link, to beat with the player's own. */

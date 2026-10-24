@@ -5,6 +5,7 @@ import { battleSearch, describesBattle, randomSeed, readBattleParams, type Battl
 import { buildTeams, createScene, type Scene } from './render/scene'
 import { battleReport } from './report'
 import { terrainForSeed } from './render/terrain'
+import { readCollectionHash } from './collection'
 import { readFriendChallenge } from './friend'
 import { createComposer, isChallenge } from './ui/composer'
 import { createControls } from './ui/controls'
@@ -330,15 +331,31 @@ async function start() {
   setUpInstall(element('install'), element('ios-install'))
   const friendChallenge = readFriendChallenge(location.search)
   const welcomedTeam = new URLSearchParams(location.search).get('equipe')
-  if (welcomedTeam) {
+  function importCollectionFromHash() {
+    const collection = readCollectionHash(location.hash)
+    if (!collection) return false
     leaveBattle()
     composer.open(null)
-    composer.welcome(welcomedTeam)
-  } else if (friendChallenge) {
-    leaveBattle()
-    composer.openFriendChallenge(friendChallenge)
-  } else if (describesBattle(location.search)) startBattle(readBattleParams(location.search))
-  else openComposer()
+    composer.importCollection(collection)
+    return true
+  }
+  // A link opened in a tab already showing PokéBrawl only changes the hash, without loading the page again.
+  window.addEventListener('hashchange', importCollectionFromHash)
+
+  // What the address asks for: a PokéDate collection, a Pokémon to enrol, a friend's challenge, a battle to watch.
+  function openFromAddress() {
+    if (importCollectionFromHash()) return
+    if (welcomedTeam) {
+      leaveBattle()
+      composer.open(null)
+      composer.welcome(welcomedTeam)
+    } else if (friendChallenge) {
+      leaveBattle()
+      composer.openFriendChallenge(friendChallenge)
+    } else if (describesBattle(location.search)) startBattle(readBattleParams(location.search))
+    else openComposer()
+  }
+  openFromAddress()
 }
 
 start().catch((error: unknown) => showError(error instanceof Error ? error.message : String(error)))

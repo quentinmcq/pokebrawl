@@ -900,3 +900,16 @@ button.type-chip {
   font-size: 3.2cqmin;
   line-height: 1.35;
 }
+
+.collection-filter {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.card-star {
+  position: absolute;
+  bottom: 1cqmin;
+  right: 1.3cqmin;
+  color: var(--accent);
+  font-size: 3.4cqmin;
+}
