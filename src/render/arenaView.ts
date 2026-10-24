@@ -1,6 +1,6 @@
 import { Container, Graphics, Sprite, Texture, type Spritesheet } from 'pixi.js'
-import { ARENA_HEIGHT, ARENA_WIDTH, isAlive, type Fighter } from '../simulation/battle'
-import { ARENA_LEFT, ARENA_TOP, COLORS, toScreenX, toScreenY, UNIT } from './layout'
+import { isAlive, type Fighter } from '../simulation/battle'
+import { COLORS, type Layout } from './layout'
 import { displayedPosition, secondsSince, type Playback } from './playback'
 import { paintTerrain, type Terrain } from './terrain'
 
@@ -20,9 +20,8 @@ const KNOCK_OUT_SECONDS = 0.6
 // Terrain pixels are twice the size of screen pixels, about the scale of the Pokémon sprites drawn over them.
 const TERRAIN_PIXEL_SIZE = 2
 
-function createTerrainSprite(terrain: Terrain, seed: number) {
-  const width = ARENA_WIDTH * UNIT
-  const height = ARENA_HEIGHT * UNIT
+function createTerrainSprite(terrain: Terrain, seed: number, { arena }: Layout) {
+  const { width, height } = arena
   const canvas = paintTerrain(
     terrain,
     seed,
@@ -32,7 +31,7 @@ function createTerrainSprite(terrain: Terrain, seed: number) {
   const texture = Texture.from(canvas)
   texture.source.scaleMode = 'nearest'
   const sprite = new Sprite(texture)
-  sprite.position.set(ARENA_LEFT, ARENA_TOP)
+  sprite.position.set(arena.left, arena.top)
   sprite.setSize(width, height)
   return sprite
 }
@@ -49,19 +48,26 @@ function lungeOffset(playback: Playback, fighter: Fighter, x: number, y: number)
 }
 
 /** Draws the ground and every fighter: a ring in the team colour, the sprite, and a health bar once hurt. */
-export function createArenaView(playback: Playback, spritesheet: Spritesheet, terrain: Terrain, seed: number) {
+export function createArenaView(
+  playback: Playback,
+  spritesheet: Spritesheet,
+  terrain: Terrain,
+  seed: number,
+  layout: Layout,
+) {
+  const { unit } = layout
   const view = new Container()
   const rings = new Graphics()
   const fighterLayer = new Container({ sortableChildren: true })
   const healthBars = new Graphics()
-  const ground = createTerrainSprite(terrain, seed)
+  const ground = createTerrainSprite(terrain, seed, layout)
   view.addChild(ground, rings, fighterLayer, healthBars)
 
   const sprites = playback.battle.fighters.map((fighter) => {
     const texture = spritesheet.textures[String(fighter.species.id)]
     if (!texture) throw new Error(`Sprite absent pour #${fighter.species.id}`)
     const sprite = new Sprite({ texture, anchor: { x: 0.5, y: 1 } })
-    sprite.scale.set((SPRITE_SIZE_UNITS * UNIT) / Math.max(texture.width, texture.height))
+    sprite.scale.set((SPRITE_SIZE_UNITS * unit) / Math.max(texture.width, texture.height))
     fighterLayer.addChild(sprite)
     return sprite
   })
@@ -73,14 +79,16 @@ export function createArenaView(playback: Playback, spritesheet: Spritesheet, te
       const sprite = sprites[fighter.index]!
       const position = displayedPosition(playback, fighter)
       const lunge = lungeOffset(playback, fighter, position.x, position.y)
-      const screenX = toScreenX(position.x + lunge.x)
-      const feetY = toScreenY(position.y + lunge.y + FEET_OFFSET_UNITS)
+      const feet = layout.toScreen(position.x, position.y)
+      const body = layout.toScreen(position.x + lunge.x, position.y + lunge.y)
+      const screenX = body.x
+      const feetY = body.y + FEET_OFFSET_UNITS * unit
       sprite.position.set(screenX, feetY)
       sprite.zIndex = feetY
 
       // Sprites face left: turning them towards their target makes the crowd look like it is charging.
       const target = fighter.targetIndex === null ? null : playback.battle.fighters[fighter.targetIndex]
-      const facingRight = target ? target.x > fighter.x : fighter.team === 0
+      const facingRight = target ? layout.toScreen(target.x, target.y).x > feet.x : fighter.team === 0
       sprite.scale.x = Math.abs(sprite.scale.x) * (facingRight ? -1 : 1)
 
       const effects = playback.effects[fighter.index]!
@@ -101,16 +109,16 @@ export function createArenaView(playback: Playback, spritesheet: Spritesheet, te
       const teamColor = COLORS.teams[fighter.team]
       rings
         .ellipse(
-          toScreenX(position.x),
-          toScreenY(position.y) + FEET_OFFSET_UNITS * UNIT * 0.8,
-          RING_RADIUS_X_UNITS * UNIT,
-          RING_RADIUS_Y_UNITS * UNIT,
+          feet.x,
+          feet.y + FEET_OFFSET_UNITS * unit * 0.8,
+          RING_RADIUS_X_UNITS * unit,
+          RING_RADIUS_Y_UNITS * unit,
         )
         .fill({ color: teamColor, alpha: 0.35 })
         .stroke({ color: teamColor, width: 3, alpha: 0.9 })
 
       if (fighter.hp === fighter.maxHp) continue
-      const barWidth = HEALTH_BAR_WIDTH_UNITS * UNIT
+      const barWidth = HEALTH_BAR_WIDTH_UNITS * unit
       const barX = screenX - barWidth / 2
       const barY = feetY - sprite.height - HEALTH_BAR_GAP - HEALTH_BAR_HEIGHT
       healthBars

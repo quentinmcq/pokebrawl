@@ -1,6 +1,6 @@
 import { Container, Graphics, Text } from 'pixi.js'
-import { ARENA_HEIGHT, ARENA_WIDTH, isAlive, type Battle } from '../simulation/battle'
-import { COLORS, FONT_FAMILY, toScreenX, toScreenY } from './layout'
+import { isAlive, type Battle } from '../simulation/battle'
+import { COLORS, FONT_FAMILY, type Layout } from './layout'
 
 // The last knock-out finishes its animation before the banner covers the arena.
 const DELAY_SECONDS = 0.8
@@ -9,10 +9,10 @@ const PANEL_WIDTH = 760
 const PANEL_HEIGHT = 250
 
 /** A banner announcing the winner over the arena; the full end screen comes later. */
-export function createEndBanner(battle: Battle, teamTitles: [string, string]) {
+export function createEndBanner(battle: Battle, teamTitles: [string, string], { arena }: Layout) {
   const view = new Container({ visible: false })
-  const centerX = toScreenX(ARENA_WIDTH / 2)
-  const centerY = toScreenY(ARENA_HEIGHT / 2)
+  const centerX = arena.left + arena.width / 2
+  const centerY = arena.top + arena.height / 2
   let shownForSeconds = 0
 
   function show() {

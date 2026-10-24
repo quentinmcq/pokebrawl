@@ -1,6 +1,6 @@
 import './ui/style.css'
 import { Application, Assets, type Spritesheet } from 'pixi.js'
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS } from './render/layout'
+import { COLORS, createLayout, orientationOf, type Layout } from './render/layout'
 import { battleSearch, describesBattle, randomSeed, readBattleParams, type BattleParams } from './render/params'
 import { createScene, type Scene } from './render/scene'
 import { terrainForSeed } from './render/terrain'
@@ -8,6 +8,7 @@ import { createControls } from './ui/controls'
 import { setUpInstall, isInstalled } from './ui/install'
 import { createMenu } from './ui/menu'
 
+const windowLayout = () => createLayout(orientationOf(window.innerWidth, window.innerHeight))
 const SPEED_KEYS: Record<string, number> = { Digit1: 1, Digit2: 2, Digit4: 4 }
 
 const element = <Element extends HTMLElement>(id: string) => document.getElementById(id) as Element
@@ -31,10 +32,22 @@ async function start() {
   const spritesheet = await Assets.load<Spritesheet>(`${import.meta.env.BASE_URL}sprites.json`).catch(() => {
     throw new Error('Sprites introuvables : lance « bun run sprites » puis recharge la page.')
   })
+  let layout: Layout = windowLayout()
+  stage.dataset.orientation = layout.orientation
   const app = new Application()
-  await app.init({ width: CANVAS_WIDTH, height: CANVAS_HEIGHT, background: COLORS.background, antialias: true })
+  await app.init({ width: layout.width, height: layout.height, background: COLORS.background, antialias: true })
   stage.querySelector('.loading')?.remove()
   stage.prepend(app.canvas)
+
+  // A wide window gets the arena turned sideways rather than a narrow strip in the middle of the screen.
+  window.addEventListener('resize', () => {
+    const next = windowLayout()
+    if (next.orientation === layout.orientation) return
+    layout = next
+    stage.dataset.orientation = layout.orientation
+    app.renderer.resize(layout.width, layout.height)
+    scene?.relayout(layout)
+  })
 
   let scene: Scene | null = null
   let params: BattleParams | null = null
@@ -59,7 +72,7 @@ async function start() {
 
   function showScene(next: BattleParams) {
     scene?.destroy()
-    scene = createScene(next, spritesheet)
+    scene = createScene(next, spritesheet, layout)
     app.stage.addChild(scene.view)
     document.title = `${scene.teamTitles[0]} contre ${scene.teamTitles[1]} · PokéBrawl`
   }

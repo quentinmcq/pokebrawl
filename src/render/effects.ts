@@ -2,7 +2,7 @@ import { Container, Graphics, Text } from 'pixi.js'
 import type { BattleEvent } from '../simulation/battle'
 import { createRandom, type Random } from '../simulation/random'
 import type { TypeKey } from '../simulation/types'
-import { FONT_FAMILY, toScreenX, toScreenY, UNIT } from './layout'
+import { FONT_FAMILY, type Layout } from './layout'
 import { displayedPosition, secondsSince, takePendingEvents, type Playback, type ShownEvent } from './playback'
 
 type ProjectileKind = 'orb' | 'beam' | 'bolt' | 'shards' | 'leaves' | 'wave' | 'crescent'
@@ -38,7 +38,7 @@ const TYPE_VISUALS: Record<TypeKey, TypeVisual> = {
 }
 
 // Effects are drawn a third larger than the arena scale, so that they still read inside a dense crowd.
-const EFFECT_UNIT = UNIT * 1.35
+const EFFECT_SCALE = 1.35
 const SUPER_EFFECTIVE_COLOR = 0xffe14a
 const KNOCK_OUT_COLOR = 0xffffff
 const OUTLINE_COLOR = 0x12131f
@@ -139,7 +139,8 @@ function diamond(graphics: Graphics, x: number, y: number, length: number, width
 }
 
 /** Projectiles, impacts and move names over the arena, all drawn from the battle's own events and clock. */
-export function createEffectsView(playback: Playback, seed: number) {
+export function createEffectsView(playback: Playback, seed: number, layout: Layout) {
+  const effectUnit = layout.unit * EFFECT_SCALE
   const view = new Container()
   const graphics = new Graphics()
   const labelLayer = new Container()
@@ -195,7 +196,8 @@ export function createEffectsView(playback: Playback, seed: number) {
     text.style.fill = color
     text.style.fontSize = event.multiplier >= 2 ? 36 : 30
     text.visible = true
-    labels[slot] = { text, startTick: event.tick, x: from.x, y: from.y - LABEL_HEAD_OFFSET_UNITS }
+    const head = layout.toScreen(from.x, from.y)
+    labels[slot] = { text, startTick: event.tick, x: head.x, y: head.y - LABEL_HEAD_OFFSET_UNITS * layout.unit }
   }
 
   function addAttack({ event, from, travelSeconds }: ShownEvent, knockedOut: Set<number>) {
@@ -259,13 +261,11 @@ export function createEffectsView(playback: Playback, seed: number) {
     const target = fighterPosition(projectile.targetIndex)
     const to = { x: target.x + projectile.offset.x, y: target.y + projectile.offset.y }
     const progress = projectile.travelSeconds > 0 ? Math.min(1, age / projectile.travelSeconds) : 1
-    const at = (share: number) => ({
-      x: toScreenX(projectile.from.x + (to.x - projectile.from.x) * share),
-      y: toScreenY(projectile.from.y + (to.y - projectile.from.y) * share),
-    })
+    const start = layout.toScreen(projectile.from.x, projectile.from.y)
+    const end = layout.toScreen(to.x, to.y)
+    const at = (share: number) => ({ x: start.x + (end.x - start.x) * share, y: start.y + (end.y - start.y) * share })
     const head = at(progress)
-    const start = at(0)
-    const angle = Math.atan2(to.y - projectile.from.y, to.x - projectile.from.x)
+    const angle = Math.atan2(end.y - start.y, end.x - start.x)
     const outline = darken(projectile.color, 0.55)
     const linger = Math.max(0, 1 - (age - projectile.travelSeconds) / BEAM_LINGER_SECONDS)
 
@@ -274,16 +274,16 @@ export function createEffectsView(playback: Playback, seed: number) {
         for (let trail = 3; trail >= 1; trail--) {
           const point = at(Math.max(0, progress - trail * 0.12))
           graphics
-            .circle(point.x, point.y, (0.2 - trail * 0.04) * EFFECT_UNIT)
+            .circle(point.x, point.y, (0.2 - trail * 0.04) * effectUnit)
             .fill({ color: projectile.color, alpha: 0.5 / trail })
         }
-        graphics.circle(head.x, head.y, 0.36 * EFFECT_UNIT).fill({ color: projectile.light, alpha: 0.35 })
+        graphics.circle(head.x, head.y, 0.36 * effectUnit).fill({ color: projectile.light, alpha: 0.35 })
         graphics
-          .circle(head.x, head.y, 0.22 * EFFECT_UNIT)
+          .circle(head.x, head.y, 0.22 * effectUnit)
           .fill(projectile.color)
           .stroke({ color: outline, width: 2 })
         graphics
-          .circle(head.x - 0.06 * EFFECT_UNIT, head.y - 0.06 * EFFECT_UNIT, 0.08 * EFFECT_UNIT)
+          .circle(head.x - 0.06 * effectUnit, head.y - 0.06 * effectUnit, 0.08 * effectUnit)
           .fill(projectile.light)
         break
       }
@@ -297,18 +297,17 @@ export function createEffectsView(playback: Playback, seed: number) {
           graphics
             .moveTo(start.x, start.y)
             .lineTo(head.x, head.y)
-            .stroke({ color, width: thickness * EFFECT_UNIT * width, alpha: 0.9, cap: 'round' })
+            .stroke({ color, width: thickness * effectUnit * width, alpha: 0.9, cap: 'round' })
         }
         break
       }
       case 'bolt': {
-        const end = at(1)
         const jitter = projectile.jitters[Math.floor(age * 30) % projectile.jitters.length]!
         const normal = { x: -Math.sin(angle), y: Math.cos(angle) }
         const points = [start]
         jitter.forEach((offset, index) => {
           const point = at((index + 1) / (jitter.length + 1))
-          points.push({ x: point.x + normal.x * offset * EFFECT_UNIT, y: point.y + normal.y * offset * EFFECT_UNIT })
+          points.push({ x: point.x + normal.x * offset * effectUnit, y: point.y + normal.y * offset * effectUnit })
         })
         points.push(end)
         const alpha = Math.max(0, 1 - age / (projectile.travelSeconds + 0.15))
@@ -318,7 +317,7 @@ export function createEffectsView(playback: Playback, seed: number) {
         ] as const) {
           graphics.moveTo(points[0]!.x, points[0]!.y)
           for (const point of points.slice(1)) graphics.lineTo(point.x, point.y)
-          graphics.stroke({ color, width: width * EFFECT_UNIT, alpha, cap: 'round', join: 'round' })
+          graphics.stroke({ color, width: width * effectUnit, alpha, cap: 'round', join: 'round' })
         }
         break
       }
@@ -332,10 +331,10 @@ export function createEffectsView(playback: Playback, seed: number) {
             projectile.kind === 'leaves'
               ? Math.sin(projectile.phase + share * 9 + index * 2) * 0.35
               : (index - 1) * 0.18
-          const x = point.x + normal.x * swirl * EFFECT_UNIT
-          const y = point.y + normal.y * swirl * EFFECT_UNIT
+          const x = point.x + normal.x * swirl * effectUnit
+          const y = point.y + normal.y * swirl * effectUnit
           const spin = projectile.kind === 'leaves' ? projectile.phase + age * 18 + index : angle
-          diamond(graphics, x, y, 0.2 * EFFECT_UNIT, 0.08 * EFFECT_UNIT, spin)
+          diamond(graphics, x, y, 0.2 * effectUnit, 0.08 * effectUnit, spin)
             .fill(projectile.color)
             .stroke({ color: outline, width: 1.5 })
         }
@@ -344,24 +343,24 @@ export function createEffectsView(playback: Playback, seed: number) {
       case 'wave': {
         for (let ring = 0; ring < 2; ring++) {
           const point = at(Math.max(0, progress - ring * 0.18))
-          graphics.circle(point.x, point.y, (0.22 + ring * 0.12 + progress * 0.12) * EFFECT_UNIT).stroke({
+          graphics.circle(point.x, point.y, (0.22 + ring * 0.12 + progress * 0.12) * effectUnit).stroke({
             color: ring === 0 ? projectile.color : projectile.light,
-            width: 0.08 * EFFECT_UNIT,
+            width: 0.08 * effectUnit,
             alpha: 0.9 - ring * 0.3,
           })
         }
         break
       }
       case 'crescent': {
-        const radius = 0.32 * EFFECT_UNIT
+        const radius = 0.32 * effectUnit
         const startAngle = angle - Math.PI / 2
         graphics
           .moveTo(head.x + Math.cos(startAngle) * radius, head.y + Math.sin(startAngle) * radius)
           .arc(head.x, head.y, radius, startAngle, startAngle + Math.PI)
-          .stroke({ color: projectile.color, width: 0.12 * EFFECT_UNIT, cap: 'round' })
+          .stroke({ color: projectile.color, width: 0.12 * effectUnit, cap: 'round' })
           .moveTo(head.x + Math.cos(startAngle) * radius * 0.7, head.y + Math.sin(startAngle) * radius * 0.7)
           .arc(head.x, head.y, radius * 0.7, startAngle, startAngle + Math.PI)
-          .stroke({ color: projectile.light, width: 0.06 * EFFECT_UNIT, cap: 'round' })
+          .stroke({ color: projectile.light, width: 0.06 * effectUnit, cap: 'round' })
         break
       }
     }
@@ -372,12 +371,13 @@ export function createEffectsView(playback: Playback, seed: number) {
       const target = fighterPosition(impact.targetIndex)
       impact.position = { x: target.x + impact.offset.x, y: target.y + impact.offset.y }
     }
-    const x = toScreenX(impact.position.x)
+    const point = layout.toScreen(impact.position.x, impact.position.y)
+    const x = point.x
     // Impacts land on the body rather than at the feet.
-    const y = toScreenY(impact.position.y - 0.5)
+    const y = point.y - 0.5 * layout.unit
     const progress = age / IMPACT_SECONDS[impact.kind]
     const fade = 1 - progress
-    const size = impact.scale * EFFECT_UNIT
+    const size = impact.scale * effectUnit
 
     switch (impact.kind) {
       case 'burst':
@@ -385,9 +385,9 @@ export function createEffectsView(playback: Playback, seed: number) {
         for (const particle of impact.particles) {
           const distance = particle.speed * age * impact.scale
           const fall = impact.kind === 'splash' ? 6 * age * age - 1.2 * age : 0
-          const px = x + Math.cos(particle.angle) * distance * EFFECT_UNIT
+          const px = x + Math.cos(particle.angle) * distance * effectUnit
           const py =
-            y + (Math.sin(particle.angle) * distance * (impact.kind === 'splash' ? 0.5 : 1) + fall) * EFFECT_UNIT
+            y + (Math.sin(particle.angle) * distance * (impact.kind === 'splash' ? 0.5 : 1) + fall) * effectUnit
           const color = particle.size > 0.15 ? impact.color : impact.light
           graphics.circle(px, py, particle.size * size * (0.4 + 0.6 * fade)).fill({ color, alpha: fade })
         }
@@ -408,8 +408,8 @@ export function createEffectsView(playback: Playback, seed: number) {
           const distance = (0.2 + progress * 0.4) * impact.scale
           graphics
             .circle(
-              x + Math.cos(particle.angle) * distance * EFFECT_UNIT,
-              y + Math.sin(particle.angle) * distance * EFFECT_UNIT * 0.6,
+              x + Math.cos(particle.angle) * distance * effectUnit,
+              y + Math.sin(particle.angle) * distance * effectUnit * 0.6,
               (0.22 + progress * 0.2) * size,
             )
             .fill({ color: impact.color, alpha: 0.55 * fade })
@@ -441,7 +441,7 @@ export function createEffectsView(playback: Playback, seed: number) {
         return
       }
       const progress = age / LABEL_SECONDS
-      label.text.position.set(toScreenX(label.x), toScreenY(label.y - progress * LABEL_RISE_UNITS))
+      label.text.position.set(label.x, label.y - progress * LABEL_RISE_UNITS * layout.unit)
       label.text.alpha = Math.min(1, progress * 8, (1 - progress) * 3)
       label.text.scale.set(Math.min(1, 0.6 + progress * 4))
     })

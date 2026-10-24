@@ -222,9 +222,11 @@ function paintLines(context: CanvasRenderingContext2D, style: TerrainStyle) {
   context.fillRect(inset, height - inset - LINE_WIDTH, width - 2 * inset, LINE_WIDTH)
   context.fillRect(inset, inset, LINE_WIDTH, height - 2 * inset)
   context.fillRect(width - inset - LINE_WIDTH, inset, LINE_WIDTH, height - 2 * inset)
-  context.fillRect(inset, Math.round(height / 2 - LINE_WIDTH / 2), width - 2 * inset, LINE_WIDTH)
+  // The halfway line splits the two camps, across the long side whichever way the arena is turned.
+  if (width > height) context.fillRect(Math.round(width / 2 - LINE_WIDTH / 2), inset, LINE_WIDTH, height - 2 * inset)
+  else context.fillRect(inset, Math.round(height / 2 - LINE_WIDTH / 2), width - 2 * inset, LINE_WIDTH)
   // A pixel circle drawn point by point stays crisp once the texture is scaled up.
-  const radius = Math.round(width * 0.11)
+  const radius = Math.round(Math.min(width, height) * 0.11)
   const points = new Set<string>()
   for (let step = 0; step < 720; step++) {
     const angle = (step / 720) * 2 * Math.PI

@@ -1,6 +1,6 @@
 import { Container, Graphics, Text, type TextStyleOptions } from 'pixi.js'
 import { isAlive, secondsAt, type Battle, type TeamIndex } from '../simulation/battle'
-import { CANVAS_WIDTH, COLORS, FONT_FAMILY, HUD_HEIGHT } from './layout'
+import { COLORS, FONT_FAMILY, HUD_HEIGHT, type Layout } from './layout'
 
 const SIDE_MARGIN = 56
 const HEALTH_BAR_Y = 168
@@ -27,28 +27,30 @@ const setText = (text: Text, value: string) => {
 }
 
 /** The band above the arena: each team's name and survivors, the clock, and the share of health left on each side. */
-export function createHud(battle: Battle, teamTitles: [string, string]) {
+export function createHud(battle: Battle, teamTitles: [string, string], { width, arena }: Layout) {
+  // Lined up with the arena edges, which sit further in on a wide screen.
+  const sideMargin = Math.max(SIDE_MARGIN, arena.left)
   const view = new Container()
-  view.addChild(new Graphics().rect(0, 0, CANVAS_WIDTH, HUD_HEIGHT).fill(COLORS.background))
+  view.addChild(new Graphics().rect(0, 0, width, HUD_HEIGHT).fill(COLORS.background))
 
   const titles = teamTitles.map((title, team) => {
     const text = new Text({ text: title, style: textStyle(40, COLORS.teams[team as TeamIndex], '700') })
     text.anchor.set(team === 0 ? 0 : 1, 0)
-    text.position.set(team === 0 ? SIDE_MARGIN : CANVAS_WIDTH - SIDE_MARGIN, 28)
+    text.position.set(team === 0 ? sideMargin : width - sideMargin, 28)
     return text
   })
   const counts = ([0, 1] as const).map((team) => {
     const text = new Text({ text: '', style: textStyle(76, COLORS.text) })
     text.anchor.set(team === 0 ? 0 : 1, 0)
-    text.position.set(team === 0 ? SIDE_MARGIN : CANVAS_WIDTH - SIDE_MARGIN, 68)
+    text.position.set(team === 0 ? sideMargin : width - sideMargin, 68)
     return text
   })
   const versus = new Text({ text: 'VS', style: textStyle(36, COLORS.mutedText) })
   versus.anchor.set(0.5, 0)
-  versus.position.set(CANVAS_WIDTH / 2, 40)
+  versus.position.set(width / 2, 40)
   const timer = new Text({ text: '', style: textStyle(40, COLORS.text, '600') })
   timer.anchor.set(0.5, 0)
-  timer.position.set(CANVAS_WIDTH / 2, 92)
+  timer.position.set(width / 2, 92)
   const healthBar = new Graphics()
   view.addChild(...titles, ...counts, versus, timer, healthBar)
 
@@ -58,13 +60,13 @@ export function createHud(battle: Battle, teamTitles: [string, string]) {
 
     const firstHealth = remainingHealth(battle, 0)
     const secondHealth = remainingHealth(battle, 1)
-    const barWidth = CANVAS_WIDTH - 2 * SIDE_MARGIN
+    const barWidth = width - 2 * sideMargin
     const firstWidth = barWidth * (firstHealth / Math.max(1, firstHealth + secondHealth))
     healthBar
       .clear()
-      .roundRect(SIDE_MARGIN, HEALTH_BAR_Y, barWidth, HEALTH_BAR_HEIGHT, HEALTH_BAR_HEIGHT / 2)
+      .roundRect(sideMargin, HEALTH_BAR_Y, barWidth, HEALTH_BAR_HEIGHT, HEALTH_BAR_HEIGHT / 2)
       .fill(COLORS.teams[1])
-      .roundRect(SIDE_MARGIN, HEALTH_BAR_Y, firstWidth, HEALTH_BAR_HEIGHT, HEALTH_BAR_HEIGHT / 2)
+      .roundRect(sideMargin, HEALTH_BAR_Y, firstWidth, HEALTH_BAR_HEIGHT, HEALTH_BAR_HEIGHT / 2)
       .fill(COLORS.teams[0])
   }
 

@@ -1,21 +1,46 @@
 import { ARENA_HEIGHT, ARENA_WIDTH, type TeamIndex } from '../simulation/battle'
 
-// The canvas keeps the resolution of a vertical video whatever the window size; CSS scales it to fit.
-export const CANVAS_WIDTH = 1080
-export const CANVAS_HEIGHT = 1920
+export type Orientation = 'portrait' | 'landscape'
+
 export const HUD_HEIGHT = 210
-const ARENA_BOTTOM_MARGIN = 30
+const ARENA_MARGIN = 30
 
-/** Pixels per arena unit. */
-export const UNIT = Math.min(
-  CANVAS_WIDTH / ARENA_WIDTH,
-  (CANVAS_HEIGHT - HUD_HEIGHT - ARENA_BOTTOM_MARGIN) / ARENA_HEIGHT,
-)
-export const ARENA_LEFT = (CANVAS_WIDTH - ARENA_WIDTH * UNIT) / 2
-export const ARENA_TOP = HUD_HEIGHT
+/**
+ * Where the arena sits on the canvas. The canvas keeps a video resolution whatever the window size (CSS scales it):
+ * 1080 × 1920 upright for phones and vertical videos, 1920 × 1080 on wide screens. Landscape shows the same arena
+ * turned a quarter, the first team on the left: the simulation never changes, so one seed is one battle in both.
+ */
+export interface Layout {
+  orientation: Orientation
+  width: number
+  height: number
+  /** Pixels per arena unit. */
+  unit: number
+  arena: { left: number; top: number; width: number; height: number }
+  toScreen: (x: number, y: number) => { x: number; y: number }
+}
 
-export const toScreenX = (x: number) => ARENA_LEFT + x * UNIT
-export const toScreenY = (y: number) => ARENA_TOP + y * UNIT
+export const orientationOf = (width: number, height: number): Orientation => (width > height ? 'landscape' : 'portrait')
+
+export function createLayout(orientation: Orientation): Layout {
+  const landscape = orientation === 'landscape'
+  const width = landscape ? 1920 : 1080
+  const height = landscape ? 1080 : 1920
+  const columns = landscape ? ARENA_HEIGHT : ARENA_WIDTH
+  const rows = landscape ? ARENA_WIDTH : ARENA_HEIGHT
+  const unit = Math.min((width - 2 * ARENA_MARGIN) / columns, (height - HUD_HEIGHT - ARENA_MARGIN) / rows)
+  const arena = { left: (width - columns * unit) / 2, top: HUD_HEIGHT, width: columns * unit, height: rows * unit }
+  return {
+    orientation,
+    width,
+    height,
+    unit,
+    arena,
+    toScreen: landscape
+      ? (x, y) => ({ x: arena.left + y * unit, y: arena.top + x * unit })
+      : (x, y) => ({ x: arena.left + x * unit, y: arena.top + y * unit }),
+  }
+}
 
 export const COLORS = {
   background: 0x12131f,

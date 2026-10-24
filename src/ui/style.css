@@ -28,15 +28,19 @@ body {
   user-select: none;
 }
 
-/* The stage keeps the 9:16 ratio of the canvas and sizes every overlay from its own width. */
+/* The stage keeps the ratio of the canvas and sizes every overlay from its short side, upright or turned. */
 .stage {
+  --safe-width: calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right));
+  --safe-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   position: relative;
-  container-type: inline-size;
-  width: min(
-    100vw - env(safe-area-inset-left) - env(safe-area-inset-right),
-    (100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 9 / 16
-  );
+  container-type: size;
+  width: min(var(--safe-width), var(--safe-height) * 9 / 16);
   aspect-ratio: 9 / 16;
+}
+
+.stage[data-orientation='landscape'] {
+  width: min(var(--safe-width), var(--safe-height) * 16 / 9);
+  aspect-ratio: 16 / 9;
 }
 
 .stage canvas {
@@ -52,9 +56,9 @@ body {
   display: grid;
   place-items: center;
   margin: 0;
-  padding: 8cqw;
+  padding: 8cqmin;
   text-align: center;
-  font-size: 4cqw;
+  font-size: 4cqmin;
 }
 
 [hidden] {
@@ -71,18 +75,22 @@ input {
 .menu {
   /* Anchored low, so that the line-up it previews stays visible above it. */
   position: absolute;
-  inset: auto 5cqw 5cqw;
-  max-height: calc(100% - 30cqw);
+  left: 50%;
+  bottom: 5cqmin;
+  translate: -50% 0;
+  box-sizing: border-box;
+  width: 90cqmin;
+  max-height: calc(100% - 30cqmin);
   overflow-y: auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3cqw;
-  padding: 5cqw;
-  border-radius: 5cqw;
+  gap: 3cqmin;
+  padding: 5cqmin;
+  border-radius: 5cqmin;
   background: var(--surface);
   backdrop-filter: blur(6px);
-  box-shadow: 0 2cqw 8cqw rgb(0 0 0 / 0.5);
-  font-size: 3.8cqw;
+  box-shadow: 0 2cqmin 8cqmin rgb(0 0 0 / 0.5);
+  font-size: 3.8cqmin;
 }
 
 .logo,
@@ -96,7 +104,7 @@ input {
 
 .logo {
   margin: 0;
-  font-size: 9cqw;
+  font-size: 9cqmin;
   font-weight: 900;
   letter-spacing: -0.03em;
   text-align: center;
@@ -107,14 +115,14 @@ input {
 }
 
 .tagline {
-  margin: 0 0 2cqw;
+  margin: 0 0 2cqmin;
   color: var(--muted);
   text-align: center;
 }
 
 .field {
   display: grid;
-  gap: 1.2cqw;
+  gap: 1.2cqmin;
 }
 
 .field span {
@@ -134,9 +142,9 @@ input {
 .field input {
   width: 100%;
   box-sizing: border-box;
-  padding: 2.2cqw 2.5cqw;
-  border: 0.4cqw solid #343858;
-  border-radius: 2.5cqw;
+  padding: 2.2cqmin 2.5cqmin;
+  border: 0.4cqmin solid #343858;
+  border-radius: 2.5cqmin;
   background: #1f2236;
 }
 
@@ -151,29 +159,29 @@ input {
 .toggle {
   display: flex;
   align-items: center;
-  gap: 2.5cqw;
+  gap: 2.5cqmin;
 }
 
 .toggle input {
-  width: 5cqw;
-  height: 5cqw;
+  width: 5cqmin;
+  height: 5cqmin;
   accent-color: var(--accent);
 }
 
 .primary,
 .secondary {
-  padding: 3.5cqw;
+  padding: 3.5cqmin;
   border: 0;
-  border-radius: 3cqw;
+  border-radius: 3cqmin;
   font-weight: 800;
   cursor: pointer;
 }
 
 .primary {
-  margin-top: 2cqw;
+  margin-top: 2cqmin;
   background: var(--accent);
   color: #14162b;
-  font-size: 4.6cqw;
+  font-size: 4.6cqmin;
 }
 
 .secondary {
@@ -184,18 +192,18 @@ input {
   margin: 0;
   color: var(--muted);
   text-align: center;
-  font-size: 3.2cqw;
+  font-size: 3.2cqmin;
 }
 
 .controls {
   position: absolute;
   left: 50%;
-  bottom: 4cqw;
+  bottom: 4cqmin;
   translate: -50% 0;
   display: flex;
   align-items: center;
-  gap: 2cqw;
-  padding: 2cqw;
+  gap: 2cqmin;
+  padding: 2cqmin;
   border-radius: 999px;
   background: var(--surface);
   backdrop-filter: blur(6px);
@@ -210,13 +218,13 @@ input {
 .controls button {
   display: grid;
   place-items: center;
-  min-width: 11cqw;
-  height: 11cqw;
-  padding: 0 2cqw;
+  min-width: 11cqmin;
+  height: 11cqmin;
+  padding: 0 2cqmin;
   border: 0;
   border-radius: 999px;
   background: transparent;
-  font-size: 3.8cqw;
+  font-size: 3.8cqmin;
   font-weight: 800;
   cursor: pointer;
 }
@@ -226,8 +234,8 @@ input {
 }
 
 .controls svg {
-  width: 6cqw;
-  height: 6cqw;
+  width: 6cqmin;
+  height: 6cqmin;
   fill: none;
   stroke: currentColor;
   stroke-width: 2.2;
@@ -244,4 +252,26 @@ input {
 .speeds button[aria-pressed='true'] {
   background: var(--accent);
   color: #14162b;
+}
+
+/* Turned sideways, the menu sits in the middle of the screen, between the two camps. */
+@container (orientation: landscape) {
+  .menu {
+    bottom: auto;
+    top: 50%;
+    translate: -50% -50%;
+    max-height: calc(100% - 6cqmin);
+    width: 72cqmin;
+    gap: 2cqmin;
+    padding: 4cqmin;
+    font-size: 3cqmin;
+  }
+
+  .logo {
+    font-size: 7cqmin;
+  }
+
+  .primary {
+    font-size: 3.6cqmin;
+  }
 }

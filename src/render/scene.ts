@@ -6,6 +6,7 @@ import { createArenaView } from './arenaView'
 import { createEffectsView } from './effects'
 import { createEndBanner } from './endBanner'
 import { createHud } from './hud'
+import type { Layout } from './layout'
 import type { BattleParams } from './params'
 import { advancePlayback, createPlayback } from './playback'
 
@@ -19,18 +20,26 @@ export function buildTeams({ teams: [first, second], seed, sameSize }: BattlePar
   return sameSize ? trimToSameSize(teams, seed) : teams
 }
 
-/** Everything drawn for one battle, from the line-up to the winner, so that the next one starts on a clean stage. */
-export function createScene(params: BattleParams, spritesheet: Spritesheet) {
+/**
+ * Everything drawn for one battle, from the line-up to the winner, so that the next one starts on a clean stage.
+ * Turning the screen redraws the scene in the new layout without touching the battle.
+ */
+export function createScene(params: BattleParams, spritesheet: Spritesheet, initialLayout: Layout) {
   const battle = createBattle({ teams: buildTeams(params), seed: params.seed })
   const teamTitles: [string, string] = [teamTitle(params.teams[0]), teamTitle(params.teams[1])]
   const playback = createPlayback(battle)
-  const arena = createArenaView(playback, spritesheet, params.terrain, params.seed)
-  const effects = createEffectsView(playback, params.seed)
-  const hud = createHud(battle, teamTitles)
-  const endBanner = createEndBanner(battle, teamTitles)
   const view = new Container()
-  view.addChild(arena.view, effects.view, hud.view, endBanner.view)
-  arena.update()
+
+  function drawIn(layout: Layout) {
+    const arena = createArenaView(playback, spritesheet, params.terrain, params.seed, layout)
+    const effects = createEffectsView(playback, params.seed, layout)
+    const hud = createHud(battle, teamTitles, layout)
+    const endBanner = createEndBanner(battle, teamTitles, layout)
+    view.addChild(arena.view, effects.view, hud.view, endBanner.view)
+    arena.update()
+    return { arena, effects, hud, endBanner }
+  }
+  let parts = drawIn(initialLayout)
 
   let waitingSeconds = START_DELAY_SECONDS
 
@@ -42,16 +51,26 @@ export function createScene(params: BattleParams, spritesheet: Spritesheet) {
       remaining = -waitingSeconds
     }
     advancePlayback(playback, remaining)
-    arena.update()
-    effects.update()
-    hud.update()
-    endBanner.update(remaining)
+    parts.arena.update()
+    parts.effects.update()
+    parts.hud.update()
+    parts.endBanner.update(remaining)
+  }
+
+  function clear() {
+    parts.arena.destroy()
+    for (const child of view.removeChildren()) child.destroy({ children: true })
+  }
+
+  function relayout(layout: Layout) {
+    clear()
+    parts = drawIn(layout)
   }
 
   function destroy() {
-    arena.destroy()
-    view.destroy({ children: true })
+    clear()
+    view.destroy()
   }
 
-  return { view, battle, teamTitles, advance, destroy, isOver: () => battle.outcome !== null }
+  return { view, battle, teamTitles, advance, relayout, destroy, isOver: () => battle.outcome !== null }
 }
