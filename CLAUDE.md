@@ -26,6 +26,8 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 - `bun run battle --a gen1 --b gen3 --seed 42` : un combat raconté en texte (`--log` pour chaque attaque,
   `--full` pour garder tous les Pokémon au lieu du même nombre par camp)
 - `bun run stats --a gen1 --b gen3 --runs 200` : taux de victoire, durée moyenne, meilleurs Pokémon (`--full` aussi)
+- `bun run costs` : recalcule `src/data/costs.json` par la simulation (6 tours de 10 000 combats, une quinzaine de
+  minutes) ; à relancer après tout changement de la simulation ou des données.
 - `bun run balance` : armées de 1 000 points faibles, moyennes, fortes ou d'élite les unes contre les autres, pour
   vérifier que les coûts n'avantagent aucune stratégie (35 à 65 % de victoires attendues)
 - `bun run data` : régénère `src/data/pokemon.json` depuis PokéAPI (quelques minutes)
@@ -58,10 +60,15 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
     partager un lien et réenregistrer une vidéo.
   - `teams.ts` : sélection des équipes, `trimToSameSize` (même nombre par camp, tirage selon la graine), `hordeOf`
     (horde d'une valeur donnée, toujours la même pour un sélecteur, pour qu'on puisse l'étudier).
-  - `cost.ts` : coût de chaque Pokémon pour un budget de 1 000 (10 à 52 points, médiane 25, plancher à 10 pour
-    100 Pokémon au plus). Coût ≈ racine de la force (dégâts par seconde × coups encaissés) : dans une mêlée, la
-    force d'une armée croît avec le carré de son nombre (loi de Lanchester), un coût proportionnel à la force rend
-    les nuées imbattables. Exposant 0,48 réglé avec `bun run balance`.
+  - `cost.ts` : coût de chaque Pokémon pour un budget de 1 000 (plancher à 10, donc 100 Pokémon au plus), lu dans
+    `src/data/costs.json`, mesuré au combat par `scripts/costs.ts` : chaque Pokémon prend 40 % du budget d'une équipe
+    aux coéquipiers tirés au hasard (les mêmes pour tous), face à des équipes mixtes ; plus il laisse de valeur
+    debout par rapport au score médian, plus il devient cher. Mesuré seul, une espèce manque de couverture de types
+    et les forts peu nombreux se comparent mal aux faibles nombreux : les nuées battaient alors tout le monde. Les
+    stats seules ratent l'essentiel, comme la portée des attaques spéciales (5 unités contre le contact) : avec la
+    formule de départ (racine de la force, loi de Lanchester), 351 Pokémon étaient nettement trop rentables, 13
+    après calibration. Équilibre des stratégies (`bun run balance`) : forts ou moyens contre faibles autour de 50 %,
+    l'élite un peu en dessous (27 à 33 %), les légendaires étant légèrement trop chers.
 - `src/render/` : affichage PixiJS dans un canvas à la résolution d'une vidéo, mis à l'échelle par CSS : 1080 × 1920
   si la fenêtre est plus haute que large (téléphone, vidéo verticale), 1920 × 1080 sinon (PC). Tout ce qui doit
   apparaître dans la vidéo est dessiné dans le canvas, jamais en HTML.
@@ -140,7 +147,7 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
    Effets d'attaque par type, noms d'attaque, « super efficace », écran de fin complet (fait).
 4. Export vidéo vertical (fait, secondaire). Mise en ligne sur Cloudflare (fait).
 5. Composer son équipe contre une horde (fait). Défi du jour avec record, série et partage (fait).
-   Classement du défi du jour (fait). Coûts mesurés au combat : à refaire (une espèce seule surévalue les puissants).
+   Classement du défi du jour (fait). Coûts mesurés au combat (fait ; l'élite reste un peu chère).
    Défi entre amis par lien, avec aperçu dans les messageries (fait).
 6. Ensuite : liens depuis pokedate.fr, pages « Gen 1 contre Gen 3 : qui gagne ? » pour le référencement,
    domaine pokebrawl.fr ; plus tard pronostic, Méga-Évolutions, statuts et talents.
