@@ -19,8 +19,6 @@ export const toScreenY = (y: number) => ARENA_TOP + y * UNIT
 
 export const COLORS = {
   background: 0x12131f,
-  arena: 0x1f2236,
-  arenaLine: 0x343858,
   text: 0xf4f3ff,
   mutedText: 0xa9acd6,
   healthBackground: 0x0b0c14,

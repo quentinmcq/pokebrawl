@@ -1,7 +1,8 @@
-import { Container, Graphics, Sprite, type Spritesheet } from 'pixi.js'
+import { Container, Graphics, Sprite, Texture, type Spritesheet } from 'pixi.js'
 import { ARENA_HEIGHT, ARENA_WIDTH, isAlive, type Fighter } from '../simulation/battle'
 import { ARENA_LEFT, ARENA_TOP, COLORS, toScreenX, toScreenY, UNIT } from './layout'
 import { displayedPosition, secondsSince, type Playback } from './playback'
+import { paintTerrain, type Terrain } from './terrain'
 
 // Sprites are larger than the collision circle: a crowd that overlaps a little reads better than tiny figures.
 const SPRITE_SIZE_UNITS = 1.8
@@ -16,17 +17,24 @@ const LUNGE_DISTANCE_UNITS = 0.4
 const HURT_FLASH_SECONDS = 0.14
 const KNOCK_OUT_SECONDS = 0.6
 
-function drawArenaFloor() {
+// Terrain pixels are twice the size of screen pixels, about the scale of the Pokémon sprites drawn over them.
+const TERRAIN_PIXEL_SIZE = 2
+
+function createTerrainSprite(terrain: Terrain, seed: number) {
   const width = ARENA_WIDTH * UNIT
   const height = ARENA_HEIGHT * UNIT
-  return new Graphics()
-    .roundRect(ARENA_LEFT, ARENA_TOP, width, height, 24)
-    .fill(COLORS.arena)
-    .moveTo(ARENA_LEFT + 24, ARENA_TOP + height / 2)
-    .lineTo(ARENA_LEFT + width - 24, ARENA_TOP + height / 2)
-    .stroke({ color: COLORS.arenaLine, width: 4 })
-    .circle(ARENA_LEFT + width / 2, ARENA_TOP + height / 2, 4 * UNIT)
-    .stroke({ color: COLORS.arenaLine, width: 4 })
+  const canvas = paintTerrain(
+    terrain,
+    seed,
+    Math.round(width / TERRAIN_PIXEL_SIZE),
+    Math.round(height / TERRAIN_PIXEL_SIZE),
+  )
+  const texture = Texture.from(canvas)
+  texture.source.scaleMode = 'nearest'
+  const sprite = new Sprite(texture)
+  sprite.position.set(ARENA_LEFT, ARENA_TOP)
+  sprite.setSize(width, height)
+  return sprite
 }
 
 function lungeOffset(playback: Playback, fighter: Fighter, x: number, y: number) {
@@ -40,13 +48,14 @@ function lungeOffset(playback: Playback, fighter: Fighter, x: number, y: number)
   return { x: ((target.x - x) / distance) * reach, y: ((target.y - y) / distance) * reach }
 }
 
-/** Draws the floor and every fighter: a ring in the team colour, the sprite, and a health bar once hurt. */
-export function createArenaView(playback: Playback, spritesheet: Spritesheet) {
+/** Draws the ground and every fighter: a ring in the team colour, the sprite, and a health bar once hurt. */
+export function createArenaView(playback: Playback, spritesheet: Spritesheet, terrain: Terrain, seed: number) {
   const view = new Container()
   const rings = new Graphics()
   const fighterLayer = new Container({ sortableChildren: true })
   const healthBars = new Graphics()
-  view.addChild(drawArenaFloor(), rings, fighterLayer, healthBars)
+  const ground = createTerrainSprite(terrain, seed)
+  view.addChild(ground, rings, fighterLayer, healthBars)
 
   const sprites = playback.battle.fighters.map((fighter) => {
     const texture = spritesheet.textures[String(fighter.species.id)]
@@ -109,5 +118,12 @@ export function createArenaView(playback: Playback, spritesheet: Spritesheet) {
     }
   }
 
-  return { view, update }
+  // The ground texture belongs to this battle alone, unlike the shared spritesheet.
+  const groundTexture = ground.texture
+  const destroy = () => {
+    view.destroy({ children: true })
+    groundTexture.destroy(true)
+  }
+
+  return { view, update, destroy }
 }

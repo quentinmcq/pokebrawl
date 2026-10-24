@@ -2,36 +2,56 @@
 <html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="description"
+      content="Des centaines de Pokémon s'affrontent en même temps : choisis deux camps et regarde."
+    />
+    <meta name="theme-color" content="#12131f" />
     <title>PokéBrawl</title>
-    <style>
-      html,
-      body {
-        margin: 0;
-        height: 100%;
-        background: #0a0b12;
-        color: #f4f3ff;
-        font-family: system-ui, sans-serif;
-      }
-      body {
-        display: grid;
-        place-items: center;
-        overflow: hidden;
-      }
-      canvas {
-        display: block;
-        width: min(100vw, calc(100dvh * 9 / 16));
-        height: auto;
-      }
-      .error {
-        max-width: 32rem;
-        padding: 1.5rem;
-        text-align: center;
-      }
-    </style>
   </head>
   <body>
-    <p>Chargement de l'arène…</p>
-    <script type="module" src="/src/render/main.ts"></script>
+    <main id="stage" class="stage">
+      <p class="loading">Chargement de l'arène…</p>
+
+      <form id="menu" class="menu" hidden>
+        <h1 class="logo">Poké<span>Brawl</span></h1>
+        <p class="tagline">Choisis deux camps et regarde-les s'affronter.</p>
+        <label class="field field--blue">
+          <span>Camp bleu</span>
+          <select name="a"></select>
+        </label>
+        <label class="field field--red">
+          <span>Camp rouge</span>
+          <select name="b"></select>
+        </label>
+        <label class="field">
+          <span>Terrain</span>
+          <select name="terrain"></select>
+        </label>
+        <label class="field">
+          <span>Graine</span>
+          <input name="seed" inputmode="numeric" pattern="[0-9]*" placeholder="Au hasard" autocomplete="off" />
+        </label>
+        <label class="toggle">
+          <input type="checkbox" name="same" />
+          <span>Même nombre de Pokémon par camp</span>
+        </label>
+        <button class="primary" type="submit">Lancer le combat</button>
+      </form>
+
+      <nav id="controls" class="controls" aria-label="Contrôles du combat" hidden>
+        <button type="button" data-action="toggle" aria-label="Pause"></button>
+        <div class="speeds" role="group" aria-label="Vitesse">
+          <button type="button" data-speed="1">×1</button>
+          <button type="button" data-speed="2">×2</button>
+          <button type="button" data-speed="4">×4</button>
+        </div>
+        <button type="button" data-action="new" aria-label="Nouveau combat"></button>
+        <button type="button" data-action="menu" aria-label="Paramètres"></button>
+        <button type="button" data-action="fullscreen" aria-label="Plein écran"></button>
+      </nav>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

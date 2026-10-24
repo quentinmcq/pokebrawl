@@ -6,7 +6,13 @@
     "suspicious": "warn"
   },
   "rules": {
-    "unicorn/no-array-fill-with-reference-type": "off"
+    "unicorn/no-array-fill-with-reference-type": "off",
+    "import/no-unassigned-import": [
+      "warn",
+      {
+        "allow": ["**/*.css"]
+      }
+    ]
   },
   "env": {
     "browser": true,
