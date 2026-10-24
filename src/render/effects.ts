@@ -3,7 +3,7 @@ import type { BattleEvent } from '../simulation/battle'
 import { createRandom, type Random } from '../simulation/random'
 import type { TypeKey } from '../simulation/types'
 import { FONT_FAMILY, type Layout } from './layout'
-import { displayedPosition, secondsSince, takePendingEvents, type Playback, type ShownEvent } from './playback'
+import { displayedPosition, secondsSince, type Playback, type ShownEvent } from './playback'
 
 type ProjectileKind = 'orb' | 'beam' | 'bolt' | 'shards' | 'leaves' | 'wave' | 'crescent'
 type ImpactKind = 'burst' | 'ring' | 'star' | 'splash' | 'cloud' | 'slash'
@@ -450,8 +450,8 @@ export function createEffectsView(playback: Playback, seed: number, layout: Layo
     })
   }
 
-  function update() {
-    const shown = takePendingEvents(playback)
+  /** Draws the frame, starting the effects of the events since the last one. */
+  function update(shown: ShownEvent[]) {
     const knockedOut = new Set(shown.flatMap(({ event }) => (event.kind === 'knockOut' ? [event.fighter] : [])))
     for (const event of shown) addAttack(event, knockedOut)
 

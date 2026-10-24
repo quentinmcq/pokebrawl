@@ -10,7 +10,7 @@ import { createEndScreen } from './endScreen'
 import { createHud } from './hud'
 import type { Layout } from './layout'
 import type { BattleParams } from './params'
-import { advancePlayback, createPlayback, takePendingEvents } from './playback'
+import { advancePlayback, createPlayback, takePendingEvents, type ShownEvent } from './playback'
 
 // Leaves a moment to take in both crowds before they charge.
 const START_DELAY_SECONDS = 1.5
@@ -26,7 +26,13 @@ export function buildTeams({ teams: [first, second], seed, sameSize }: BattlePar
  * Everything drawn for one battle, from the line-up to the winner, so that the next one starts on a clean stage.
  * Turning the screen redraws the scene in the new layout without touching the battle.
  */
-export function createScene(params: BattleParams, spritesheet: Spritesheet, initialLayout: Layout) {
+export function createScene(
+  params: BattleParams,
+  spritesheet: Spritesheet,
+  initialLayout: Layout,
+  /** Hears every event as the screen shows it, for the sound. */
+  onEvents: (events: ShownEvent[]) => void = () => {},
+) {
   const battle = createBattle({ teams: buildTeams(params), seed: params.seed })
   const opponent = params.opponentName === null ? null : checkNickname(params.opponentName)
   const teamTitles: [string, string] = [
@@ -58,7 +64,9 @@ export function createScene(params: BattleParams, spritesheet: Spritesheet, init
     }
     advancePlayback(playback, remaining)
     parts.arena.update()
-    parts.effects.update()
+    const events = takePendingEvents(playback)
+    parts.effects.update(events)
+    onEvents(events)
     parts.hud.update()
     parts.endScreen.update(remaining)
   }

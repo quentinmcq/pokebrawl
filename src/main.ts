@@ -12,6 +12,7 @@ import { setUpInstall, isInstalled } from './ui/install'
 import { createMenu } from './ui/menu'
 import { ordinal, savedNickname, saveNickname, submitScore } from './ui/ranking'
 import { shareLink } from './ui/share'
+import { createSound } from './ui/sound'
 import { createSpriteFactory } from './ui/sprites'
 import { readStored, writeStored } from './ui/storage'
 import { canRecord, recordCanvas, videoBaseName, type Video } from './ui/recorder'
@@ -67,6 +68,9 @@ async function start() {
   })
 
   let recording: { stop: () => Promise<Video>; heldSeconds: number } | null = null
+  const sound = createSound()
+  // Browsers keep sound off until the page is touched: the first tap anywhere wakes it.
+  window.addEventListener('pointerdown', () => sound.isEnabled() && sound.wake(), { once: true })
   let scene: Scene | null = null
   let params: BattleParams | null = null
   const speeds = { ...DEFAULT_SPEEDS, ...readStored<Partial<typeof DEFAULT_SPEEDS>>(SPEED_STORAGE_KEY, {}) }
@@ -98,7 +102,7 @@ async function start() {
 
   function showScene(next: BattleParams) {
     scene?.destroy()
-    scene = createScene(next, spritesheet, layout)
+    scene = createScene(next, spritesheet, layout, (events) => sound.play(events, speed))
     app.stage.addChild(scene.view)
     document.title = `${scene.teamTitles[0]} contre ${scene.teamTitles[1]} · PokéBrawl`
   }
@@ -189,7 +193,9 @@ async function start() {
   let share: { text: string; url: string } | null = null
 
   function finishBattle() {
-    if (!scene || !params || !isChallenge(params)) return
+    if (!scene || !params) return
+    sound.fanfare(!isChallenge(params) || scene.battle.outcome === 0)
+    if (!isChallenge(params)) return
     const result = composer.finish(params, scene.battle.outcome === 0)
     share = result.shareText === null ? null : { text: result.shareText, url: result.shareUrl }
     publishable = result.publishable
@@ -279,8 +285,13 @@ async function start() {
     onFullscreen: toggleFullscreen,
     onRecord: startRecording,
     onSkip: skipToEnd,
+    onSound: () => {
+      sound.setEnabled(!sound.isEnabled())
+      controls.setSound(sound.isEnabled())
+    },
   })
   controls.setRecordingAvailable(canRecord())
+  controls.setSound(sound.isEnabled())
   controls.setSpeed(speed)
   controls.setFullscreen(fullscreenAvailable, false)
   document.addEventListener('fullscreenchange', () =>

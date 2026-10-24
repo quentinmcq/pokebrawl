@@ -9,6 +9,8 @@ const ICONS = {
   enterFullscreen:
     '<path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/>',
   skip: '<path d="M5 4l10 8-10 8z"/><path d="M19 5v14"/>',
+  soundOn: '<path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/>',
+  soundOff: '<path d="M11 5 6 9H2v6h4l5 4z"/><path d="m22 9-6 6"/><path d="m16 9 6 6"/>',
   record: '<circle cx="12" cy="12" r="7" fill="currentColor" stroke="none"/>',
   exitFullscreen:
     '<path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3"/>',
@@ -26,6 +28,7 @@ interface ControlHandlers {
   onFullscreen: () => void
   onRecord: () => void
   onSkip: () => void
+  onSound: () => void
 }
 
 const icon = (name: keyof typeof ICONS) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`
@@ -53,6 +56,7 @@ export function createControls(nav: HTMLElement, stage: HTMLElement, handlers: C
     else if (target.dataset.action === 'fullscreen') handlers.onFullscreen()
     else if (target.dataset.action === 'record') handlers.onRecord()
     else if (target.dataset.action === 'skip') handlers.onSkip()
+    else if (target.dataset.action === 'sound') handlers.onSound()
     wake()
   })
 
@@ -87,7 +91,14 @@ export function createControls(nav: HTMLElement, stage: HTMLElement, handlers: C
     fullscreenButton.ariaLabel = active ? 'Quitter le plein écran' : 'Plein écran'
   }
 
+  function setSound(enabled: boolean) {
+    const soundButton = button('sound')
+    soundButton.innerHTML = icon(enabled ? 'soundOn' : 'soundOff')
+    soundButton.ariaLabel = enabled ? 'Couper le son' : 'Remettre le son'
+  }
+
   return {
+    setSound,
     setRecordingAvailable: (available: boolean) => (button('record').hidden = !available),
     show: () => {
       nav.hidden = false
