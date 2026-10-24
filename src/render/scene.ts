@@ -4,7 +4,7 @@ import { createBattle, type TeamSetup } from '../simulation/battle'
 import { selectTeam, teamTitle, trimToSameSize } from '../simulation/teams'
 import { createArenaView } from './arenaView'
 import { createEffectsView } from './effects'
-import { createEndBanner } from './endBanner'
+import { createEndScreen } from './endScreen'
 import { createHud } from './hud'
 import type { Layout } from './layout'
 import type { BattleParams } from './params'
@@ -34,10 +34,10 @@ export function createScene(params: BattleParams, spritesheet: Spritesheet, init
     const arena = createArenaView(playback, spritesheet, params.terrain, params.seed, layout)
     const effects = createEffectsView(playback, params.seed, layout)
     const hud = createHud(battle, teamTitles, layout)
-    const endBanner = createEndBanner(battle, teamTitles, layout)
-    view.addChild(arena.view, effects.view, hud.view, endBanner.view)
+    const endScreen = createEndScreen(battle, teamTitles, spritesheet, layout)
+    view.addChild(arena.view, effects.view, hud.view, endScreen.view)
     arena.update()
-    return { arena, effects, hud, endBanner }
+    return { arena, effects, hud, endScreen }
   }
   let parts = drawIn(initialLayout)
 
@@ -54,11 +54,12 @@ export function createScene(params: BattleParams, spritesheet: Spritesheet, init
     parts.arena.update()
     parts.effects.update()
     parts.hud.update()
-    parts.endBanner.update(remaining)
+    parts.endScreen.update(remaining)
   }
 
   function clear() {
     parts.arena.destroy()
+    parts.endScreen.destroy()
     for (const child of view.removeChildren()) child.destroy({ children: true })
   }
 
