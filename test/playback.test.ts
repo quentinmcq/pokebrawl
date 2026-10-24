@@ -22,7 +22,9 @@ describe('playback', () => {
 
   it('draws fighters between their previous and current positions', () => {
     const playback = createPlayback(createBattle(setup()))
-    advancePlayback(playback, 30 * SECONDS_PER_TICK + SECONDS_PER_TICK / 2)
+    // One tick at a time: a single long advance would hit the cap on ticks per frame.
+    for (let tick = 0; tick < 30; tick++) advancePlayback(playback, SECONDS_PER_TICK)
+    advancePlayback(playback, SECONDS_PER_TICK / 2)
     const fighter = playback.battle.fighters.find((candidate) => {
       const previous = playback.previousPositions[candidate.index]!
       return previous.x !== candidate.x || previous.y !== candidate.y
@@ -43,7 +45,7 @@ describe('playback', () => {
 
   it('hands over each event once, with special attacks taking time to land', () => {
     const playback = createPlayback(createBattle(setup()))
-    advancePlayback(playback, 15)
+    for (let frame = 0; frame < 15 * 60; frame++) advancePlayback(playback, 1 / 60)
     const shown = takePendingEvents(playback)
     expect(takePendingEvents(playback)).toEqual([])
     const attacks = shown.flatMap((item) =>
