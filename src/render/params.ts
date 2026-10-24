@@ -6,6 +6,8 @@ export interface BattleParams {
   terrain: Terrain
   /** Both sides keep as many Pokémon as the smaller one, picked at random from the seed; on unless `same=0`. */
   sameSize: boolean
+  /** Who sent the second team, in a challenge between friends: it shows as « Équipe de Sacha ». */
+  opponentName: string | null
 }
 
 export const DEFAULT_TEAMS: [string, string] = ['gen1', 'gen3']
@@ -30,11 +32,13 @@ export function readBattleParams(search: string, pickSeed = randomSeed): BattleP
     seed,
     terrain: isTerrain(terrain) ? terrain : terrainForSeed(seed),
     sameSize: query.get('same') !== '0',
+    opponentName: query.get('nb') || null,
   }
 }
 
-export function battleSearch({ teams: [first, second], seed, terrain, sameSize }: BattleParams) {
+export function battleSearch({ teams: [first, second], seed, terrain, sameSize, opponentName }: BattleParams) {
   const query = new URLSearchParams({ a: first, b: second, seed: String(seed), terrain })
   if (!sameSize) query.set('same', '0')
+  if (opponentName) query.set('nb', opponentName)
   return `?${query}`
 }

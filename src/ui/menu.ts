@@ -48,6 +48,7 @@ export function createMenu(form: HTMLFormElement, { onPreview, onStart }: MenuHa
       seed: chosenSeed,
       terrain: isTerrain(terrain.value) ? terrain.value : terrainForSeed(chosenSeed),
       sameSize: sameSize.checked,
+      opponentName: null,
     }
   }
 

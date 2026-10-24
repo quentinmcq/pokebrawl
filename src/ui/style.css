@@ -830,3 +830,29 @@ input {
   font-size: 3.2cqmin;
   text-align: center;
 }
+
+.challenge-friend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2cqmin;
+}
+
+.challenge-friend input {
+  flex: 1;
+  min-width: 0;
+  padding: 2cqmin 2.5cqmin;
+  border: 0.4cqmin solid #343858;
+  border-radius: 2.5cqmin;
+  background: #1f2236;
+}
+
+.challenge-friend .secondary {
+  padding: 2cqmin 3cqmin;
+  font-size: 3.4cqmin;
+}
+
+.challenge-friend .hint {
+  flex-basis: 100%;
+  margin: 0;
+  text-align: left;
+}

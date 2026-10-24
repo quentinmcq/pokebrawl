@@ -1,6 +1,8 @@
 import { Container, type Spritesheet } from 'pixi.js'
 import { pokedex } from '../pokedex'
 import { createBattle, type TeamSetup } from '../simulation/battle'
+import { friendTeamTitle } from '../friend'
+import { checkNickname } from '../nickname'
 import { selectTeam, teamTitle, trimToSameSize } from '../simulation/teams'
 import { createArenaView } from './arenaView'
 import { createEffectsView } from './effects'
@@ -26,7 +28,11 @@ export function buildTeams({ teams: [first, second], seed, sameSize }: BattlePar
  */
 export function createScene(params: BattleParams, spritesheet: Spritesheet, initialLayout: Layout) {
   const battle = createBattle({ teams: buildTeams(params), seed: params.seed })
-  const teamTitles: [string, string] = [teamTitle(params.teams[0]), teamTitle(params.teams[1])]
+  const opponent = params.opponentName === null ? null : checkNickname(params.opponentName)
+  const teamTitles: [string, string] = [
+    teamTitle(params.teams[0]),
+    opponent ? friendTeamTitle(opponent.ok ? opponent.nickname : 'Un ami') : teamTitle(params.teams[1]),
+  ]
   const playback = createPlayback(battle)
   const view = new Container()
 

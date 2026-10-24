@@ -5,8 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta
       name="description"
-      content="Des centaines de Pokémon s'affrontent en même temps : choisis deux camps et regarde."
+      content="Compose ton équipe de Pokémon avec 1 000 points et bats la horde du jour, ou défie tes amis."
     />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="PokéBrawl" />
+    <meta property="og:title" content="PokéBrawl" />
+    <meta
+      property="og:description"
+      content="Compose ton équipe de Pokémon avec 1 000 points et bats la horde du jour, ou défie tes amis."
+    />
+    <meta property="og:image" content="/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#12131f" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -65,6 +74,11 @@
             <div class="segmented segmented--wide" role="group" aria-label="Mode">
               <button type="button" data-mode="daily">Défi du jour</button>
               <button type="button" data-mode="training">Entraînement</button>
+              <button type="button" data-mode="friend" hidden>Défi d'un ami</button>
+            </div>
+            <div class="daily" data-role="friend" hidden>
+              <p class="daily-title" data-role="friend-title"></p>
+              <p class="hint" data-role="friend-status"></p>
             </div>
             <div class="daily" data-role="daily">
               <p class="daily-title" data-role="daily-title"></p>
@@ -100,6 +114,17 @@
               <p class="summary" data-role="budget-summary"></p>
             </div>
             <div class="team" data-role="team"></div>
+            <div class="challenge-friend" data-role="challenge-friend">
+              <input
+                name="challenger"
+                maxlength="20"
+                placeholder="Ton pseudo"
+                autocomplete="nickname"
+                aria-label="Ton pseudo pour le défi"
+              />
+              <button class="secondary" type="button" data-action="challenge">Défier un ami</button>
+              <p class="hint" data-role="challenge-status" hidden></p>
+            </div>
             <p class="hint" data-role="team-hint">
               Touche un Pokémon du catalogue pour l'ajouter, et un Pokémon de ton équipe pour le retirer.
             </p>

@@ -1,4 +1,5 @@
 import { dayOf } from '../src/daily'
+import { readFriendChallenge } from '../src/friend'
 import {
   isDay,
   isPlayerId,
@@ -19,6 +20,14 @@ interface D1PreparedStatement {
   first<Row>(): Promise<Row | null>
   all<Row>(): Promise<D1Result<Row>>
   run(): Promise<unknown>
+}
+interface RewrittenElement {
+  setAttribute(name: string, value: string): void
+  setInnerContent(content: string): void
+}
+declare class HTMLRewriter {
+  on(selector: string, handlers: { element(element: RewrittenElement): void }): HTMLRewriter
+  transform(response: Response): Response
 }
 interface Env {
   ASSETS: { fetch(request: Request): Promise<Response> }
@@ -127,9 +136,30 @@ async function handleApi(request: Request, env: Env, url: URL) {
   return submitScore(env, day, request)
 }
 
+/**
+ * Messaging apps read a link's preview without running the app, so the Worker writes it into the page: an absolute
+ * image address, and for a friend's challenge, who sends it and the team to beat. Cheap enough for a free Worker.
+ */
+function withLinkPreview(response: Response, url: URL) {
+  const rewriter = new HTMLRewriter().on('meta[property="og:image"]', {
+    element: (element) => element.setAttribute('content', `${url.origin}/og.png`),
+  })
+  const challenge = readFriendChallenge(url.search)
+  if (!challenge) return rewriter.transform(response)
+  const title = `${challenge.name} te défie sur PokéBrawl`
+  const description = `Bats son équipe de ${challenge.size} Pokémon (${challenge.points} points) avec tes 1 000 points.`
+  return rewriter
+    .on('title', { element: (element) => element.setInnerContent(title) })
+    .on('meta[property="og:title"]', { element: (element) => element.setAttribute('content', title) })
+    .on('meta[property="og:description"]', { element: (element) => element.setAttribute('content', description) })
+    .on('meta[name="description"]', { element: (element) => element.setAttribute('content', description) })
+    .transform(response)
+}
+
 export default {
   async fetch(request: Request, env: Env) {
     const url = new URL(request.url)
+    if (url.pathname === '/') return withLinkPreview(await env.ASSETS.fetch(request), url)
     if (!url.pathname.startsWith('/api/')) return env.ASSETS.fetch(request)
     return handleApi(request, env, url).catch((error: unknown) => {
       console.error(error)

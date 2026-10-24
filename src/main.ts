@@ -4,11 +4,13 @@ import { COLORS, createLayout, orientationOf, type Layout } from './render/layou
 import { battleSearch, describesBattle, randomSeed, readBattleParams, type BattleParams } from './render/params'
 import { createScene, type Scene } from './render/scene'
 import { terrainForSeed } from './render/terrain'
+import { readFriendChallenge } from './friend'
 import { createComposer, isChallenge } from './ui/composer'
 import { createControls } from './ui/controls'
 import { setUpInstall, isInstalled } from './ui/install'
 import { createMenu } from './ui/menu'
 import { ordinal, savedNickname, saveNickname, submitScore } from './ui/ranking'
+import { shareLink } from './ui/share'
 import { createSpriteFactory } from './ui/sprites'
 import { canRecord, recordCanvas, videoBaseName, type Video } from './ui/recorder'
 import { createVideoPanel } from './ui/videoPanel'
@@ -160,12 +162,12 @@ async function start() {
     void publish(new FormData(publishForm).get('nickname')?.toString() ?? '')
   })
 
-  let shareText: string | null = null
+  let share: { text: string; url: string } | null = null
 
   function finishBattle() {
     if (!scene || !params || !isChallenge(params)) return
     const result = composer.finish(params, scene.battle.outcome === 0)
-    shareText = result.shareText
+    share = result.shareText === null ? null : { text: result.shareText, url: result.shareUrl }
     publishable = result.publishable
     resultMessage = result.message ?? ''
     resultLine.textContent = result.message
@@ -174,8 +176,8 @@ async function start() {
     publishForm.hidden = publishable === null || nickname !== null
     if (publishable && nickname) void publish(nickname)
     resultLine.hidden = result.message === null
-    shareButton.hidden = shareText === null
-    shareButton.textContent = 'Partager'
+    shareButton.hidden = share === null
+    shareButton.textContent = params.opponentName ? 'Renvoyer le défi' : 'Partager'
     // The daily seed is fixed: the same team would only replay the same battle.
     endActions.querySelector<HTMLElement>('[data-action="rematch"]')!.hidden = result.daily
     // The next step replaces the playback controls, which have nothing left to control.
@@ -185,16 +187,9 @@ async function start() {
     }
   }
 
-  // A friend receives the score and the link; on a computer without a share sheet, it goes to the clipboard.
   async function shareResult() {
-    if (!shareText) return
-    const url = `${location.origin}${import.meta.env.BASE_URL}`
-    if (navigator.share) {
-      await navigator.share({ text: shareText, url }).catch(() => {})
-      return
-    }
-    await navigator.clipboard.writeText(`${shareText}\n${url}`).catch(() => {})
-    shareButton.textContent = 'Copié\u00a0!'
+    if (!share) return
+    if ((await shareLink(share.text, share.url)) === 'copied') shareButton.textContent = 'Lien copié\u00a0!'
   }
 
   const composer = createComposer(element('composer'), {
@@ -291,7 +286,11 @@ async function start() {
   })
 
   setUpInstall(element('install'), element('ios-install'))
-  if (describesBattle(location.search)) startBattle(readBattleParams(location.search))
+  const friendChallenge = readFriendChallenge(location.search)
+  if (friendChallenge) {
+    leaveBattle()
+    composer.openFriendChallenge(friendChallenge)
+  } else if (describesBattle(location.search)) startBattle(readBattleParams(location.search))
   else openComposer()
 }
 

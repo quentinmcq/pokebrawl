@@ -9,6 +9,7 @@ describe('battle params', () => {
       seed: 42,
       terrain: 'snow',
       sameSize: false,
+      opponentName: null,
     })
   })
 
@@ -18,6 +19,7 @@ describe('battle params', () => {
       seed: 7,
       terrain: terrainForSeed(7),
       sameSize: true,
+      opponentName: null,
     })
     expect(readBattleParams('?seed=abc', () => 7).seed).toBe(7)
     expect(readBattleParams('?seed=-3', () => 7).seed).toBe(7)
@@ -30,10 +32,13 @@ describe('battle params', () => {
       seed: 123,
       terrain: 'cave' as const,
       sameSize: true,
+      opponentName: null,
     }
     expect(readBattleParams(battleSearch(params))).toEqual(params)
     const everyPokemon = { ...params, sameSize: false }
     expect(readBattleParams(battleSearch(everyPokemon))).toEqual(everyPokemon)
+    const betweenFriends = { ...params, teams: ['ids:25', 'ids:6'] as [string, string], opponentName: 'Sacha' }
+    expect(readBattleParams(battleSearch(betweenFriends))).toEqual(betweenFriends)
     expect(describesBattle(battleSearch(params))).toBe(true)
     expect(describesBattle('')).toBe(false)
   })
