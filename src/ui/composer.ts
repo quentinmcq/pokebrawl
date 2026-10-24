@@ -161,11 +161,6 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
 
   function renderChallenge() {
     const daily = challenge.mode === 'daily'
-    for (const button of rankingButtons)
-      button.addEventListener('click', () => {
-        rankingDay = button.dataset.ranking as typeof rankingDay
-        renderDaily()
-      })
     for (const button of modeButtons) button.ariaPressed = String(button.dataset.mode === challenge.mode)
     query('[data-role="daily"]').hidden = !daily
     query('[data-role="training"]').hidden = daily
