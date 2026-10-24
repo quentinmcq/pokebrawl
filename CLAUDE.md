@@ -10,7 +10,8 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 
 - `bun dev` : l'application sur http://localhost:5173/ (composition d'équipe), ou un combat direct avec
   `?a=gen1&b=gen3&seed=42&terrain=grass` (`&same=0` pour garder tous les Pokémon des deux équipes). Clavier : Espace pause, 1/2/4 vitesse, R nouveau combat,
-  F plein écran ; au toucher, une barre de contrôle apparaît. `bun dev --host` pour tester sur le téléphone (Wi-Fi).
+  F plein écran, S résultat immédiat ; au toucher, une barre de contrôle apparaît. Défis en ×2 par défaut, combats
+  regardés en ×1, chaque mode retient sa vitesse ; ⏭ joue la fin du combat d'un coup (même résultat). `bun dev --host` pour tester sur le téléphone (Wi-Fi).
 - `bun run dev:api` (dans un second terminal) : le Worker et une base D1 locale sur le port 8787, pour le classement
   en développement (`bun dev` lui transmet `/api` par un proxy, voir `vite.config.ts`).
 - `bun run build` puis `bun run preview` : version de production, la seule où le service worker (PWA) s'active.
@@ -119,7 +120,17 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   en fin de combat, « Voir » rejoue l'équipe d'un joueur de la veille. « Défier un ami » (panneau de l'équipe) partage
   un lien de défi (`share.ts` : feuille de partage du téléphone ou presse-papier) ; un lien reçu ouvre l'onglet
   « Défi de Sacha », et une victoire propose de « Renvoyer le défi » avec l'équipe gagnante.
-  Un lien `?equipe=ids:25` (depuis PokéDate) ajoute ce Pokémon à l'équipe et le dit au joueur. Menu spectateur (`menu.ts`,
+  Un lien `?equipe=ids:25` (depuis PokéDate) ajoute ce Pokémon à l'équipe et le dit au joueur. Aide à la
+  composition (`src/advice.ts`) : types dominants de la horde et types à viser (super efficaces sur le plus de ses
+  membres), chacun filtre le catalogue ; « Compléter » remplit le budget au hasard. Pokémon attrapés sur PokéDate
+  (`src/collection.ts`, lien `#pokedex=` au format de transfert de PokéDate) : étoile ★ et filtre du catalogue,
+  sans avantage en combat.
+- `src/report.ts` : bilan d'un défi en trois phrases au plus (attaques peu efficaces, types punis, meilleur et pire
+  rapport dégâts/points), en rejouant le combat en mémoire puisqu'il est déterministe.
+- `src/ui/sound.ts` : sons synthétisés (Web Audio, aucun fichier) : impact sourd ou « piou » selon la catégorie,
+  hauteur selon le type, plus fort si super efficace, note descendante au K.O., air de victoire ou de défaite ;
+  6 sons par 0,1 s au plus hors coups notables ; bouton pour couper, mémorisé. Pas de cris : PokeAPI les sert en
+  OGG, illisible par Safari sur iPhone. Menu spectateur (`menu.ts`,
   aperçu des équipes derrière), barre de contrôle qui s'efface pendant le combat (`controls.ts`), installation
   de la PWA (`install.ts`), enregistrement vidéo (`recorder.ts`, `videoPanel.ts`) : le bouton ● rejoue le combat
   depuis le début en 1080 × 1920 quel que soit l'écran, s'arrête 4,5 s après la fin, puis propose de télécharger la
@@ -150,7 +161,9 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 5. Composer son équipe contre une horde (fait). Défi du jour avec record, série et partage (fait).
    Classement du défi du jour (fait). Coûts mesurés au combat (fait ; l'élite reste un peu chère).
    Défi entre amis par lien, avec aperçu dans les messageries (fait).
-6. Ensuite : liens depuis pokedate.fr, pages « Gen 1 contre Gen 3 : qui gagne ? » pour le référencement,
+   Liens depuis pokedate.fr (bannière sur les résultats et les fiches, pied de page, Pokédex), aide à la
+   composition, bilan, résultat immédiat, son (fait).
+6. Ensuite : pages « Gen 1 contre Gen 3 : qui gagne ? » pour le référencement,
    domaine pokebrawl.fr ; plus tard pronostic, Méga-Évolutions, statuts et talents.
 
 Les sprites et le Pokédex de PokéDate (`../pokedate/scripts/fetch-sprites.ts`) peuvent servir de modèle.
