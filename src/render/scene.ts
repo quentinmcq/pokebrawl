@@ -3,6 +3,7 @@ import { pokedex } from '../pokedex'
 import { createBattle, type TeamSetup } from '../simulation/battle'
 import { selectTeam, teamTitle, trimToSameSize } from '../simulation/teams'
 import { createArenaView } from './arenaView'
+import { createEffectsView } from './effects'
 import { createEndBanner } from './endBanner'
 import { createHud } from './hud'
 import type { BattleParams } from './params'
@@ -24,10 +25,11 @@ export function createScene(params: BattleParams, spritesheet: Spritesheet) {
   const teamTitles: [string, string] = [teamTitle(params.teams[0]), teamTitle(params.teams[1])]
   const playback = createPlayback(battle)
   const arena = createArenaView(playback, spritesheet, params.terrain, params.seed)
+  const effects = createEffectsView(playback, params.seed)
   const hud = createHud(battle, teamTitles)
   const endBanner = createEndBanner(battle, teamTitles)
   const view = new Container()
-  view.addChild(arena.view, hud.view, endBanner.view)
+  view.addChild(arena.view, effects.view, hud.view, endBanner.view)
   arena.update()
 
   let waitingSeconds = START_DELAY_SECONDS
@@ -41,6 +43,7 @@ export function createScene(params: BattleParams, spritesheet: Spritesheet) {
     }
     advancePlayback(playback, remaining)
     arena.update()
+    effects.update()
     hud.update()
     endBanner.update(remaining)
   }

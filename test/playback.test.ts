@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { pokedex } from '../src/pokedex'
-import { advancePlayback, createPlayback, displayedPosition, SECONDS_PER_TICK } from '../src/render/playback'
+import {
+  advancePlayback,
+  createPlayback,
+  displayedPosition,
+  SECONDS_PER_TICK,
+  takePendingEvents,
+} from '../src/render/playback'
 import { createBattle, runBattle, type BattleSetup } from '../src/simulation/battle'
 import { selectTeam } from '../src/simulation/teams'
 
@@ -33,5 +39,19 @@ describe('playback', () => {
     const { battle } = runBattle(setup())
     expect(playback.battle.tick).toBe(battle.tick)
     expect(playback.battle.outcome).toBe(battle.outcome)
+  })
+
+  it('hands over each event once, with special attacks taking time to land', () => {
+    const playback = createPlayback(createBattle(setup()))
+    advancePlayback(playback, 15)
+    const shown = takePendingEvents(playback)
+    expect(takePendingEvents(playback)).toEqual([])
+    const attacks = shown.flatMap((item) =>
+      item.event.kind === 'knockOut' ? [] : [{ ...item, move: item.event.move }],
+    )
+    expect(attacks.some(({ move, travelSeconds }) => move.category === 'special' && travelSeconds > 0)).toBe(true)
+    expect(
+      attacks.filter(({ move }) => move.category === 'physical').every(({ travelSeconds }) => travelSeconds === 0),
+    ).toBe(true)
   })
 })

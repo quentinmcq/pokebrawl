@@ -83,17 +83,20 @@ export function createArenaView(playback: Playback, spritesheet: Spritesheet, te
       const facingRight = target ? target.x > fighter.x : fighter.team === 0
       sprite.scale.x = Math.abs(sprite.scale.x) * (facingRight ? -1 : 1)
 
+      const effects = playback.effects[fighter.index]!
       if (!isAlive(fighter)) {
-        const progress = Math.min(1, (secondsSince(playback, fighter.knockedOutAtTick) ?? 0) / KNOCK_OUT_SECONDS)
+        // The fall waits for the blow to land, so that a fighter never drops before the projectile reaches it.
+        const elapsed = (secondsSince(playback, fighter.knockedOutAtTick) ?? 0) - effects.knockOutDelaySeconds
+        const progress = Math.min(1, Math.max(0, elapsed) / KNOCK_OUT_SECONDS)
         sprite.visible = progress < 1
         sprite.alpha = 1 - progress
         sprite.rotation = progress * (facingRight ? 1.4 : -1.4)
-        sprite.tint = COLORS.hurt
+        sprite.tint = elapsed >= 0 ? COLORS.hurt : 0xffffff
         continue
       }
 
-      const hurtElapsed = secondsSince(playback, playback.effects[fighter.index]!.hurtAtTick)
-      sprite.tint = hurtElapsed !== null && hurtElapsed < HURT_FLASH_SECONDS ? COLORS.hurt : 0xffffff
+      const hurtElapsed = (secondsSince(playback, effects.hurtAtTick) ?? -1) - effects.hurtDelaySeconds
+      sprite.tint = hurtElapsed >= 0 && hurtElapsed < HURT_FLASH_SECONDS ? COLORS.hurt : 0xffffff
 
       const teamColor = COLORS.teams[fighter.team]
       rings
