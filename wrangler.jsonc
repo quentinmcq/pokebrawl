@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pokebrawl",
+  "account_id": "ea93a11f9c4cf5128fd1deffb3908158",
+  "compatibility_date": "2026-10-01",
+  // Static files only: the whole app runs in the browser.
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+  },
+  "workers_dev": true,
+  "preview_urls": false,
+}

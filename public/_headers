@@ -1,0 +1,10 @@
+# Built files carry a content hash in their name: they never change once published.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The service worker must always be fetched fresh, or an old version would keep serving an old app.
+/sw.js
+  Cache-Control: no-cache
+
+/sprites.*
+  Cache-Control: public, max-age=86400
