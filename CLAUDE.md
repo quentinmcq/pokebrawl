@@ -14,7 +14,11 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   regardés en ×1, chaque mode retient sa vitesse ; ⏭ joue la fin du combat d'un coup (même résultat). `bun dev --host` pour tester sur le téléphone (Wi-Fi).
 - `bun run dev:api` (dans un second terminal) : le Worker et une base D1 locale sur le port 8787, pour le classement
   en développement (`bun dev` lui transmet `/api` par un proxy, voir `vite.config.ts`).
-- `bun run build` puis `bun run preview` : version de production, la seule où le service worker (PWA) s'active.
+- `bun run build` puis `bun run preview` : version de production (application et pages de combat), la seule où le
+  service worker (PWA) s'active.
+- `bun run matchups` : simule les 198 affiches des pages « qui gagne ? » (200 combats chacune, à nombre égal,
+  réparties sur tous les cœurs, environ 4 minutes) dans `src/data/matchups.json` ; à relancer après tout changement
+  de la simulation, des coûts ou des données.
 - `bun run deploy` : vérifications, sprites, build, mise en ligne sur Cloudflare (Worker `pokebrawl`, même compte
   que PokéDate, plan gratuit), puis migrations de la base D1 `pokebrawl`. Cache long sur `/assets/*`, jamais sur
   `sw.js` (`public/_headers`).
@@ -96,6 +100,11 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   - `endScreen.ts` : vainqueur, durée, meilleur Pokémon en grand (sprite agrandi sans lissage), les trois suivants,
     survivants ; mis en page à taille fixe puis réduit pour tenir dans l'arène, dans les deux formats.
   - `params.ts` : équipes, graine, terrain et option « même nombre » lus dans l'URL et réécrits dedans.
+- `src/matchups.ts`, `scripts/pages.ts` : pages statiques pour le référencement, écrites dans `dist/` après le
+  build de Vite : une par affiche (`/combats/gen-1-contre-gen-3/` : les 36 duels de générations, les 153 de types,
+  les légendaires contre chaque génération), avec victoires, durée, survivants, Pokémon décisifs, bouton « Regarder
+  un combat » (une graine où gagne le favori) et liens entre pages ; plus l'index `/combats/`, `sitemap.xml` et
+  `robots.txt`. Adresse publique dans `src/site.ts`, à changer avec le domaine.
 - `src/leaderboard.ts`, `src/nickname.ts` : types du classement, validation des équipes envoyées (points recalculés,
   budget, taille) et des pseudos (règles de PokéDate : 2 à 20 caractères, insultes refusées même déguisées).
 - `src/friend.ts` : défi entre amis. Lien `?defi=ids:66*12&de=Sacha&seed=42` : l'équipe à battre, qui l'envoie et la
@@ -163,7 +172,7 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
    Défi entre amis par lien, avec aperçu dans les messageries (fait).
    Liens depuis pokedate.fr (bannière sur les résultats et les fiches, pied de page, Pokédex), aide à la
    composition, bilan, résultat immédiat, son (fait).
-6. Ensuite : pages « Gen 1 contre Gen 3 : qui gagne ? » pour le référencement,
-   domaine pokebrawl.fr ; plus tard pronostic, Méga-Évolutions, statuts et talents.
+   Pages « Gen 1 contre Gen 3 : qui gagne ? » pour le référencement (fait).
+6. Ensuite : domaine pokebrawl.fr (puis `src/site.ts` et `pokebrawlUrl` dans PokéDate), cris des Pokémon ; plus tard pronostic, Méga-Évolutions, statuts et talents.
 
 Les sprites et le Pokédex de PokéDate (`../pokedate/scripts/fetch-sprites.ts`) peuvent servir de modèle.
