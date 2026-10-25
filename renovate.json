@@ -1,0 +1,72 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests", ":dependencyDashboard"],
+  "timezone": "Europe/Paris",
+  "minimumReleaseAge": "1 day",
+  "rangeStrategy": "bump",
+  "labels": ["dependencies"],
+  "semanticCommits": "enabled",
+  "semanticCommitType": "chore",
+  "semanticCommitScope": "deps",
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "packageRules": [
+    {
+      "description": "The battle's rendering: checked by hand, it is what players see",
+      "groupName": "pixi",
+      "matchPackageNames": ["pixi.js", "@pixi/**"]
+    },
+    {
+      "groupName": "build and assets",
+      "matchPackageNames": ["vite", "sharp"]
+    },
+    {
+      "groupName": "tests",
+      "matchPackageNames": ["vitest", "@vitest/**", "@playwright/test", "playwright"]
+    },
+    {
+      "groupName": "lint and format",
+      "matchPackageNames": ["oxlint", "oxfmt", "lefthook"]
+    },
+    {
+      "groupName": "typescript",
+      "matchPackageNames": ["typescript", "@types/**"]
+    },
+    {
+      "groupName": "cloudflare",
+      "matchPackageNames": ["wrangler"]
+    },
+    {
+      "groupName": "github actions",
+      "matchManagers": ["github-actions"]
+    },
+    {
+      "groupName": "bun",
+      "matchDepTypes": ["packageManager"]
+    },
+    {
+      "description": "Dev tooling: automerge minor and patch updates once CI passes",
+      "matchDepTypes": ["devDependencies"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash"
+    },
+    {
+      "description": "GitHub Actions pinned by digest: automerge everything but major updates",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "automerge": true,
+      "automergeType": "pr",
+      "automergeStrategy": "squash"
+    },
+    {
+      "description": "Major updates: one PR per package, reviewed by hand",
+      "matchUpdateTypes": ["major"],
+      "groupName": null,
+      "addLabels": ["major"],
+      "automerge": false
+    }
+  ]
+}
