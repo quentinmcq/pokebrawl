@@ -44,6 +44,16 @@ const CALIBRATED_COSTS: Record<string, number> = calibratedCosts
  * its own against mixed teams of the same budget (`bun run costs`). Stats alone miss what decides a crowd fight,
  * such as the reach of special attacks, which strike from five units away while physical ones must close in.
  */
-export const costOf = (fighter: FighterSetup) => CALIBRATED_COSTS[fighter.species.id] ?? estimatedCostOf(fighter)
+const MEDIAN_COST = 25
+/**
+ * Calibrated one Pokémon at a time, prices left armies of a few strong Pokémon winning only a third of their battles
+ * against swarms or average teams: above the median, prices are eased a little. Crowds weigh their numbers squared,
+ * so the setting is touchy; at this exponent every strategy wins 48 to 59 % against another (`bun run balance`).
+ */
+const EXPENSIVE_PRICE_EXPONENT = 0.94
+const eased = (cost: number) =>
+  cost <= MEDIAN_COST ? cost : Math.round(MEDIAN_COST * (cost / MEDIAN_COST) ** EXPENSIVE_PRICE_EXPONENT)
+
+export const costOf = (fighter: FighterSetup) => eased(CALIBRATED_COSTS[fighter.species.id] ?? estimatedCostOf(fighter))
 
 export const teamCost = (fighters: FighterSetup[]) => fighters.reduce((total, fighter) => total + costOf(fighter), 0)
