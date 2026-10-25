@@ -921,3 +921,10 @@ button.type-chip {
   color: var(--accent);
   font-size: calc(3.4 * var(--u));
 }
+
+.header-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: calc(2 * var(--u)) calc(4 * var(--u));
+}
