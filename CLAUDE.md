@@ -21,12 +21,15 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   de la simulation, des coûts ou des données.
 - `bun run deploy` : vérifications, sprites, build, mise en ligne sur Cloudflare (Worker `pokebrawl`, même compte
   que PokéDate, plan gratuit), puis migrations de la base D1 `pokebrawl`. Cache long sur `/assets/*`, jamais sur
-  `sw.js` (`public/_headers`).
-- `bun run verify-daily [--day 2026-10-25|yesterday] [--apply] [--local]` : rejoue tous les scores d'un jour du
+  `sw.js`, et en-têtes de sécurité sur tout le site (`public/_headers`) : CSP sans script en ligne ni `eval` (PixiJS
+  est chargé dans sa version sans `eval`, `pixi.js/unsafe-eval` dans `main.ts`), `nosniff`, pas d'affichage en cadre.
+  Toute adresse inconnue répond 404 avec `dist/404.html` (`not_found_handling`), pas avec l'application.
+- `bun run verify-daily [--day 2026-10-25|today|yesterday] [--apply] [--local]` : rejoue tous les scores d'un jour du
   classement contre la horde enregistrée avec chacun et liste ceux qui ne gagnent pas vraiment ; `--apply` les
   supprime. Les scores envoyés avant l'enregistrement des hordes (colonne `horde` vide) ne sont pas jugés : les hordes
-  suivent les prix, qui ont pu changer depuis. Lancé chaque nuit à 00 h 30 UTC par
-  `.github/workflows/verify-daily.yml` (secret `CLOUDFLARE_API_TOKEN` avec droit d'écriture sur D1).
+  suivent les prix, qui ont pu changer depuis. Lancé par `.github/workflows/verify-daily.yml` (secret
+  `CLOUDFLARE_API_TOKEN` avec droit d'écriture sur D1) toutes les deux heures de 6 h à 22 h UTC pour le jour même, et
+  à 00 h 30 UTC pour la veille entière ; pas plus souvent, le dépôt est privé (2 000 minutes gratuites par mois).
 - `bun run audience [--days 7]` : compteurs du site en ligne, jour par jour (visites et provenance, combats par
   mode, victoires, partages, défis envoyés, scores publiés, installations, vidéos, pages « qui gagne ? » lues).
 - `bun run sprites` : télécharge les 1025 sprites et les rassemble dans `public/sprites.webp` + `.json`, puis les
@@ -106,7 +109,9 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
     quand il est touché, barre de PV dès la première blessure, chute au K.O.
   - `hud.ts` : bandeau du haut (survivants de chaque camp, chrono, part des PV restants).
   - `endScreen.ts` : vainqueur, durée, meilleur Pokémon en grand (sprite agrandi sans lissage), les trois suivants,
-    survivants ; mis en page à taille fixe puis réduit pour tenir dans l'arène, dans les deux formats.
+    survivants ; mis en page à taille fixe puis réduit pour tenir dans l'arène, dans les deux formats. Après un défi,
+    il se range en haut de l'arène (portrait) ou dans sa moitié gauche (paysage) pour laisser la place à la suite en
+    HTML, et reprend toute l'arène dans une vidéo.
   - `params.ts` : équipes, graine, terrain et option « même nombre » lus dans l'URL et réécrits dedans.
 - `src/locale.ts`, `src/messages.ts`, `src/ui/i18n.ts` : deux langues, choisies par l'adresse (`/` en français,
   `/en/` en anglais ; ni cookie ni redirection, un lien « English » / « Français » en haut de l'accueil, comme sur
@@ -119,7 +124,9 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   (`/combats/gen-1-contre-gen-3/` : les 36 duels de générations, les 153 de types,
   les légendaires contre chaque génération), avec victoires, durée, survivants, Pokémon décisifs, bouton « Regarder
   un combat » (une graine où gagne le favori) et liens entre pages ; plus les index `/combats/` et `/en/battles/`,
-  `sitemap.xml` (chaque adresse avec sa traduction) et `robots.txt`. Adresse publique dans `src/site.ts`, à changer avec le domaine.
+  `sitemap.xml` (chaque adresse avec sa traduction), `robots.txt` et `404.html`. Les sprites des pages sont de petites
+  images découpées dans la planche au build (`/combats/sprites/`), le compteur de lectures un fichier à part
+  (`/combats/count.js`, la CSP refusant les scripts en ligne). Adresse publique dans `src/site.ts`, à changer avec le domaine.
 - `src/leaderboard.ts`, `src/nickname.ts` : types du classement, validation des équipes envoyées (points recalculés,
   budget, taille) et des pseudos (règles de PokéDate : 2 à 20 caractères, insultes refusées même déguisées).
 - `src/friend.ts` : défi entre amis. Lien `?defi=ids:66*12&de=Sacha&seed=42` : l'équipe à battre, qui l'envoie et la
@@ -142,9 +149,11 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   dépend que de l'équipe, c'est une énigme. Score : le moins de points pour gagner ; série de jours réussis.
 - `src/ui/` : HTML par-dessus le canvas, donc jamais dans une vidéo enregistrée. `composer.ts` : l'accueil, défi du
   jour (par défaut, avec record et série) ou entraînement contre une horde au choix (Facile 800, Normal 1 000,
-  Difficile 1 250 points) et de l'équipe (doublons permis), catalogue filtrable
+  Difficile 1 250 points) et de l'équipe (doublons permis), catalogue filtrable (`catalogue.ts`)
   avec sprites découpés en CSS dans la planche (`sprites.ts`), dernière équipe et hordes battues retenues dans le
-  navigateur (`storage.ts`) ; après un défi, « Modifier mon équipe », « Revanche » (entraînement) ou « Partager »
+  navigateur (`storage.ts`) ; un défi fini rend son `mode` (`daily`, `training`, `friend`, ou `replay` pour un combat
+  rejoué qui ne compte pas). Après un défi (`endActions.ts`) : bilan, résultat, succès, publication au classement,
+  « Modifier mon équipe », « Revanche » (entraînement) ou « Partager »
   (défi du jour réussi : score, série et lien, par le partage du téléphone ou le presse-papier). Classement du jour
   et de la veille (`ranking.ts`) : pseudo demandé à la première victoire puis publication automatique, rang affiché
   en fin de combat, « Voir » rejoue l'équipe d'un joueur de la veille. « Défier un ami » (panneau de l'équipe) partage
@@ -174,9 +183,13 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   de la PWA (`install.ts`), enregistrement vidéo (`recorder.ts`, `videoPanel.ts`) : le bouton ● rejoue le combat
   depuis le début en 1080 × 1920 quel que soit l'écran, s'arrête 4,5 s après la fin, puis propose de télécharger la
   vidéo (MP4 si le navigateur sait l'encoder, sinon WebM) ou, sur téléphone, de la partager vers une autre app. Les tailles suivent le petit côté de la scène (unités `cqmin`), dans les deux formats.
-- `src/main.ts` : assemble le tout ; plein écran, écran maintenu allumé pendant un combat (Wake Lock).
+- `src/main.ts` : assemble le tout ; plein écran, écran maintenu allumé pendant un combat (Wake Lock). Un lien de
+  combat dont une équipe n'existe pas ouvre l'accueil.
+- `scripts/d1.ts`, `scripts/download.ts` : requête D1 par Wrangler et téléchargement avec reprises, partagés par les
+  scripts.
 - `public/` : `manifest.webmanifest` (plein écran, toutes orientations), `sw.js` (cache de l'application et des sprites,
-  rafraîchi en arrière-plan : elle s'ouvre hors ligne une fois installée), icônes.
+  rafraîchi en arrière-plan : elle s'ouvre hors ligne une fois installée, en français comme en anglais ; une adresse
+  avec paramètres n'est jamais gardée, le Worker y écrit le défi d'un ami), icônes.
 - `src/data/pokemon.json` : 1025 Pokémon (noms fr/en, types, stats, génération, rareté) et leurs 4 attaques.
   Attaques apprises par niveau (les plus emblématiques ; les CT donneraient Hydrocanon à Magicarpe), une par
   type, triées par puissance attendue. Les attaques sans sens hors tour par tour (charge, recharge, autodestruction)
