@@ -23,8 +23,8 @@ const yesterday = () => {
   date.setUTCDate(date.getUTCDate() - 1)
   return date.toISOString().slice(0, 10)
 }
-const day = options.day === 'yesterday' ? yesterday() : options.day
-if (!isDay(day)) throw new Error(`Jour invalide : ${day} (format 2026-10-25, ou yesterday)`)
+const day = options.day === 'yesterday' ? yesterday() : options.day === 'today' ? dayOf(new Date()) : options.day
+if (!isDay(day)) throw new Error(`Jour invalide : ${day} (format 2026-10-25, today ou yesterday)`)
 const target = options.local ? '--local' : '--remote'
 
 function query<Row>(sql: string): Row[] {

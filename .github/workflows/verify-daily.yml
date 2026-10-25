@@ -1,11 +1,14 @@
 name: Contrôle du classement
 
-# Every night, replays the previous day's daily scores and removes the teams that do not actually win: the free
-# Worker cannot replay battles when scores arrive. Needs the CLOUDFLARE_API_TOKEN secret (D1 edit permission).
+# Replays the daily scores and removes the teams that do not actually win: the free Worker cannot replay battles when
+# scores arrive. Every two hours during the day for today, so that a false score does not hold the top for long, and
+# every night for the whole of yesterday. The repository is private: each run counts as a minute of the free 2,000 a
+# month, hence two hours rather than less. Needs the CLOUDFLARE_API_TOKEN secret (D1 edit permission).
 on:
   schedule:
     # 00:30 UTC, after midnight in France in summer and winter alike: the day before is complete.
     - cron: '30 0 * * *'
+    - cron: '0 6-22/2 * * *'
   workflow_dispatch:
 
 permissions:
@@ -13,7 +16,7 @@ permissions:
 
 jobs:
   verify:
-    name: Rejouer les scores de la veille
+    name: Rejouer les scores
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -21,6 +24,6 @@ jobs:
         with:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile
-      - run: bun run verify-daily --day yesterday --apply
+      - run: bun run verify-daily --day ${{ github.event.schedule == '30 0 * * *' && 'yesterday' || 'today' }} --apply
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
