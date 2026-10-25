@@ -232,6 +232,12 @@ const french = {
   friendStatus: (size: number, points: number) =>
     `Bats son équipe de ${size} Pokémon (${points} points) avec tes ${budget} points. Même combat pour vous deux.`,
   dailyEyebrow: (day: string) => `Défi du ${dayIn('fr')(day)}`,
+  dailyVersus: (opponent: string, size: number) => `contre ${opponent} · ${size} Pokémon`,
+  nextChallenge: (seconds: number) => {
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    return `Nouveau défi dans ${hours > 0 ? `${hours}\u00a0h ${String(minutes).padStart(2, '0')}` : `${Math.max(1, minutes)}\u00a0min`}`
+  },
   dailyGoal: 'Un nouvel adversaire chaque jour, le même pour tous. Gagne en dépensant le moins de points possible.',
   dailyBest: (best: number) => `Ton record du jour\u00a0: ${number(best)} points. Peux-tu gagner avec moins\u00a0?`,
   hordeSummary: (size: number, points: number, beaten: boolean) =>
@@ -369,6 +375,12 @@ const english: Messages = {
   friendStatus: (size, points) =>
     `Beat their team of ${size} Pokémon (${points} points) with your ${englishBudget} points. The same battle for you both.`,
   dailyEyebrow: (day) => `${dayIn('en')(day)} challenge`,
+  dailyVersus: (opponent, size) => `against ${opponent} · ${size} Pokémon`,
+  nextChallenge: (seconds) => {
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    return `New challenge in ${hours > 0 ? `${hours} h ${String(minutes).padStart(2, '0')}` : `${Math.max(1, minutes)} min`}`
+  },
   dailyGoal: 'A new opponent every day, the same for everyone. Win spending as few points as you can.',
   dailyBest: (best) => `Your best today: ${englishNumber(best)} points. Can you win with fewer?`,
   hordeSummary: (size, points, beaten) =>

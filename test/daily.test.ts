@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { currentStreak, dailyChallenge, dailyDayOf, dayOf, EMPTY_DAILY_RECORD, recordDailyWin } from '../src/daily'
+import {
+  currentStreak,
+  dailyChallenge,
+  dailyDayOf,
+  dayOf,
+  EMPTY_DAILY_RECORD,
+  recordDailyWin,
+  secondsUntilNextDay,
+} from '../src/daily'
 import { pokedex } from '../src/pokedex'
 import { selectTeam } from '../src/simulation/teams'
 
@@ -41,5 +49,14 @@ describe('daily record', () => {
     expect(currentStreak(record, '2026-11-02')).toBe(3)
     expect(currentStreak(record, '2026-11-03')).toBe(0)
     expect(recordDailyWin(record, '2026-11-03', 800).streak).toBe(1)
+  })
+})
+
+describe('secondsUntilNextDay', () => {
+  it('counts down to midnight in French time', () => {
+    // 22:30 in Paris (UTC+1 in winter): an hour and a half left.
+    expect(secondsUntilNextDay(new Date('2026-12-01T21:30:00Z'))).toBe(90 * 60)
+    // Just after midnight in Paris, a whole day is ahead.
+    expect(secondsUntilNextDay(new Date('2026-12-01T23:00:01Z'))).toBe(24 * 3600 - 1)
   })
 })

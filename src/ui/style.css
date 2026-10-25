@@ -117,6 +117,18 @@ input {
   font-size: calc(3.6 * var(--u));
 }
 
+/* Upright, the sheet sits on the bottom edge across the whole width: no strip of arena shows under it. */
+@container (orientation: portrait) {
+  .menu {
+    bottom: 0;
+    width: 100%;
+    max-width: none;
+    border-width: 1px 0 0;
+    border-radius: calc(5 * var(--u)) calc(5 * var(--u)) 0 0;
+    padding-bottom: calc(3.5 * var(--u) + env(safe-area-inset-bottom));
+  }
+}
+
 .menu-head {
   display: flex;
   align-items: center;
@@ -1640,4 +1652,21 @@ button.type-chip {
 
 .filter-panel [data-action='reset-filters'] {
   justify-self: end;
+}
+
+/* The lobby's daily card: the time left, the date in large, then the opponent. */
+.countdown {
+  margin: 0;
+  color: var(--accent);
+  font-size: calc(3 * var(--u));
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.daily-versus {
+  margin: calc(-1.5 * var(--u)) 0 0;
+  color: var(--muted);
+  font-size: calc(3.8 * var(--u));
+  font-weight: 700;
 }

@@ -11,6 +11,21 @@ export const dayOf = (moment: Date) =>
     moment,
   )
 
+const CLOCK_FORMAT = new Intl.DateTimeFormat('en-GB', {
+  timeZone: TIME_ZONE,
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
+})
+const SECONDS_PER_DAY = 24 * 60 * 60
+
+/** How long until the next challenge, at midnight in French time. */
+export function secondsUntilNextDay(moment: Date) {
+  const [hours, minutes, seconds] = CLOCK_FORMAT.format(moment).split(':').map(Number)
+  return SECONDS_PER_DAY - (hours! * 3600 + minutes! * 60 + seconds!)
+}
+
 const seedOfDay = (day: string) => Number(day.replaceAll('-', ''))
 
 /**

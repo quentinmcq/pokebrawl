@@ -6,6 +6,7 @@ import {
   dayOf,
   EMPTY_DAILY_RECORD,
   previousDay,
+  secondsUntilNextDay,
   recordDailyWin,
   type DailyRecord,
 } from '../daily'
@@ -130,8 +131,13 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     )
     const best = dailyRecord.bestByDay[day]
     const streak = currentStreak(dailyRecord, day)
-    query('[data-role="daily-eyebrow"]').textContent = TEXT.dailyEyebrow(day)
-    query('[data-role="daily-title"]').textContent = teamTitle(horde, LOCALE)
+    // The date first, which brings players back every day; the opponent comes second.
+    query('[data-role="daily-title"]').textContent = TEXT.dailyEyebrow(day)
+    query('[data-role="daily-versus"]').textContent = TEXT.dailyVersus(
+      teamTitle(horde, LOCALE),
+      selectTeam(pokedex, horde).fighters.length,
+    )
+    renderCountdown()
     // The rule is told until the player has played a daily challenge; then only their record and streak remain.
     const hasPlayedDaily = Object.keys(dailyRecord.bestByDay).length > 0
     const goal = best !== undefined ? TEXT.dailyBest(best) : hasPlayedDaily ? '' : TEXT.dailyGoal
@@ -167,6 +173,19 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
         }),
     )
   }
+
+  // Time left before the next challenge, ticking each minute; at midnight the lobby moves to the new one.
+  let shownDay = today()
+  function renderCountdown() {
+    query('[data-role="countdown"]').textContent = TEXT.nextChallenge(secondsUntilNextDay(new Date()))
+  }
+  setInterval(() => {
+    if (section.hidden || section.dataset.screen !== 'lobby') return
+    if (today() !== shownDay) {
+      shownDay = today()
+      renderLobby()
+    } else renderCountdown()
+  }, 30_000)
 
   /** The lobby: today's challenge, and a friend's when a link brought one. */
   function renderLobby() {
