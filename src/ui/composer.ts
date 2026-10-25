@@ -25,6 +25,7 @@ import {
   toFighterSetup,
 } from '../simulation/teams'
 import type { TypeKey } from '../simulation/types'
+import { slideSegmented } from './segmented'
 import { createCatalogue, searchNameOf, typeHex, typeTextColor, type CatalogueEntry } from './catalogue'
 import { LOCALE, nameOf, TEXT } from './i18n'
 import { fetchRanking, renderRanking, savedNickname, saveNickname } from './ranking'
@@ -162,6 +163,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   let rankingRequest = 0
   async function renderRankingOf(day: string) {
     for (const button of rankingButtons) button.ariaPressed = String(button.dataset.ranking === rankingDay)
+    slideSegmented(rankingButtons[0]!.parentElement!)
     const request = ++rankingRequest
     query('[data-role="ranking-summary"]').textContent = TEXT.page.loadingShort
     const ranking = await fetchRanking(day)
@@ -207,6 +209,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     )
     hordeSelect.value = challenge.horde
     for (const button of levelButtons) button.ariaPressed = String(Number(button.dataset.level) === challenge.level)
+    slideSegmented(levelButtons[0]!.parentElement!)
     const horde = selectTeam(pokedex, opponent().horde).fighters
     const beaten = challenge.mode === 'training' && wins.has(hordeSelector(challenge.horde, challenge.level))
     query('[data-role="horde-summary"]').textContent = TEXT.hordeSummary(horde.length, teamCost(horde), beaten)
@@ -276,8 +279,6 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       ? TEXT.overBudget(used)
       : TEXT.budgetSummary(used, size, size >= MAX_TEAM_SIZE)
     query('[data-role="budget-summary"]').classList.toggle('over-budget', overBudget)
-    // A friend can only be challenged with a team to beat.
-    query('[data-role="challenge-friend"]').hidden = size === 0
     query('[data-role="team"]').replaceChildren(
       ...[...team]
         .toSorted(([a], [b]) => a - b)
@@ -353,11 +354,13 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       showScreen('builder')
     })
   query('[data-action="lobby"]').addEventListener('click', () => showScreen('lobby'))
+  // From the lobby, « Challenge a friend » leads to the builder and points at its button.
   query('[data-action="challenge-how"]').addEventListener('click', () => {
     showScreen('builder')
-    const notice = query('[data-role="team-notice"]')
-    notice.replaceChildren(TEXT.challengeHowTo)
-    notice.hidden = false
+    const button = query('[data-action="challenge"]')
+    button.classList.remove('is-pointed')
+    void button.offsetWidth
+    button.classList.add('is-pointed')
   })
 
   fightButton.addEventListener('click', () => {

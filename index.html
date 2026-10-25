@@ -244,7 +244,11 @@
             </div>
             <div class="budget-bar"><div class="budget-fill"></div></div>
             <div class="team" data-role="team"></div>
-            <div class="challenge-friend" data-role="challenge-friend" hidden>
+            <div class="notice" data-role="team-notice" hidden></div>
+            <p class="hint" data-role="team-hint" data-i18n="teamHint">
+              Touche un Pokémon du catalogue pour l'ajouter, et un Pokémon de ton équipe pour le retirer.
+            </p>
+            <div class="team-actions">
               <input
                 hidden
                 name="challenger"
@@ -258,20 +262,18 @@
               <button class="secondary" type="button" data-action="challenge" data-i18n="challengeFriend">
                 Défier un ami
               </button>
+              <a
+                class="secondary"
+                data-role="collection-import"
+                href="https://pokedate.fr/pokedex?from=pokebrawl"
+                data-i18n-href="pokedatePokedex"
+                title="Récupère les Pokémon attrapés sur PokéDate"
+                data-i18n-title="pokedateImport"
+                data-i18n="pokedateShort"
+                >★ Mes Pokémon PokéDate</a
+              >
               <p class="hint" data-role="challenge-status" hidden></p>
             </div>
-            <div class="notice" data-role="team-notice" hidden></div>
-            <p class="hint" data-role="team-hint" data-i18n="teamHint">
-              Touche un Pokémon du catalogue pour l'ajouter, et un Pokémon de ton équipe pour le retirer.
-            </p>
-            <a
-              class="link pokedate-import"
-              data-role="collection-import"
-              href="https://pokedate.fr/pokedex?from=pokebrawl"
-              data-i18n-href="pokedatePokedex"
-              data-i18n="pokedateImport"
-              >★ Tu joues à PokéDate&nbsp;? Récupère tes Pokémon attrapés</a
-            >
           </section>
         </div>
 
