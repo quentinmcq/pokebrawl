@@ -160,8 +160,14 @@ input {
   padding-top: calc(3 * var(--u));
 }
 
-.menu-options-body .toggle {
+.menu-options-body .toggle,
+.menu-options-body .seed-hint {
   grid-column: 1 / -1;
+}
+
+.seed-hint {
+  margin: calc(-1.5 * var(--u)) 0 0;
+  text-align: left;
 }
 
 .menu > .primary {
