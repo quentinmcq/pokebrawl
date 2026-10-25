@@ -56,12 +56,12 @@ const today = () => dayOf(new Date())
 const typeHex = (type: TypeKey) => `#${typeColor(type).toString(16).padStart(6, '0')}`
 const TYPE_NAME = TYPE_NAMES[LOCALE]
 
-/** What the end of a challenge says, and the message to share after beating the daily horde. */
+/** What the end of a challenge says, and what to share after it. */
 export interface ChallengeResult {
+  /** `replay`: a past day's battle, replayed from the ranking, which counts for nothing. */
+  mode: Mode | 'replay'
   message: string | null
-  shareText: string | null
-  shareUrl: string
-  daily: boolean
+  share: { text: string; url: string } | null
   /** Today's daily horde beaten: the score can go to the ranking. */
   publishable: { day: string; team: string } | null
 }
@@ -473,23 +473,19 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     },
     /** Records the end of a challenge: a tick on a beaten training horde, the score and streak of the daily one. */
     finish(params: BattleParams, won: boolean): ChallengeResult {
+      const nothing = { message: null, share: null, publishable: null }
       if (params.opponentName) {
-        if (!won)
-          return {
-            message: TEXT.friendLost(params.opponentName),
-            shareText: null,
-            shareUrl: siteUrl(),
-            daily: true,
-            publishable: null,
-          }
+        if (!won) return { ...nothing, mode: 'friend', message: TEXT.friendLost(params.opponentName) }
         // The winner sends the challenge back, with the team that just won.
         const name = savedNickname() ?? TEXT.aFriend
         return {
+          ...nothing,
+          mode: 'friend',
           message: TEXT.friendWon(params.opponentName),
-          shareText: TEXT.challengeBackText(name),
-          shareUrl: siteUrl(friendChallengeSearch({ team: params.teams[0], name, seed: randomSeed() })),
-          daily: true,
-          publishable: null,
+          share: {
+            text: TEXT.challengeBackText(name),
+            url: siteUrl(friendChallengeSearch({ team: params.teams[0], name, seed: randomSeed() })),
+          },
         }
       }
       const day = dailyDayOf(params.teams[1])
@@ -498,29 +494,22 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
           wins.add(params.teams[1])
           writeStored(STORAGE_KEYS.wins, [...wins])
         }
-        return { message: null, shareText: null, shareUrl: siteUrl(), daily: false, publishable: null }
+        return { ...nothing, mode: 'training' }
       }
-      // A past day's battle, replayed from the ranking, counts for nothing.
-      if (day !== today())
-        return { message: null, shareText: null, shareUrl: siteUrl(), daily: true, publishable: null }
-      if (!won)
-        return {
-          message: TEXT.dailyLost,
-          shareText: null,
-          shareUrl: siteUrl(),
-          daily: true,
-          publishable: null,
-        }
+      if (day !== today()) return { ...nothing, mode: 'replay' }
+      if (!won) return { ...nothing, mode: 'daily', message: TEXT.dailyLost }
       const points = teamCost(selectTeam(pokedex, params.teams[0]).fighters)
       dailyRecord = recordDailyWin(dailyRecord, day, points)
       writeStored(STORAGE_KEYS.daily, dailyRecord)
       const best = dailyRecord.bestByDay[day]!
       const streak = currentStreak(dailyRecord, day)
       return {
+        mode: 'daily',
         message: TEXT.dailyWon(points, best < points ? best : null, streak),
-        shareText: TEXT.dailyShare(day, teamTitle(params.teams[1], LOCALE), points, streak).join('\n'),
-        shareUrl: siteUrl(),
-        daily: true,
+        share: {
+          text: TEXT.dailyShare(day, teamTitle(params.teams[1], LOCALE), points, streak).join('\n'),
+          url: siteUrl(),
+        },
         publishable: { day, team: params.teams[0] },
       }
     },

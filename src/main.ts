@@ -6,25 +6,21 @@ import { COLORS, createLayout, orientationOf, type Layout } from './render/layou
 import { battleSearch, describesBattle, randomSeed, readBattleParams, type BattleParams } from './render/params'
 import { buildTeams, createScene, type Scene } from './render/scene'
 import { summarizeBattle } from './simulation/battle'
-import { teamCost } from './simulation/cost'
-import { battleReport } from './report'
 import { terrainForSeed } from './render/terrain'
 import { readCollectionHash } from './collection'
 import { dailyDayOf } from './daily'
 import { readFriendChallenge } from './friend'
-import type { Achievement } from './achievements'
 import { createAchievements } from './ui/achievementsView'
-import { createComposer, isChallenge, type ChallengeResult } from './ui/composer'
+import { createComposer, isChallenge } from './ui/composer'
+import { createEndActions } from './ui/endActions'
 import { createControls } from './ui/controls'
 import { setUpInstall, isInstalled } from './ui/install'
 import { createMenu } from './ui/menu'
-import { LOCALE, TEXT, translatePage } from './ui/i18n'
-import { savedNickname, saveNickname, submitScore } from './ui/ranking'
-import { shareLink } from './ui/share'
+import { TEXT, translatePage } from './ui/i18n'
 import { createSound } from './ui/sound'
 import { track, trackVisit } from './ui/track'
 import { createSpriteFactory } from './ui/sprites'
-import { readStored, STORAGE_KEYS, writeStored } from './ui/storage'
+import { readStored, writeStored } from './ui/storage'
 import { canRecord, recordCanvas, videoBaseName, type Video } from './ui/recorder'
 import { createVideoPanel } from './ui/videoPanel'
 
@@ -202,41 +198,6 @@ async function start() {
   // After a challenge, the settings lead back to the team to improve it; after a watched battle, to its menu.
   const openMenu = () => (isChallenge(params) ? openComposer() : openSpectatorMenu())
 
-  const shareButton = endActions.querySelector<HTMLButtonElement>('[data-action="share"]')!
-  const resultLine = endActions.querySelector<HTMLElement>('[data-role="result"]')!
-  const reportList = endActions.querySelector<HTMLElement>('[data-role="report"]')!
-  const publishForm = endActions.querySelector<HTMLFormElement>('[data-role="publish"]')!
-  const publishError = publishForm.querySelector<HTMLElement>('[data-role="publish-error"]')!
-  let publishable: { day: string; team: string } | null = null
-  let resultMessage = ''
-
-  // Sends today's win to the ranking under the saved nickname, and adds the rank to the result line.
-  async function publish(name: string) {
-    if (!publishable) return
-    publishError.hidden = true
-    const outcome = await submitScore(publishable.day, name, publishable.team)
-    if ('error' in outcome) {
-      publishError.textContent = outcome.error ?? ''
-      publishError.hidden = false
-      publishForm.hidden = false
-      return
-    }
-    saveNickname(name)
-    track('publish')
-    publishForm.hidden = true
-    const { you, total } = outcome.ranking
-    if (you) {
-      resultLine.textContent = TEXT.rankLine(resultMessage, you.rank, total)
-      showUnlocked([...shownUnlocked, ...achievements.recordRank(you.rank)])
-    }
-  }
-  publishForm.addEventListener('submit', (event) => {
-    event.preventDefault()
-    void publish(new FormData(publishForm).get('nickname')?.toString() ?? '')
-  })
-
-  let share: { text: string; url: string } | null = null
-
   function finishBattle() {
     if (!scene || !params) return
     sound.fanfare(!isChallenge(params) || scene.battle.outcome === 0)
@@ -244,29 +205,7 @@ async function start() {
     sound.champion(summarizeBattle(scene.battle).mostValuable.species.id, END_SCREEN_DELAY_SECONDS / speed)
     if (!isChallenge(params)) return
     const won = scene.battle.outcome === 0
-    const result = composer.finish(params, won)
-    showUnlocked(won ? recordAchievements(params, result) : [])
-    if (won && result.publishable) track('win-daily')
-    else if (won && params.opponentName) track('win-friend')
-    else if (won && !result.daily) track('win-training')
-    share = result.shareText === null ? null : { text: result.shareText, url: result.shareUrl }
-    publishable = result.publishable
-    resultMessage = result.message ?? ''
-    resultLine.textContent = result.message
-    publishError.hidden = true
-    const nickname = savedNickname()
-    publishForm.hidden = publishable === null || nickname !== null
-    if (publishable && nickname) void publish(nickname)
-    resultLine.hidden = result.message === null
-    const report = battleReport({ teams: buildTeams(params), seed: params.seed }, LOCALE)
-    reportList.replaceChildren(
-      ...report.map((line) => Object.assign(document.createElement('li'), { textContent: line })),
-    )
-    reportList.hidden = report.length === 0
-    shareButton.hidden = share === null
-    shareButton.textContent = params.opponentName ? TEXT.sendBack : TEXT.page.share
-    // The daily seed is fixed: the same team would only replay the same battle.
-    endActions.querySelector<HTMLElement>('[data-action="rematch"]')!.hidden = result.daily
+    endActionsPanel.fill(params, composer.finish(params, won), won)
     // The next step replaces the playback controls, which have nothing left to control.
     if (!recording) {
       controls.hide()
@@ -274,36 +213,12 @@ async function start() {
     }
   }
 
-  async function shareResult() {
-    if (!share) return
-    const outcome = await shareLink(share.text, share.url)
-    if (outcome === 'shared' || outcome === 'copied') track(params?.opponentName ? 'share-back' : 'share-daily')
-    if (outcome === 'copied') shareButton.textContent = TEXT.linkCopied
-  }
-
   const spriteOf = createSpriteFactory(spritesheet)
   const achievements = createAchievements(element('composer').querySelector('[data-role="achievements"]')!, spriteOf)
-  const unlockedLine = endActions.querySelector<HTMLElement>('[data-role="unlocked"]')!
-  let shownUnlocked: Achievement[] = []
-
-  function showUnlocked(earned: Achievement[]) {
-    shownUnlocked = earned
-    unlockedLine.hidden = earned.length === 0
-    unlockedLine.textContent = TEXT.unlocked(earned.map(({ title }) => title[LOCALE]))
-  }
-
-  // Only the player's own team counts: today's daily horde, a training horde or a friend, never a replayed team.
-  function recordAchievements(battle: BattleParams, result: ChallengeResult) {
-    const isOwnWin = result.publishable !== null || battle.opponentName !== null || !result.daily
-    if (!isOwnWin) return []
-    const fighters = buildTeams(battle)[0].fighters
-    const win = {
-      speciesIds: fighters.map(({ species }) => species.id),
-      points: teamCost(fighters),
-      collection: readStored<number[]>(STORAGE_KEYS.collection, []),
-    }
-    return battle.opponentName ? achievements.recordFriendWin(win) : achievements.recordWin(win)
-  }
+  const endActionsPanel = createEndActions(endActions, achievements, {
+    onEdit: openComposer,
+    onRematch: () => params && startBattle(withNewSeed(params)),
+  })
 
   const composer = createComposer(element('composer'), {
     spriteOf,
@@ -311,11 +226,6 @@ async function start() {
     onSpectate: openSpectatorMenu,
   })
   element('menu').querySelector('[data-action="compose"]')!.addEventListener('click', openComposer)
-  endActions.querySelector('[data-action="edit"]')!.addEventListener('click', openComposer)
-  shareButton.addEventListener('click', () => void shareResult())
-  endActions.querySelector('[data-action="rematch"]')!.addEventListener('click', () => {
-    if (params) startBattle(withNewSeed(params))
-  })
 
   const menu = createMenu(element<HTMLFormElement>('menu'), {
     onPreview: (preview) => {
