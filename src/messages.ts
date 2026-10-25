@@ -1,7 +1,10 @@
 import { NUMBER_LOCALES, type Locale } from './locale'
 import { TEAM_BUDGET } from './simulation/cost'
 
-const numberIn = (locale: Locale) => (value: number) => value.toLocaleString(NUMBER_LOCALES[locale])
+// French separates thousands with a narrow space that most fonts draw almost invisibly: « 1000 ». A plain
+// non-breaking space reads as « 1 000 ».
+const numberIn = (locale: Locale) => (value: number) =>
+  value.toLocaleString(NUMBER_LOCALES[locale]).replaceAll('\u202f', '\u00a0')
 const dayIn = (locale: Locale) => {
   const format = new Intl.DateTimeFormat(NUMBER_LOCALES[locale], { day: 'numeric', month: 'long', timeZone: 'UTC' })
   return (day: string) => format.format(new Date(`${day}T12:00:00Z`))
@@ -40,8 +43,6 @@ const frenchPage = {
   otherLanguage: 'English',
   otherLanguagePath: '/en/',
   otherLanguageCode: 'en',
-  composerTagline:
-    'Bats la horde avec 1&nbsp;000&nbsp;points de Pokémon : beaucoup de petits, ou quelques géants&nbsp;?',
   install: 'Installer l’application',
   iosInstall: 'Pour l’installer : Partager, puis « Sur l’écran d’accueil ».',
   opponent: 'Adversaire',
@@ -75,7 +76,7 @@ const frenchPage = {
   dearest: 'Plus chers',
   pokedexOrder: 'N° du Pokédex',
   myPokedate: '★ Mes Pokémon PokéDate',
-  pokedateImport: '★ Joue avec les Pokémon que tu as attrapés sur PokéDate',
+  pokedateImport: '★ Jouer avec mes Pokémon PokéDate',
   pokedatePokedex: 'https://pokedate.fr/pokedex',
   clear: 'Vider',
   fill: 'Compléter',
@@ -124,7 +125,6 @@ const englishPage: Record<PageKey, string> = {
   otherLanguage: 'Français',
   otherLanguagePath: '/',
   otherLanguageCode: 'fr',
-  composerTagline: 'Beat the horde with 1,000 points of Pokémon: lots of small ones, or a few giants?',
   install: 'Install the app',
   iosInstall: 'To install it: Share, then “Add to Home Screen”.',
   opponent: 'Opponent',
@@ -158,7 +158,7 @@ const englishPage: Record<PageKey, string> = {
   dearest: 'Most expensive',
   pokedexOrder: 'Pokédex number',
   myPokedate: '★ My PokéDate Pokémon',
-  pokedateImport: '★ Play with the Pokémon you caught on PokéDate',
+  pokedateImport: '★ Play with my PokéDate Pokémon',
   pokedatePokedex: 'https://pokedate.fr/en/pokedex',
   clear: 'Clear',
   fill: 'Fill up',

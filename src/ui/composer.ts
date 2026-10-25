@@ -25,7 +25,7 @@ import {
   toFighterSetup,
 } from '../simulation/teams'
 import type { TypeKey } from '../simulation/types'
-import { createCatalogue, searchNameOf, typeHex, type CatalogueEntry } from './catalogue'
+import { createCatalogue, searchNameOf, typeHex, typeTextColor, type CatalogueEntry } from './catalogue'
 import { LOCALE, nameOf, TEXT } from './i18n'
 import { fetchRanking, renderRanking, savedNickname, saveNickname } from './ranking'
 import { shareLink, siteUrl } from './share'
@@ -61,6 +61,7 @@ const typeChip = (type: TypeKey, tag: 'span' | 'button') => {
   chip.className = 'type-chip'
   chip.textContent = TYPE_NAME[type]
   chip.style.background = typeHex(type)
+  chip.style.color = typeTextColor(type)
   return chip
 }
 
@@ -221,6 +222,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     const size = teamSize()
     query<HTMLElement>('.budget-fill').style.width = `${(100 * used) / TEAM_BUDGET}%`
     query('[data-role="budget-summary"]').textContent = TEXT.budgetSummary(used, size, size >= MAX_TEAM_SIZE)
+    // A friend can only be challenged with a team to beat.
+    query('[data-role="challenge-friend"]').hidden = size === 0
     query('[data-role="team"]').replaceChildren(
       ...[...team]
         .toSorted(([a], [b]) => a - b)
@@ -308,11 +311,18 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     challengeStatus.hidden = false
   }
 
+  // The nickname field only shows when there is none yet, or to correct a refused one.
   challengerInput.value = savedNickname() ?? ''
-  query('[data-action="challenge"]').addEventListener('click', async () => {
+  async function challengeFriend() {
     if (team.size === 0) return showChallengeStatus(TEXT.composeFirst)
-    const nickname = checkNickname(challengerInput.value)
-    if (!nickname.ok) return showChallengeStatus(TEXT.nicknameErrors[nickname.error])
+    const typed = !challengerInput.hidden
+    const nickname = checkNickname(typed ? challengerInput.value : savedNickname())
+    if (!nickname.ok) {
+      challengerInput.hidden = false
+      challengerInput.focus()
+      if (typed) showChallengeStatus(TEXT.nicknameErrors[nickname.error])
+      return
+    }
     saveNickname(nickname.nickname)
     const { text, url } = challengeOf(nickname.nickname)
     const outcome = await shareLink(text, url)
@@ -321,6 +331,10 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     showChallengeStatus(
       outcome === 'copied' ? TEXT.challengeCopied : outcome === 'shared' ? TEXT.challengeSent : TEXT.shareFailed,
     )
+  }
+  query('[data-action="challenge"]').addEventListener('click', () => void challengeFriend())
+  challengerInput.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') void challengeFriend()
   })
   query('[data-action="spectate"]').addEventListener('click', onSpectate)
 

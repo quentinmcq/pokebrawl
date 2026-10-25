@@ -404,7 +404,6 @@ input {
   text-align: left;
 }
 
-.composer-header .tagline,
 .composer-header .secondary,
 .composer-header .hint {
   grid-column: 1 / -1;
@@ -438,6 +437,21 @@ input {
   margin: 0;
   font-size: calc(4 * var(--u));
   font-weight: 900;
+}
+
+/* A panel's title, with a few words about its content on the right. */
+.panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: calc(1 * var(--u)) calc(3 * var(--u));
+}
+
+.panel-head .summary,
+.panel-head .link,
+.panel-head .toggle {
+  font-size: calc(3 * var(--u));
 }
 
 .panel .row {
@@ -717,11 +731,6 @@ input {
     flex-wrap: wrap;
   }
 
-  .composer-header .tagline {
-    flex: 1;
-    text-align: center;
-  }
-
   .composer-side,
   .catalog {
     min-height: 0;
@@ -762,16 +771,38 @@ input {
 }
 
 .ranking {
-  display: grid;
-  gap: calc(1.5 * var(--u));
   margin-top: calc(1 * var(--u));
+}
+
+/* A <details> lays its content out as blocks: the spacing goes on the children. */
+.ranking > :not(summary) {
+  margin-top: calc(1.5 * var(--u));
 }
 
 .ranking-head {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
   gap: calc(2 * var(--u));
+  cursor: pointer;
+  list-style: none;
+}
+
+.ranking-head::-webkit-details-marker {
+  display: none;
+}
+
+.ranking-head h3::after {
+  content: ' ▾';
+  color: var(--muted);
+}
+
+.ranking[open] .ranking-head h3::after {
+  content: ' ▴';
+}
+
+.ranking > .segmented {
+  width: max-content;
 }
 
 .ranking-head h3 {

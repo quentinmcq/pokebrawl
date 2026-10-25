@@ -23,6 +23,24 @@ const ALL = ''
 const TYPE_NAME = TYPE_NAMES[LOCALE]
 
 export const typeHex = (type: TypeKey) => `#${typeColor(type).toString(16).padStart(6, '0')}`
+
+const DARK_TEXT = '#14162b'
+const DARK_TEXT_LUMINANCE = 0.0085
+const relativeLuminance = (color: number) => {
+  const [red, green, blue] = [color >> 16, (color >> 8) & 0xff, color & 0xff].map((channel) => {
+    const value = channel / 255
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4
+  })
+  return 0.2126 * red! + 0.7152 * green! + 0.0722 * blue!
+}
+
+/** White or dark text on a type's colour, whichever contrasts more: white reads poorly on Normal or Electric. */
+export function typeTextColor(type: TypeKey) {
+  const luminance = relativeLuminance(typeColor(type))
+  const onWhite = 1.05 / (luminance + 0.05)
+  const onDark = (luminance + 0.05) / (DARK_TEXT_LUMINANCE + 0.05)
+  return onDark > onWhite ? DARK_TEXT : '#fff'
+}
 export const searchNameOf = (species: Species) => withoutDiacritics(`${species.names.fr} ${species.names.en}`)
 const collectionStar = () => Object.assign(document.createElement('span'), { className: 'card-star', textContent: '★' })
 

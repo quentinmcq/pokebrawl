@@ -90,9 +90,6 @@
               Regarder un combat →
             </button>
           </nav>
-          <p class="tagline" data-i18n="composerTagline">
-            Bats la horde avec 1&nbsp;000&nbsp;points de Pokémon&nbsp;: beaucoup de petits, ou quelques géants&nbsp;?
-          </p>
           <button class="secondary" type="button" id="install" data-i18n="install" hidden>
             Installer l'application
           </button>
@@ -103,7 +100,10 @@
 
         <div class="composer-side">
           <section class="panel panel--red" aria-labelledby="opponent-title">
-            <h2 id="opponent-title" data-i18n="opponent">Adversaire</h2>
+            <div class="panel-head">
+              <h2 id="opponent-title" data-i18n="opponent">Adversaire</h2>
+              <p class="summary" data-role="horde-summary"></p>
+            </div>
             <div class="segmented segmented--wide" role="group" aria-label="Mode" data-i18n-aria-label="mode">
               <button type="button" data-mode="daily" data-i18n="daily">Défi du jour</button>
               <button type="button" data-mode="training" data-i18n="training">Entraînement</button>
@@ -116,22 +116,22 @@
             <div class="daily" data-role="daily">
               <p class="daily-title" data-role="daily-title"></p>
               <p class="hint" data-role="daily-status"></p>
-              <div class="ranking">
-                <div class="ranking-head">
+              <details class="ranking">
+                <summary class="ranking-head">
                   <h3 data-i18n="ranking">Classement</h3>
-                  <div
-                    class="segmented segmented--small"
-                    role="group"
-                    aria-label="Jour du classement"
-                    data-i18n-aria-label="rankingDay"
-                  >
-                    <button type="button" data-ranking="today" data-i18n="today">Aujourd'hui</button>
-                    <button type="button" data-ranking="yesterday" data-i18n="yesterday">Hier</button>
-                  </div>
+                  <span class="hint" data-role="ranking-summary" data-i18n="loadingShort">Chargement…</span>
+                </summary>
+                <div
+                  class="segmented segmented--small"
+                  role="group"
+                  aria-label="Jour du classement"
+                  data-i18n-aria-label="rankingDay"
+                >
+                  <button type="button" data-ranking="today" data-i18n="today">Aujourd'hui</button>
+                  <button type="button" data-ranking="yesterday" data-i18n="yesterday">Hier</button>
                 </div>
-                <p class="hint" data-role="ranking-summary" data-i18n="loadingShort">Chargement…</p>
                 <ol class="ranking-list" data-role="ranking-list"></ol>
-              </div>
+              </details>
             </div>
             <div class="row" data-role="training">
               <select name="horde" aria-label="Horde à battre" data-i18n-aria-label="hordeToBeat"></select>
@@ -141,7 +141,6 @@
                 <button type="button" data-level="1250" data-i18n="hard">Difficile</button>
               </div>
             </div>
-            <p class="summary" data-role="horde-summary"></p>
             <p class="advice" data-role="advice"></p>
             <div class="sprite-strip" data-role="horde"></div>
           </section>
@@ -153,8 +152,9 @@
               <p class="summary" data-role="budget-summary"></p>
             </div>
             <div class="team" data-role="team"></div>
-            <div class="challenge-friend">
+            <div class="challenge-friend" data-role="challenge-friend" hidden>
               <input
+                hidden
                 name="challenger"
                 maxlength="20"
                 placeholder="Ton pseudo"
@@ -182,7 +182,27 @@
         </div>
 
         <section class="panel catalog" aria-labelledby="catalog-title">
-          <h2 id="catalog-title" data-i18n="catalogue">Catalogue</h2>
+          <div class="panel-head">
+            <h2 id="catalog-title" data-i18n="catalogue">Catalogue</h2>
+            <label class="toggle collection-filter" data-role="collection-filter" hidden>
+              <input type="checkbox" name="collection" />
+              <span
+                ><span data-i18n="myPokedate">★ Mes Pokémon PokéDate</span> (<span data-role="collection-count"></span
+                >)</span
+              >
+            </label>
+            <a
+              class="link"
+              data-role="collection-import"
+              href="https://pokedate.fr/pokedex"
+              data-i18n-href="pokedatePokedex"
+              target="_blank"
+              rel="noopener"
+              data-i18n="pokedateImport"
+            >
+              ★ Jouer avec mes Pokémon PokéDate
+            </a>
+          </div>
           <div class="filters">
             <input
               name="search"
@@ -201,24 +221,6 @@
               <option value="id" data-i18n="pokedexOrder">N° du Pokédex</option>
             </select>
           </div>
-          <label class="toggle collection-filter" data-role="collection-filter" hidden>
-            <input type="checkbox" name="collection" />
-            <span
-              ><span data-i18n="myPokedate">★ Mes Pokémon PokéDate</span> (<span data-role="collection-count"></span
-              >)</span
-            >
-          </label>
-          <a
-            class="link"
-            data-role="collection-import"
-            href="https://pokedate.fr/pokedex"
-            data-i18n-href="pokedatePokedex"
-            target="_blank"
-            rel="noopener"
-            data-i18n="pokedateImport"
-          >
-            ★ Joue avec les Pokémon que tu as attrapés sur PokéDate
-          </a>
           <div class="cards" data-role="cards"></div>
         </section>
 
