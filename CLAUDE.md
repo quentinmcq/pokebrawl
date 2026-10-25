@@ -46,6 +46,10 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   vérifier que les coûts n'avantagent aucune stratégie (35 à 65 % de victoires attendues)
 - `bun run data` : régénère `src/data/pokemon.json` depuis PokéAPI (quelques minutes)
 - `bun run check` : lint, formatage, types, tests
+- `bun run test:e2e` : build puis tests Playwright (`e2e/`, ordinateur et mobile) contre le Worker et une base D1
+  locale à part (`scripts/e2e-server.ts`, port 8788) ; nécessite `bun run sprites`.
+- CI (`.github/workflows/ci.yml`) : `bun run check` et les tests Playwright à chaque push et PR, sans déployer ;
+  Renovate (`renovate.json`) groupe les mises à jour par domaine et fusionne seul l'outillage mineur une fois vert.
 
 Équipes : `gen1` à `gen9`, `type:fire`, `legendaries`, `ids:25,6*3,150` (`*3` : trois exemplaires),
 `horde:gen1:1000` (horde fixe de 1 000 points tirée de la Gen 1).

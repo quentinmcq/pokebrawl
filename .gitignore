@@ -8,3 +8,5 @@ coverage
 public/sprites.*
 .wrangler
 public/cries/
+test-results
+playwright-report
