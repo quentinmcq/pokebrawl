@@ -145,6 +145,12 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   membres), chacun filtre le catalogue ; « Compléter » remplit le budget au hasard. Pokémon attrapés sur PokéDate
   (`src/collection.ts`, lien `#pokedex=` au format de transfert de PokéDate) : étoile ★ et filtre du catalogue,
   sans avantage en combat.
+- `src/achievements.ts`, `src/ui/achievementsView.ts` : 15 succès, chacun avec un Pokémon pour emblème. Objectifs
+  longs (hordes de génération et de type battues, légendaires, Difficile, séries de 7 et 30 jours, podium, ami
+  battu) tirés de ce que le navigateur garde déjà, plus deux compteurs ; exploits jugés sur la victoire (moins de
+  500 points, une seule espèce, 60 Pokémon ou plus, 10 ou moins, 10 Magicarpe, uniquement des Pokémon PokéDate).
+  Seules comptent les victoires de l'équipe du joueur (défi du jour, entraînement, ami), jamais un combat regardé ni
+  une équipe rejouée. Panneau repliable dans la composition, ligne « Succès débloqué » en fin de combat.
 - `src/report.ts` : bilan d'un défi en trois phrases au plus (attaques peu efficaces, types punis, meilleur et pire
   rapport dégâts/points), en rejouant le combat en mémoire puisqu'il est déterministe.
 - `src/ui/sound.ts` : sons synthétisés (Web Audio, aucun fichier) : impact sourd ou « piou » selon la catégorie,
@@ -187,7 +193,7 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
    Liens depuis pokedate.fr (bannière sur les résultats et les fiches, pied de page, Pokédex), aide à la
    composition, bilan, résultat immédiat, son (fait).
    Pages « Gen 1 contre Gen 3 : qui gagne ? » pour le référencement (fait).
-   Cris des Pokémon (fait).
+   Cris des Pokémon (fait). Mesure d'audience, contrôle de nuit du classement, succès (fait).
 6. Ensuite : domaine pokebrawl.fr (puis `src/site.ts` et `pokebrawlUrl` dans PokéDate) ; plus tard pronostic, Méga-Évolutions, statuts et talents.
 
 Les sprites et le Pokédex de PokéDate (`../pokedate/scripts/fetch-sprites.ts`) peuvent servir de modèle.
