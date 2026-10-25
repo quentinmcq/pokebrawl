@@ -4,7 +4,7 @@ import { costOf, MAX_TEAM_SIZE, MIN_COST } from './cost'
 import { createRandom } from './random'
 import type { Locale, Pokedex, Species, TypeKey } from './types'
 
-export const TEAM_SELECTOR_EXAMPLES = ['gen1', 'type:fire', 'legendaries', 'ids:25,6*3,150', 'horde:gen1:1000']
+const TEAM_SELECTOR_EXAMPLES = ['gen1', 'type:fire', 'legendaries', 'ids:25,6*3,150', 'horde:gen1:1000']
 
 function speciesMatching(pokedex: Pokedex, selector: string): Species[] {
   const generation = /^gen([1-9])$/.exec(selector)?.[1]
@@ -32,7 +32,7 @@ function speciesMatching(pokedex: Pokedex, selector: string): Species[] {
   throw new Error(`Équipe inconnue : « ${selector} » (exemples : ${TEAM_SELECTOR_EXAMPLES.join(', ')})`)
 }
 
-export const TYPE_NAMES_FR: Record<TypeKey, string> = {
+const TYPE_NAMES_FR: Record<TypeKey, string> = {
   normal: 'Normal',
   fire: 'Feu',
   water: 'Eau',

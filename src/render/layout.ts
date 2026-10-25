@@ -1,6 +1,6 @@
 import { ARENA_HEIGHT, ARENA_WIDTH, type TeamIndex } from '../simulation/battle'
 
-export type Orientation = 'portrait' | 'landscape'
+type Orientation = 'portrait' | 'landscape'
 
 export const HUD_HEIGHT = 210
 const ARENA_MARGIN = 30

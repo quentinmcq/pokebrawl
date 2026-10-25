@@ -31,7 +31,7 @@ export interface BaseStats {
   speed: number
 }
 
-export type Rarity = 'legendary' | 'mythical' | null
+type Rarity = 'legendary' | 'mythical' | null
 
 export type MoveCategory = 'physical' | 'special'
 

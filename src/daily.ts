@@ -3,7 +3,7 @@ import { parseHorde, TEAM_SELECTORS } from './simulation/teams'
 
 // Everyone gets a new challenge at midnight in France, where the players are.
 const TIME_ZONE = 'Europe/Paris'
-export const DAILY_LEVEL = 1000
+const DAILY_LEVEL = 1000
 
 /** `2026-10-25` for the given moment, in French time. */
 export const dayOf = (moment: Date) =>

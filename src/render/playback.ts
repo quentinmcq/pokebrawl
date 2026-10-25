@@ -5,10 +5,10 @@ export const SECONDS_PER_TICK = 1 / TICKS_PER_SECOND
 // A frame arriving after a long pause (hidden tab) would otherwise replay seconds of battle in one go.
 const MAX_TICKS_PER_ADVANCE = 20
 /** Units per second: even from the far end of its reach, a special attack lands within a quarter of a second. */
-export const PROJECTILE_SPEED = 30
+const PROJECTILE_SPEED = 30
 
 /** Special attacks fly to their target, physical ones land at once: the target reacts when the blow arrives. */
-export const travelSecondsOf = (move: Move, distance: number) =>
+const travelSecondsOf = (move: Move, distance: number) =>
   move.category === 'special' ? distance / PROJECTILE_SPEED : 0
 
 /** An event as the screen shows it: where the attacker stood and how long its attack takes to land. */
@@ -18,7 +18,7 @@ export interface ShownEvent {
   travelSeconds: number
 }
 
-export interface FighterEffects {
+interface FighterEffects {
   attackedAtTick: number | null
   attackTarget: number | null
   hurtAtTick: number | null

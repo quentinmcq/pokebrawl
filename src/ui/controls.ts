@@ -21,7 +21,7 @@ const ICONS = {
 const IDLE_DELAY_MS = 2500
 const MOUSE_ZONE_SHARE = 0.25
 
-export type PlayState = 'playing' | 'paused' | 'over'
+type PlayState = 'playing' | 'paused' | 'over'
 
 interface ControlHandlers {
   onToggle: () => void

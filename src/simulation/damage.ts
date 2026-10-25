@@ -22,7 +22,7 @@ export interface Combatant {
   stats: BattleStats
 }
 
-export interface HitRoll {
+interface HitRoll {
   damage: number
   multiplier: number
   critical: boolean

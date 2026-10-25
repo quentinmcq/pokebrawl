@@ -312,7 +312,7 @@ const french = {
     `Bats son équipe de ${size} Pokémon (${points} points) avec tes ${budget} points.`,
 }
 
-export type Messages = typeof french
+type Messages = typeof french
 
 const englishNumber = numberIn('en')
 const englishBudget = englishNumber(TEAM_BUDGET)

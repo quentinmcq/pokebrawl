@@ -2,7 +2,7 @@ import type { NicknameError } from './messages'
 import { withoutDiacritics } from './text'
 
 // The same rules as PokéDate's nicknames: names show publicly in the daily ranking.
-export const NICKNAME_LENGTH = { min: 2, max: 20 } as const
+const NICKNAME_LENGTH = { min: 2, max: 20 } as const
 
 const ALLOWED_CHARACTERS = /^[\p{L}\p{N} '_-]+$/u
 
@@ -60,9 +60,9 @@ const BLOCKED_FRAGMENTS = [
 const normalized = (text: string) =>
   withoutDiacritics(text).replaceAll(/[0134578]/g, (digit) => LOOKALIKE_LETTERS[digit] ?? digit)
 
-export const cleanNickname = (value: unknown) => (typeof value === 'string' ? value.trim().replaceAll(/\s+/g, ' ') : '')
+const cleanNickname = (value: unknown) => (typeof value === 'string' ? value.trim().replaceAll(/\s+/g, ' ') : '')
 
-export type NicknameCheck = { ok: true; nickname: string } | { ok: false; error: NicknameError }
+type NicknameCheck = { ok: true; nickname: string } | { ok: false; error: NicknameError }
 
 export function checkNickname(value: unknown): NicknameCheck {
   const nickname = cleanNickname(value)

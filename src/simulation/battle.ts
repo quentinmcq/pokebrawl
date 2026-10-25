@@ -7,7 +7,7 @@ import type { Move, PokemonTypes, Species } from './types'
 export const ARENA_WIDTH = 36
 export const ARENA_HEIGHT = 64
 // Close to half the drawn sprite size: a smaller body lets the crowd pile up into an unreadable heap.
-export const FIGHTER_RADIUS = 0.8
+const FIGHTER_RADIUS = 0.8
 export const TICKS_PER_SECOND = 20
 const SECONDS_PER_TICK = 1 / TICKS_PER_SECOND
 const MAX_DURATION_SECONDS = 180
@@ -23,7 +23,7 @@ const BEST_MOVE_CHANCE = 0.75
 const GRID_CELL_SIZE = 2 * FIGHTER_RADIUS
 
 export type TeamIndex = 0 | 1
-export type BattleOutcome = TeamIndex | 'draw'
+type BattleOutcome = TeamIndex | 'draw'
 
 export interface FighterSetup {
   species: Species
@@ -86,7 +86,7 @@ export interface Battle {
   outcome: BattleOutcome | null
 }
 
-export interface BattleResult {
+interface BattleResult {
   outcome: BattleOutcome
   durationSeconds: number
   survivors: [Fighter[], Fighter[]]
