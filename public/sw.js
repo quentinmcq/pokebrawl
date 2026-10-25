@@ -28,12 +28,18 @@ self.addEventListener('fetch', (event) => {
   const navigation = request.mode === 'navigate'
   const cacheKey = navigation ? url.pathname : request
   // The server writes a friend's challenge into the page it sends for « ?defi=… »: only a plain address is kept.
-  const keeps = (response) => response.ok && (!navigation || url.search === '')
+  // A redirected answer is never kept: when the site moves to its own domain, the old address redirects every page.
+  const keeps = (response) => response.ok && !response.redirected && (!navigation || url.search === '')
   event.respondWith(
     caches.open(CACHE_NAME).then(async (cache) => {
       const cached = await cache.match(cacheKey)
       const fresh = fetch(request)
         .then((response) => {
+          if (response.redirected && new URL(response.url).origin !== self.location.origin) {
+            // The site has moved: this old copy is dropped, and the next visit follows the move.
+            void caches.delete(CACHE_NAME)
+            return navigation ? Response.redirect(response.url, 301) : response
+          }
           if (keeps(response)) cache.put(cacheKey, response.clone())
           return response
         })
