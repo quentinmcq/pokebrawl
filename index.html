@@ -134,6 +134,12 @@
               Touche un Pokémon du catalogue pour l'ajouter, et un Pokémon de ton équipe pour le retirer.
             </p>
           </section>
+          <details class="panel achievements" data-role="achievements">
+            <summary>
+              <h2>Succès <span data-role="achievements-count"></span></h2>
+            </summary>
+            <ul class="badges" data-role="badges"></ul>
+          </details>
         </div>
 
         <section class="panel catalog" aria-labelledby="catalog-title">
@@ -182,6 +188,7 @@
       <div id="end-actions" class="end-actions" hidden>
         <ul class="report" data-role="report" hidden></ul>
         <p class="end-result" data-role="result" hidden></p>
+        <p class="unlocked" data-role="unlocked" hidden></p>
         <form class="publish" data-role="publish" hidden>
           <input
             name="nickname"

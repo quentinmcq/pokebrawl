@@ -21,19 +21,11 @@ import type { Species, TypeKey } from '../simulation/types'
 import { fetchRanking, renderRanking, savedNickname, saveNickname } from './ranking'
 import { shareLink, siteUrl } from './share'
 import { track } from './track'
-import { readStored, writeStored } from './storage'
+import { readStored, STORAGE_KEYS, writeStored } from './storage'
 
 const LEVELS = [800, 1000, 1250]
 type Mode = 'daily' | 'training' | 'friend'
 const DEFAULT_CHALLENGE = { mode: 'daily' as Mode, horde: 'gen1', level: 1000 }
-const STORAGE_KEYS = {
-  team: 'pokebrawl.team',
-  challenge: 'pokebrawl.challenge',
-  wins: 'pokebrawl.wins',
-  daily: 'pokebrawl.daily',
-  friend: 'pokebrawl.friend',
-  collection: 'pokebrawl.collection',
-}
 const ALL = ''
 
 interface Entry {

@@ -928,3 +928,92 @@ button.type-chip {
   justify-content: flex-end;
   gap: calc(2 * var(--u)) calc(4 * var(--u));
 }
+
+.achievements summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.achievements summary::-webkit-details-marker {
+  display: none;
+}
+
+.achievements summary h2::after {
+  content: ' ▾';
+  color: var(--muted);
+}
+
+.achievements[open] summary h2::after {
+  content: ' ▴';
+}
+
+.achievements h2 span {
+  color: var(--accent);
+}
+
+.badges {
+  display: grid;
+  gap: calc(1.5 * var(--u));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.badge {
+  display: grid;
+  grid-template-columns: calc(10 * var(--u)) 1fr;
+  grid-template-rows: auto auto;
+  column-gap: calc(2.5 * var(--u));
+  align-items: center;
+  padding: calc(1.5 * var(--u)) calc(2 * var(--u));
+  border-radius: calc(2 * var(--u));
+  background: #1f2236;
+  opacity: 0.55;
+}
+
+.badge .sprite {
+  --size: calc(8 * var(--u));
+  grid-row: span 2;
+  justify-self: center;
+  filter: grayscale(1);
+}
+
+.badge b {
+  font-size: calc(3.2 * var(--u));
+}
+
+.badge span {
+  color: var(--muted);
+  font-size: calc(2.8 * var(--u));
+}
+
+.badge--unlocked {
+  opacity: 1;
+  box-shadow: 0 0 0 calc(0.4 * var(--u)) var(--accent) inset;
+}
+
+.badge--unlocked .sprite {
+  filter: none;
+}
+
+.unlocked {
+  margin: 0;
+  padding: calc(2 * var(--u)) calc(4 * var(--u));
+  border-radius: 999px;
+  background: var(--accent);
+  color: #14162b;
+  font-size: calc(3.6 * var(--u));
+  font-weight: 900;
+  text-align: center;
+  animation: unlocked 0.5s ease-out;
+}
+
+@keyframes unlocked {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.08);
+  }
+}

@@ -4,12 +4,15 @@ import { COLORS, createLayout, orientationOf, type Layout } from './render/layou
 import { battleSearch, describesBattle, randomSeed, readBattleParams, type BattleParams } from './render/params'
 import { buildTeams, createScene, type Scene } from './render/scene'
 import { summarizeBattle } from './simulation/battle'
+import { teamCost } from './simulation/cost'
 import { battleReport } from './report'
 import { terrainForSeed } from './render/terrain'
 import { readCollectionHash } from './collection'
 import { dailyDayOf } from './daily'
 import { readFriendChallenge } from './friend'
-import { createComposer, isChallenge } from './ui/composer'
+import type { Achievement } from './achievements'
+import { createAchievements } from './ui/achievementsView'
+import { createComposer, isChallenge, type ChallengeResult } from './ui/composer'
 import { createControls } from './ui/controls'
 import { setUpInstall, isInstalled } from './ui/install'
 import { createMenu } from './ui/menu'
@@ -18,7 +21,7 @@ import { shareLink } from './ui/share'
 import { createSound } from './ui/sound'
 import { track, trackVisit } from './ui/track'
 import { createSpriteFactory } from './ui/sprites'
-import { readStored, writeStored } from './ui/storage'
+import { readStored, STORAGE_KEYS, writeStored } from './ui/storage'
 import { canRecord, recordCanvas, videoBaseName, type Video } from './ui/recorder'
 import { createVideoPanel } from './ui/videoPanel'
 
@@ -168,6 +171,8 @@ async function start() {
     leaveBattle()
     menu.close()
     composer.open(params)
+    // A streak can lapse overnight: the progress shown follows today's state.
+    achievements.render()
   }
 
   function openSpectatorMenu() {
@@ -202,7 +207,10 @@ async function start() {
     track('publish')
     publishForm.hidden = true
     const { you, total } = outcome.ranking
-    if (you) resultLine.textContent = `${resultMessage} · ${ordinal(you.rank)} sur ${total}`
+    if (you) {
+      resultLine.textContent = `${resultMessage} · ${ordinal(you.rank)} sur ${total}`
+      showUnlocked([...shownUnlocked, ...achievements.recordRank(you.rank)])
+    }
   }
   publishForm.addEventListener('submit', (event) => {
     event.preventDefault()
@@ -219,6 +227,7 @@ async function start() {
     if (!isChallenge(params)) return
     const won = scene.battle.outcome === 0
     const result = composer.finish(params, won)
+    showUnlocked(won ? recordAchievements(params, result) : [])
     if (won && result.publishable) track('win-daily')
     else if (won && params.opponentName) track('win-friend')
     else if (won && !result.daily) track('win-training')
@@ -254,8 +263,32 @@ async function start() {
     if (outcome === 'copied') shareButton.textContent = 'Lien copié\u00a0!'
   }
 
+  const spriteOf = createSpriteFactory(spritesheet)
+  const achievements = createAchievements(element('composer').querySelector('[data-role="achievements"]')!, spriteOf)
+  const unlockedLine = endActions.querySelector<HTMLElement>('[data-role="unlocked"]')!
+  let shownUnlocked: Achievement[] = []
+
+  function showUnlocked(earned: Achievement[]) {
+    shownUnlocked = earned
+    unlockedLine.hidden = earned.length === 0
+    unlockedLine.textContent = `${earned.length > 1 ? 'Succès débloqués' : 'Succès débloqué'} : ${earned.map(({ title }) => title).join(', ')}`
+  }
+
+  // Only the player's own team counts: today's daily horde, a training horde or a friend, never a replayed team.
+  function recordAchievements(battle: BattleParams, result: ChallengeResult) {
+    const isOwnWin = result.publishable !== null || battle.opponentName !== null || !result.daily
+    if (!isOwnWin) return []
+    const fighters = buildTeams(battle)[0].fighters
+    const win = {
+      speciesIds: fighters.map(({ species }) => species.id),
+      points: teamCost(fighters),
+      collection: readStored<number[]>(STORAGE_KEYS.collection, []),
+    }
+    return battle.opponentName ? achievements.recordFriendWin(win) : achievements.recordWin(win)
+  }
+
   const composer = createComposer(element('composer'), {
-    spriteOf: createSpriteFactory(spritesheet),
+    spriteOf,
     onFight: startBattle,
     onSpectate: openSpectatorMenu,
   })

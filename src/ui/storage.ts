@@ -1,3 +1,15 @@
+// What the browser keeps between visits; the composer and the achievements read the same entries.
+export const STORAGE_KEYS = {
+  team: 'pokebrawl.team',
+  challenge: 'pokebrawl.challenge',
+  wins: 'pokebrawl.wins',
+  daily: 'pokebrawl.daily',
+  friend: 'pokebrawl.friend',
+  collection: 'pokebrawl.collection',
+  achievements: 'pokebrawl.achievements',
+  achievementStats: 'pokebrawl.achievement-stats',
+}
+
 // Per-browser conveniences only (the last team, beaten hordes): storage can be missing or full, and the app still works.
 export function readStored<Value>(key: string, fallback: Value): Value {
   try {
