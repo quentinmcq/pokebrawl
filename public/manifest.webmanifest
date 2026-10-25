@@ -1,7 +1,7 @@
 {
   "name": "PokéBrawl",
   "short_name": "PokéBrawl",
-  "description": "Compose ton équipe de Pokémon avec 1 000 points et bats la horde du jour, ou défie tes amis.",
+  "description": "Compose ton équipe de Pokémon avec 1 000 points et relève le défi du jour, ou défie tes amis.",
   "lang": "fr",
   "start_url": "/",
   "scope": "/",

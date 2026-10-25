@@ -8,7 +8,7 @@
     <meta
       name="description"
       data-i18n-content="description"
-      content="Compose ton équipe de Pokémon avec 1 000 points et bats la horde du jour, ou défie tes amis."
+      content="Compose ton équipe de Pokémon avec 1 000 points et relève le défi du jour, ou défie tes amis."
     />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="PokéBrawl" />
@@ -16,7 +16,7 @@
     <meta
       property="og:description"
       data-i18n-content="description"
-      content="Compose ton équipe de Pokémon avec 1 000 points et bats la horde du jour, ou défie tes amis."
+      content="Compose ton équipe de Pokémon avec 1 000 points et relève le défi du jour, ou défie tes amis."
     />
     <meta property="og:image" content="/og.png" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -32,6 +32,7 @@
   </head>
   <body>
     <main id="stage" class="stage">
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
       <p class="loading" data-i18n="loading">Chargement de l’arène…</p>
 
       <form id="menu" class="menu" hidden>
@@ -188,7 +189,9 @@
             <button class="lobby-row" type="button" data-open="training">
               <span>
                 <b data-i18n="training">Entraînement</b>
-                <small data-i18n="trainingHint">Bats une horde au choix, autant de fois que tu veux.</small>
+                <small data-i18n="trainingHint"
+                  >Choisis ton adversaire&nbsp;: une génération, un type ou les légendaires.</small
+                >
               </span>
               <span class="lobby-chevron" aria-hidden="true">›</span>
             </button>
@@ -217,8 +220,8 @@
             </div>
             <div class="training-fields" data-role="training">
               <label class="field-line">
-                <span data-i18n="horde">Horde</span>
-                <select name="horde" aria-label="Horde à battre" data-i18n-aria-label="hordeToBeat"></select>
+                <span data-i18n="horde">Adversaire</span>
+                <select name="horde" aria-label="Adversaire à battre" data-i18n-aria-label="hordeToBeat"></select>
               </label>
               <div class="field-line">
                 <span data-i18n="difficulty">Difficulté</span>
@@ -320,11 +323,14 @@
                     <option value="id" data-i18n="pokedexOrder">N° Pokédex</option>
                   </select>
                 </label>
+                <button class="link" type="button" data-action="reset-filters" data-i18n="resetFilters">
+                  Réinitialiser les filtres
+                </button>
               </div>
             </details>
           </div>
           <div class="suggested" data-role="suggested" hidden>
-            <span data-i18n="effectiveTypes">Efficaces contre la horde</span>
+            <span data-i18n="effectiveTypes">Efficaces contre l’adversaire</span>
           </div>
           <div class="cards" data-role="cards"></div>
         </section>

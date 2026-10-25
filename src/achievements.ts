@@ -53,8 +53,8 @@ export const ACHIEVEMENTS: Achievement[] = [
     id: 'generations',
     title: { fr: 'Maître des générations', en: 'Master of generations' },
     description: {
-      fr: 'Bats les 9 hordes de génération à l’entraînement.',
-      en: 'Beat all 9 generation hordes in training.',
+      fr: 'Bats les 9 générations à l’entraînement.',
+      en: 'Beat all 9 generations in training.',
     },
     emblem: 493,
     progress: countIn(GENERATION_POOLS),
@@ -63,7 +63,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'types',
     title: { fr: 'Maître des types', en: 'Master of types' },
-    description: { fr: 'Bats les 18 hordes de type à l’entraînement.', en: 'Beat all 18 type hordes in training.' },
+    description: { fr: 'Bats les 18 types à l’entraînement.', en: 'Beat all 18 types in training.' },
     emblem: 133,
     progress: countIn(TYPE_POOLS),
     isUnlocked: (state) => countIn(TYPE_POOLS)(state).done === TYPE_POOLS.length,
@@ -71,14 +71,14 @@ export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'legendaries',
     title: { fr: 'Chasseur de légendes', en: 'Legend hunter' },
-    description: { fr: 'Bats la horde des légendaires.', en: 'Beat the legendaries horde.' },
+    description: { fr: 'Bats les légendaires à l’entraînement.', en: 'Beat the legendaries in training.' },
     emblem: 150,
     isUnlocked: (state) => poolsBeaten(state).has('legendaries'),
   },
   {
     id: 'hard',
     title: { fr: 'Sans pitié', en: 'Merciless' },
-    description: { fr: 'Bats une horde en difficulté Difficile.', en: 'Beat a horde on Hard.' },
+    description: { fr: 'Gagne un entraînement en Difficile.', en: 'Win a training battle on Hard.' },
     emblem: 248,
     isUnlocked: (state) => state.trainingWins.some((win) => parseHorde(win)?.value === HARD_LEVEL),
   },

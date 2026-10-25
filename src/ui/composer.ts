@@ -24,6 +24,7 @@ import {
   toFighterSetup,
 } from '../simulation/teams'
 import { slideSegmented } from './segmented'
+import { showToast } from './toast'
 import { createCatalogue, searchNameOf, type CatalogueEntry } from './catalogue'
 import { LOCALE, nameOf, TEXT } from './i18n'
 import { fetchRanking, renderRanking, savedNickname, saveNickname } from './ranking'
@@ -178,10 +179,9 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   function renderChallenge() {
     query('[data-role="training"]').hidden = challenge.mode !== 'training'
     // The label says which mode, the title who the opponent is.
-    const levelName = { 800: TEXT.page.easy, 1000: TEXT.page.normal, 1250: TEXT.page.hard }[challenge.level]
     const [mode, name] =
       challenge.mode === 'training'
-        ? [TEXT.page.training, `${teamTitle(hordeSelector(challenge.horde, challenge.level), LOCALE)} · ${levelName}`]
+        ? [TEXT.page.training, teamTitle(challenge.horde, LOCALE)]
         : challenge.mode === 'friend' && friendChallenge
           ? [TEXT.page.friendMode, TEXT.friendTeam(friendChallenge.name)]
           : [TEXT.page.daily, teamTitle(dailyChallenge(today()).horde, LOCALE)]
@@ -357,7 +357,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   // The nickname field only shows when there is none yet, or to correct a refused one.
   challengerInput.value = savedNickname() ?? ''
   async function challengeFriend() {
-    if (team.size === 0) return showChallengeStatus(TEXT.composeFirst)
+    if (team.size === 0) return showToast(TEXT.composeFirst)
     const typed = !challengerInput.hidden
     const nickname = checkNickname(typed ? challengerInput.value : savedNickname())
     if (!nickname.ok) {
@@ -371,7 +371,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     const outcome = await shareLink(text, url)
     if (outcome === 'cancelled') return
     if (outcome !== 'failed') track('share-challenge')
-    showChallengeStatus(
+    challengeStatus.hidden = true
+    showToast(
       outcome === 'copied' ? TEXT.challengeCopied : outcome === 'shared' ? TEXT.challengeSent : TEXT.shareFailed,
     )
   }

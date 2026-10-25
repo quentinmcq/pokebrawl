@@ -32,7 +32,7 @@ describe('languages', () => {
 
   it('names teams and matchups in English', () => {
     expect(teamTitle('type:fire', 'en')).toBe('Fire Type')
-    expect(teamTitle('horde:gen1:1000', 'en')).toBe('Gen 1 Horde')
+    expect(teamTitle('horde:gen1:1000', 'en')).toBe('Gen 1')
     const matchup = MATCHUPS.find(({ teams }) => teams[0] === 'gen1' && teams[1] === 'gen3')!
     expect(matchupTitle(matchup, 'en')).toBe('Gen 1 vs Gen 3')
     expect(matchupPath(matchup, 'en')).toBe('/en/battles/gen-1-vs-gen-3/')

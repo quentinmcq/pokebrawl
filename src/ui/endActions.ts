@@ -9,6 +9,7 @@ import { LOCALE, TEXT } from './i18n'
 import { savedNickname, saveNickname, submitScore } from './ranking'
 import { shareLink } from './share'
 import { readStored, STORAGE_KEYS } from './storage'
+import { showToast } from './toast'
 import { track } from './track'
 
 interface EndActionsHandlers {
@@ -85,7 +86,7 @@ export function createEndActions(
     if (!result?.share) return
     const outcome = await shareLink(result.share.text, result.share.url)
     if (outcome === 'shared' || outcome === 'copied') track(result.mode === 'friend' ? 'share-back' : 'share-daily')
-    if (outcome === 'copied') shareButton.textContent = TEXT.linkCopied
+    if (outcome === 'copied') showToast(TEXT.linkCopied)
   }
 
   publishForm.addEventListener('submit', (event) => {

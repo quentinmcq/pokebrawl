@@ -60,9 +60,9 @@ const TEXTS = {
     description: (team: string, verb: string, share: string, size: number) =>
       `${team} ${verb} dans ${share} des ${RUNS} combats simulés à ${size} Pokémon contre ${size}. Résultats, Pokémon décisifs et un combat à regarder.`,
     oneSided: (team: string, verb: string) =>
-      `${team} ${verb} presque à chaque fois&nbsp;: à toi de trouver l’équipe qui renverse la tendance, en composant la tienne pour défier les hordes de PokéBrawl.`,
+      `${team} ${verb} presque à chaque fois&nbsp;: à toi de trouver l’équipe qui renverse la tendance, en composant la tienne pour relever les défis de PokéBrawl.`,
     open: (team: string, verb: string) =>
-      `${team} ${verb} ici, mais chaque combat reste ouvert&nbsp;: regarde-en un, ou compose ta propre équipe pour défier les hordes de PokéBrawl.`,
+      `${team} ${verb} ici, mais chaque combat reste ouvert&nbsp;: regarde-en un, ou compose ta propre équipe pour relever les défis de PokéBrawl.`,
     pageTitle: (title: string) => `${title} : qui gagne ? · PokéBrawl`,
     heading: (title: string) => `${title} : qui gagne&nbsp;?`,
     averageSeconds: (seconds: number) => `<strong>${seconds}&nbsp;s</strong> de combat en moyenne`,
@@ -120,9 +120,9 @@ const TEXTS = {
     description: (team: string, verb: string, share: string, size: number) =>
       `${team} ${verb} ${share} of ${RUNS} simulated battles at ${size} Pokémon a side. Results, the deciding Pokémon and a battle to watch.`,
     oneSided: (team: string, verb: string) =>
-      `${team} ${verb} almost every time: find the team that turns the tide by building your own to take on PokéBrawl’s hordes.`,
+      `${team} ${verb} almost every time: find the team that turns the tide by building your own to take on PokéBrawl’s challenges.`,
     open: (team: string, verb: string) =>
-      `${team} ${verb} here, but every battle stays open: watch one, or build your own team to take on PokéBrawl’s hordes.`,
+      `${team} ${verb} here, but every battle stays open: watch one, or build your own team to take on PokéBrawl’s challenges.`,
     pageTitle: (title: string) => `${title}: who wins? · PokéBrawl`,
     heading: (title: string) => `${title}: who wins?`,
     averageSeconds: (seconds: number) => `<strong>${seconds}&nbsp;s</strong> of battle on average`,
