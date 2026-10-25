@@ -76,8 +76,8 @@ const frenchPage = {
   dearest: 'Prix ↓',
   pokedexOrder: 'N° Pokédex',
   myPokedate: '★ Mes Pokémon PokéDate',
-  pokedateImport: '★ Jouer avec mes Pokémon PokéDate',
-  pokedatePokedex: 'https://pokedate.fr/pokedex',
+  pokedateImport: '★ Tu joues à PokéDate&nbsp;? Récupère tes Pokémon attrapés',
+  pokedatePokedex: 'https://pokedate.fr/pokedex?from=pokebrawl',
   clear: 'Vider',
   fill: 'Compléter',
   fillTitle: 'Compléter l’équipe au hasard',
@@ -159,8 +159,8 @@ const englishPage: Record<PageKey, string> = {
   dearest: 'Price ↓',
   pokedexOrder: 'Pokédex no.',
   myPokedate: '★ My PokéDate Pokémon',
-  pokedateImport: '★ Play with my PokéDate Pokémon',
-  pokedatePokedex: 'https://pokedate.fr/en/pokedex',
+  pokedateImport: '★ Playing PokéDate? Bring your caught Pokémon',
+  pokedatePokedex: 'https://pokedate.fr/en/pokedex?from=pokebrawl',
   clear: 'Clear',
   fill: 'Fill up',
   fillTitle: 'Fill the team at random',
@@ -235,7 +235,12 @@ const french = {
     `${names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} et ${names.at(-1)}`} ${names.length === 1 ? 'a' : 'ont'} rejoint ton équipe : complète-la, puis bats la horde du jour !`,
   noCollection: 'Aucun Pokémon attrapé sur PokéDate pour l’instant : entre des dates là-bas pour en attraper.',
   collection: (count: number) =>
-    `${count} Pokémon attrapé${count > 1 ? 's' : ''} sur PokéDate : ils portent une ★, et le filtre du catalogue les regroupe.`,
+    `${count} Pokémon reçu${count > 1 ? 's' : ''} de PokéDate\u00a0: le catalogue n’affiche plus qu’eux (filtre ★).`,
+  addCollection: 'Les ajouter à mon équipe',
+  collectionAdded: (count: number) =>
+    count === 0
+      ? 'Plus de place dans ton équipe\u00a0: retire d’abord des Pokémon.'
+      : `${count} Pokémon PokéDate ${count > 1 ? 'ont' : 'a'} rejoint ton équipe\u00a0: complète-la, puis bats la horde du jour\u00a0!`,
   aFriend: 'Un ami',
   friendTeam: (name: string) => `Équipe de ${name}`,
   friendLost: (name: string) => `L’équipe de ${name} a gagné. Change ton équipe !`,
@@ -363,7 +368,12 @@ const english: Messages = {
   welcomed: (names) =>
     `${names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`} joined your team: fill it up, then beat the daily horde!`,
   noCollection: 'No Pokémon caught on PokéDate yet: go on dates there to catch some.',
-  collection: (count) => `${count} Pokémon caught on PokéDate: they wear a ★, and the catalogue filter gathers them.`,
+  collection: (count) => `${count} Pokémon received from PokéDate: the catalogue now shows only them (★ filter).`,
+  addCollection: 'Add them to my team',
+  collectionAdded: (count) =>
+    count === 0
+      ? 'No room left in your team: remove some Pokémon first.'
+      : `${count} PokéDate Pokémon joined your team: fill it up, then beat the daily horde!`,
   aFriend: 'A friend',
   friendTeam: (name) => `${name}’s team`,
   friendLost: (name) => `${name}’s team won. Change your team!`,

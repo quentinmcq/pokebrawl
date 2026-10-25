@@ -1013,6 +1013,19 @@ input {
   font-weight: 700;
 }
 
+.notice .primary {
+  display: block;
+  margin: calc(2 * var(--u)) 0 0;
+  padding: calc(2.4 * var(--u)) calc(4 * var(--u));
+  font-size: calc(3.4 * var(--u));
+}
+
+.pokedate-import {
+  justify-self: center;
+  font-size: calc(3 * var(--u));
+  text-align: center;
+}
+
 .advice {
   display: grid;
   gap: calc(1.2 * var(--u));

@@ -345,6 +345,25 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   })
   query('[data-action="spectate"]').addEventListener('click', onSpectate)
 
+  // The way to the PokéDate Pokédex only shows until its Pokémon have arrived.
+  function renderCollectionImport(caught: number) {
+    query('[data-role="collection-import"]').hidden = caught > 0
+  }
+  renderCollectionImport(readStored<number[]>(STORAGE_KEYS.collection, []).length)
+
+  /** One of each of these Pokémon, the cheapest first, as far as the budget and the team size go; says how many. */
+  function addOneOfEach(ids: number[]) {
+    let added = 0
+    for (const id of [...ids].toSorted((a, b) => entryOf(a).cost - entryOf(b).cost || a - b)) {
+      if (spent() + entryOf(id).cost > TEAM_BUDGET || teamSize() >= MAX_TEAM_SIZE) continue
+      team.set(id, (team.get(id) ?? 0) + 1)
+      added++
+    }
+    saveTeam()
+    renderTeam()
+    return added
+  }
+
   return {
     /** Reopens on the battle just fought, or on the last team and horde this browser remembers. */
     open(current: BattleParams | null) {
@@ -387,10 +406,24 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     /** Keeps the Pokémon caught on PokéDate, received by link, and says how to find them. */
     importCollection(ids: number[]) {
       writeStored(STORAGE_KEYS.collection, ids)
-      catalogue.setCollection(new Set(ids))
+      renderCollectionImport(ids.length)
+      catalogue.setCollection(new Set(ids), { showOnly: true })
       const notice = query('[data-role="team-notice"]')
-      notice.textContent = ids.length === 0 ? TEXT.noCollection : TEXT.collection(ids.length)
+      notice.replaceChildren(ids.length === 0 ? TEXT.noCollection : TEXT.collection(ids.length))
+      if (ids.length > 0) {
+        const add = Object.assign(document.createElement('button'), {
+          type: 'button',
+          className: 'primary',
+          textContent: TEXT.addCollection,
+        })
+        add.addEventListener('click', () => {
+          notice.replaceChildren(TEXT.collectionAdded(addOneOfEach(ids)))
+          catalogue.showAll()
+        })
+        notice.append(add)
+      }
       notice.hidden = false
+      notice.scrollIntoView({ behavior: 'smooth', block: 'center' })
     },
     /** Opens on a friend's team, received by link, to beat with the player's own. */
     openFriendChallenge(received: FriendChallenge) {

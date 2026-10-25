@@ -125,7 +125,6 @@ export function createCatalogue(
 
   function renderCollection() {
     query('[data-role="collection-filter"]').hidden = collection.size === 0
-    query('[data-role="collection-import"]').hidden = collection.size > 0
     query('[data-role="collection-count"]').textContent = String(collection.size)
   }
 
@@ -150,13 +149,21 @@ export function createCatalogue(
       render()
       panel.scrollIntoView({ behavior: 'smooth', block: 'start' })
     },
-    setCollection(ids: Set<number>) {
+    /** The Pokémon caught on PokéDate; `showOnly` turns the filter on, right after they arrive. */
+    setCollection(ids: Set<number>, { showOnly = false } = {}) {
       collection = ids
       for (const [id, card] of cards) {
         card.querySelector('.card-star')?.remove()
         if (collection.has(id)) card.prepend(collectionStar())
       }
+      if (showOnly && collection.size > 0) collectionCheckbox.checked = true
       renderCollection()
+      render()
+    },
+    /** Back to every Pokémon, to fill up the team around the ones already picked. */
+    showAll() {
+      collectionCheckbox.checked = false
+      render()
     },
   }
 }

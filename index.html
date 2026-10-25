@@ -179,10 +179,18 @@
               </button>
               <p class="hint" data-role="challenge-status" hidden></p>
             </div>
-            <p class="notice" data-role="team-notice" hidden></p>
+            <div class="notice" data-role="team-notice" hidden></div>
             <p class="hint" data-role="team-hint" data-i18n="teamHint">
               Touche un Pokémon du catalogue pour l'ajouter, et un Pokémon de ton équipe pour le retirer.
             </p>
+            <a
+              class="link pokedate-import"
+              data-role="collection-import"
+              href="https://pokedate.fr/pokedex?from=pokebrawl"
+              data-i18n-href="pokedatePokedex"
+              data-i18n="pokedateImport"
+              >★ Tu joues à PokéDate&nbsp;? Récupère tes Pokémon attrapés</a
+            >
           </section>
           <details class="panel achievements" data-role="achievements">
             <summary>
@@ -202,17 +210,6 @@
                 >)</span
               >
             </label>
-            <a
-              class="link"
-              data-role="collection-import"
-              href="https://pokedate.fr/pokedex"
-              data-i18n-href="pokedatePokedex"
-              target="_blank"
-              rel="noopener"
-              data-i18n="pokedateImport"
-            >
-              ★ Jouer avec mes Pokémon PokéDate
-            </a>
           </div>
           <div class="filters">
             <input
