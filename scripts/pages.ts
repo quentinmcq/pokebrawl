@@ -4,6 +4,9 @@ import sharp from 'sharp'
 import matchupResults from '../src/data/matchups.json'
 import { HOME_PATHS, LOCALES, MATCHUPS_PATHS, NUMBER_LOCALES, type Locale } from '../src/locale'
 import { MATCHUPS, matchupPath, matchupTitle, shortTitle, type Matchup } from '../src/matchups'
+import { typeHex, typeTextColor } from '../src/ui/catalogue'
+import { TYPE_NAMES } from '../src/simulation/teams'
+import type { TypeKey } from '../src/simulation/types'
 import { pokedex } from '../src/pokedex'
 import { SITE_URL } from '../src/site'
 import type { MatchupResult } from './matchups'
@@ -80,13 +83,22 @@ const TEXTS = {
     otherLanguage: 'English',
     footer:
       'PokéBrawl, projet de fan non officiel et sans but commercial. Pokémon © Nintendo / Game Freak / The Pokémon Company. Données : PokeAPI.',
-    indexTitle: 'Qui gagne ? Générations et types de Pokémon face à face · PokéBrawl',
-    indexHeading: 'Qui gagne&nbsp;? Générations et types de Pokémon face à face',
+    indexTitle: 'Qui gagne ? Générations et types de Pokémon en combat de masse · PokéBrawl',
+    indexHeading: 'Qui gagne&nbsp;?',
     indexLead: (count: number) =>
-      `${count} affiches, chacune jouée ${RUNS} fois par la simulation de PokéBrawl, à nombre égal de chaque côté.`,
+      `Et si toute la Gen&nbsp;1 affrontait toute la Gen&nbsp;3&nbsp;? PokéBrawl a simulé ${count} affiches, chacune ${RUNS} fois, avec autant de Pokémon de chaque côté. Choisis-en une pour voir qui l’emporte, les Pokémon décisifs, et regarder un combat.`,
     indexDescription:
-      'Gen 1 contre Gen 3, Feu contre Eau, légendaires contre chaque génération : les résultats de centaines de combats de masse simulés entre Pokémon.',
+      'Gen 1 contre Gen 3, Feu contre Eau, légendaires contre chaque génération : les résultats de centaines de combats de masse simulés entre Pokémon.',
+    playCall: 'Compose ton équipe et joue',
     groups: ['Générations', 'Légendaires', 'Types'],
+    groupIntros: [
+      'Chaque génération contre chaque autre, au complet.',
+      'Les Pokémon légendaires et fabuleux contre chaque génération.',
+      'Touche un type pour voir ses 17 duels.',
+    ],
+    versus: 'contre',
+    winsShort: (team: string, share: string) => `${team} gagne ${share}`,
+    typeRecord: (wins: number) => `${wins} victoire${wins > 1 ? 's' : ''} sur 17`,
   },
   en: {
     percent: (share: number) => `${Math.round(share * 100)}%`,
@@ -131,17 +143,27 @@ const TEXTS = {
     otherLanguage: 'Français',
     footer:
       'PokéBrawl, an unofficial, non-commercial fan project. Pokémon © Nintendo / Game Freak / The Pokémon Company. Data: PokeAPI.',
-    indexTitle: 'Who wins? Pokémon generations and types head to head · PokéBrawl',
-    indexHeading: 'Who wins? Pokémon generations and types head to head',
+    indexTitle: 'Who wins? Pokémon generations and types in mass battles · PokéBrawl',
+    indexHeading: 'Who wins?',
     indexLead: (count: number) =>
-      `${count} matchups, each played ${RUNS} times by PokéBrawl’s simulation, with equal numbers on each side.`,
+      `What if all of Gen&nbsp;1 fought all of Gen&nbsp;3? PokéBrawl simulated ${count} matchups, each ${RUNS} times, with as many Pokémon on each side. Pick one to see who wins, the deciding Pokémon, and watch a battle.`,
     indexDescription:
       'Gen 1 vs Gen 3, Fire vs Water, the legendaries vs every generation: the results of hundreds of simulated mass battles between Pokémon.',
+    playCall: 'Build your team and play',
     groups: ['Generations', 'Legendaries', 'Types'],
+    groupIntros: [
+      'Every generation against every other, in full.',
+      'The legendary and mythical Pokémon against each generation.',
+      'Tap a type to see its 17 battles.',
+    ],
+    versus: 'vs',
+    winsShort: (team: string, share: string) => `${team} wins ${share}`,
+    typeRecord: (wins: number) => `${wins} win${wins === 1 ? '' : 's'} of 17`,
   },
 } satisfies Record<Locale, unknown>
 
 const otherLocale = (locale: Locale): Locale => (locale === 'fr' ? 'en' : 'fr')
+const TYPE_KEYS = Object.keys(TYPE_NAMES.fr) as TypeKey[]
 
 // Each page shows a few Pokémon: each gets a small image of its own, cut out of the app's sheet, rather than the
 // whole sheet (some 700 kB) for every page.
@@ -195,8 +217,8 @@ function page(
     <header class="site-header">
       <a class="logo" href="${HOME_PATHS[locale]}">Poké<span>Brawl</span></a>
       <nav class="header-links">
-        <a href="${paths[otherLocale(locale)]}" hreflang="${otherLocale(locale)}" lang="${otherLocale(locale)}">${text.otherLanguage}</a>
-        <a class="header-link" href="${HOME_PATHS[locale]}">${text.play}</a>
+        <a class="pill" href="${paths[otherLocale(locale)]}" hreflang="${otherLocale(locale)}" lang="${otherLocale(locale)}" aria-label="${text.otherLanguage}" title="${text.otherLanguage}">${otherLocale(locale).toUpperCase()}</a>
+        <a class="pill pill--play" href="${HOME_PATHS[locale]}">${text.play}</a>
       </nav>
     </header>
     <main>
@@ -261,10 +283,8 @@ ${result.top
       <h2>${text.howHeading}</h2>
       <p>${text.how} ${outlook}</p>
       <h2>${text.others}</h2>
-      <ul class="links">
-${related.map((other) => `        <li><a href="${matchupPath(other, locale)}">${escape(matchupTitle(other, locale))}</a></li>`).join('\n')}
-        <li><a href="${MATCHUPS_PATHS[locale]}">${text.all}</a></li>
-      </ul>`
+${cardsOf(related, locale)}
+      <p><a href="${MATCHUPS_PATHS[locale]}">${text.all} →</a></p>`
   return page(locale, {
     title: text.pageTitle(title),
     description: text.description(capitalised(team), verb(text.prevails), text.percent(share), result.size),
@@ -273,29 +293,53 @@ ${related.map((other) => `        <li><a href="${matchupPath(other, locale)}">${
   })
 }
 
+function matchupCard(matchup: Matchup, locale: Locale) {
+  const text = TEXTS[locale]
+  const result = results.get(matchup.slug)!
+  const { winner, first, second, share } = outcomeOf(result)
+  const [blue, red] = matchup.teams.map((team) => escape(shortTitle(team, locale)))
+  return `        <a class="matchup-card" href="${matchupPath(matchup, locale)}">
+          <span class="matchup-teams"><span class="blue">${blue}</span> <span class="versus">${text.versus}</span> <span class="red">${red}</span></span>
+          <span class="scoreboard-bar"><span class="blue" style="width:${(100 * first) / result.runs}%"></span><span class="red" style="width:${(100 * second) / result.runs}%"></span></span>
+          <span class="matchup-result">${escape(text.winsShort(shortTitle(matchup.teams[winner], locale), text.percent(share)))}</span>
+        </a>`
+}
+
+const cardsOf = (matchups: Matchup[], locale: Locale) =>
+  `      <div class="matchup-cards">\n${matchups.map((matchup) => matchupCard(matchup, locale)).join('\n')}\n      </div>`
+
+// Each type folds its 17 battles away, so that the page does not run to 153 cards.
+function typeGroups(locale: Locale) {
+  const text = TEXTS[locale]
+  return TYPE_KEYS.map((type) => {
+    const selector = `type:${type}`
+    const matchups = MATCHUPS.filter(({ teams }) => teams.includes(selector))
+    const wins = matchups.filter((matchup) => matchup.teams[outcomeOf(results.get(matchup.slug)!).winner] === selector)
+    const chip = `<span class="type-chip" style="background:${typeHex(type)};color:${typeTextColor(type)}">${escape(shortTitle(selector, locale))}</span>`
+    return `      <details class="type-group">
+        <summary>${chip} <span>${text.typeRecord(wins.length)}</span></summary>
+${cardsOf(matchups, locale)}
+      </details>`
+  }).join('\n')
+}
+
 function indexPage(locale: Locale) {
   const text = TEXTS[locale]
-  const groups: ((matchup: Matchup) => boolean)[] = [
-    ({ teams }) => teams.every(isGeneration),
-    ({ teams }) => teams.includes('legendaries'),
-    ({ teams }) => teams.every((team) => team.startsWith('type:')),
-  ]
+  const generations = MATCHUPS.filter(({ teams }) => teams.every(isGeneration))
+  const legendaries = MATCHUPS.filter(({ teams }) => teams.includes('legendaries'))
   const body = `      <nav class="breadcrumb" aria-label="${text.breadcrumb}"><a href="${HOME_PATHS[locale]}">${text.home}</a> › ${text.battles}</nav>
       <h1>${text.indexHeading}</h1>
       <p class="lead">${text.indexLead(MATCHUPS.length)}</p>
-${groups
-  .map(
-    (belongs, index) => `      <h2>${text.groups[index]}</h2>
-      <ul class="index">
-${MATCHUPS.filter(belongs)
-  .map((matchup) => {
-    const { winner, share } = outcomeOf(results.get(matchup.slug)!)
-    return `        <li><a href="${matchupPath(matchup, locale)}">${escape(matchupTitle(matchup, locale))}</a> <span>→ ${escape(shortTitle(matchup.teams[winner], locale))} ${text.percent(share)}</span></li>`
-  })
-  .join('\n')}
-      </ul>`,
-  )
-  .join('\n')}`
+      <div class="actions"><a class="button primary" href="${HOME_PATHS[locale]}">${text.playCall}</a></div>
+      <h2>${text.groups[0]}</h2>
+      <p class="group-intro">${text.groupIntros[0]}</p>
+${cardsOf(generations, locale)}
+      <h2>${text.groups[1]}</h2>
+      <p class="group-intro">${text.groupIntros[1]}</p>
+${cardsOf(legendaries, locale)}
+      <h2>${text.groups[2]}</h2>
+      <p class="group-intro">${text.groupIntros[2]}</p>
+${typeGroups(locale)}`
   return page(locale, { title: text.indexTitle, description: text.indexDescription, paths: MATCHUPS_PATHS, body })
 }
 
@@ -306,11 +350,11 @@ body{margin:0;background:var(--background);color:var(--text);font-family:system-
 a{color:var(--accent)}
 main{max-width:760px;margin:0 auto;padding:0 20px 48px}
 .site-header{display:flex;align-items:center;justify-content:space-between;max-width:760px;margin:0 auto;padding:20px}
-.header-links{display:flex;gap:16px;align-items:center}
-.header-links a{color:var(--muted)}
+.header-links{display:flex;gap:10px;align-items:center}
+.pill{display:inline-flex;align-items:center;height:40px;padding:0 16px;border:1px solid rgb(255 255 255 / .14);border-radius:999px;background:rgb(255 255 255 / .07);backdrop-filter:blur(12px);color:var(--text);font-weight:800;font-size:14px;text-decoration:none}
+.pill--play{background:var(--accent);border-color:var(--accent);color:#14162b}
 .logo{color:var(--text);font-size:28px;font-weight:900;letter-spacing:-.03em;text-decoration:none}
 .logo span{color:var(--accent)}
-.header-links .header-link{color:var(--accent);font-weight:700}
 .breadcrumb{color:var(--muted);font-size:14px}
 .breadcrumb a{color:var(--muted)}
 h1{font-size:clamp(28px,6vw,40px);line-height:1.15;margin:12px 0}
@@ -334,9 +378,22 @@ h2{margin-top:40px}
 .top-name{font-weight:800}
 .top-detail{color:var(--muted);font-size:14px}
 .sprite{image-rendering:pixelated;justify-self:center}
-.links,.index{padding-left:20px}
-.index li{margin:4px 0}
-.index span{color:var(--muted);font-size:14px}
+.links{padding-left:20px}
+.group-intro{margin:-8px 0 16px;color:var(--muted)}
+.matchup-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.matchup-card{display:grid;gap:8px;padding:14px;border-radius:14px;background:var(--surface);color:var(--text);text-decoration:none;border:1px solid transparent}
+.matchup-card:hover{border-color:#343858}
+.matchup-teams{font-weight:800}
+.versus{color:var(--muted);font-weight:600;font-size:14px}
+.matchup-card .scoreboard-bar{height:8px}
+.matchup-result{color:var(--muted);font-size:14px}
+.type-group{margin:8px 0;border-radius:14px;background:#161827}
+.type-group summary{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;list-style:none;color:var(--muted);font-size:14px}
+.type-group summary::-webkit-details-marker{display:none}
+.type-group summary::after{content:'▾';margin-left:auto}
+.type-group[open] summary::after{content:'▴'}
+.type-group .matchup-cards{padding:0 14px 14px}
+.type-chip{padding:3px 12px;border-radius:999px;font-weight:800;font-size:15px}
 .site-footer{max-width:760px;margin:0 auto;padding:24px 20px;color:var(--muted);font-size:13px;border-top:1px solid #2a2d47}
 `
 
