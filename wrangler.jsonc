@@ -10,7 +10,18 @@
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "404-page",
-    "run_worker_first": ["/api/*", "/", "/en", "/en/"],
+    // Pages go through the Worker (link previews, the move to pokebrawl.fr); the heavy files never do, which keeps
+    // within the free plan's requests.
+    "run_worker_first": [
+      "/*",
+      "!/assets/*",
+      "!/cries/*",
+      "!/sprites.*",
+      "!/icons/*",
+      "!/combats/sprites/*",
+      "!/combats/style.css",
+      "!/combats/count.js",
+    ],
   },
   "d1_databases": [
     {
@@ -25,6 +36,11 @@
     { "name": "EVENT_RATE_LIMITER", "namespace_id": "2002", "simple": { "limit": 60, "period": 60 } },
   ],
   "observability": { "enabled": true, "logs": { "enabled": true, "invocation_logs": false } },
+  // Cloudflare creates the DNS records and the certificate of these domains itself.
+  "routes": [
+    { "pattern": "pokebrawl.fr", "custom_domain": true },
+    { "pattern": "www.pokebrawl.fr", "custom_domain": true },
+  ],
   "workers_dev": true,
   "preview_urls": false,
 }

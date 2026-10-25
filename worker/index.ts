@@ -13,6 +13,7 @@ import { MESSAGES, TRANSLATED_ATTRIBUTES, type PageKey, type ServerError } from 
 import { checkNickname } from '../src/nickname'
 import { pokedex } from '../src/pokedex'
 import { selectorOfFighters, selectTeam } from '../src/simulation/teams'
+import { canonicalRedirect } from '../src/site'
 import { isTrackedEvent } from '../src/tracking'
 
 // The few Cloudflare types this Worker uses, rather than the whole workers-types package.
@@ -227,6 +228,8 @@ function homePage(response: Response, url: URL, locale: Locale) {
 export default {
   async fetch(request: Request, env: Env) {
     const url = new URL(request.url)
+    const redirect = canonicalRedirect(url)
+    if (redirect) return Response.redirect(redirect, 301)
     if (url.pathname === '/en') return Response.redirect(`${url.origin}/en/${url.search}`, 301)
     if (Object.values(HOME_PATHS).includes(url.pathname)) {
       const page = await env.ASSETS.fetch(new Request(new URL('/', url), request))

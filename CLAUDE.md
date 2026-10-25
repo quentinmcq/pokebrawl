@@ -1,6 +1,6 @@
 # PokéBrawl
 
-Jeu de combats de masse entre Pokémon, en ligne sur https://pokebrawl.quentin-macq.workers.dev. Le but est de faire
+Jeu de combats de masse entre Pokémon, en ligne sur https://pokebrawl.fr. Le but est de faire
 venir des joueurs sur le site et de les faire jouer (pas de produire des vidéos pour les réseaux sociaux) : on
 compose une équipe avec un budget de 1 000 points pour battre une horde, et on peut aussi regarder des combats de
 générations ou de types. Projet frère de PokéDate (`../pokedate`), volontairement séparé.
@@ -126,7 +126,8 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   un combat » (une graine où gagne le favori) et liens entre pages ; plus les index `/combats/` et `/en/battles/`,
   `sitemap.xml` (chaque adresse avec sa traduction), `robots.txt` et `404.html`. Les sprites des pages sont de petites
   images découpées dans la planche au build (`/combats/sprites/`), le compteur de lectures un fichier à part
-  (`/combats/count.js`, la CSP refusant les scripts en ligne). Adresse publique dans `src/site.ts`, à changer avec le domaine.
+  (`/combats/count.js`, la CSP refusant les scripts en ligne). Adresse publique dans `src/site.ts` (`pokebrawl.fr`, domaine OVH délégué à Cloudflare) ; `www` et l'ancienne
+  adresse `workers.dev` redirigent vers lui (`canonicalRedirect`), sauf l'API et `sw.js` pour les applis déjà installées.
 - `src/leaderboard.ts`, `src/nickname.ts` : types du classement, validation des équipes envoyées (points recalculés,
   budget, taille) et des pseudos (règles de PokéDate : 2 à 20 caractères, insultes refusées même déguisées).
 - `src/friend.ts` : défi entre amis. Lien `?defi=ids:66*12&de=Sacha&seed=42` : l'équipe à battre, qui l'envoie et la
@@ -220,6 +221,6 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
    Pages « Gen 1 contre Gen 3 : qui gagne ? » pour le référencement (fait).
    Cris des Pokémon (fait). Mesure d'audience, contrôle de nuit du classement, succès (fait).
    Version anglaise sur `/en/`, application et pages « who wins? » (fait).
-6. Ensuite : domaine pokebrawl.fr (puis `src/site.ts` et `pokebrawlUrl` dans PokéDate) ; plus tard pronostic, Méga-Évolutions, statuts et talents.
+6. Domaine pokebrawl.fr (fait). Ensuite : plus tard pronostic, Méga-Évolutions, statuts et talents.
 
 Les sprites et le Pokédex de PokéDate (`../pokedate/scripts/fetch-sprites.ts`) peuvent servir de modèle.
