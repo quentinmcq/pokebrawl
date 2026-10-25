@@ -20,7 +20,7 @@ import { TEXT, translatePage } from './ui/i18n'
 import { createSound } from './ui/sound'
 import { track, trackVisit } from './ui/track'
 import { createSpriteFactory } from './ui/sprites'
-import { readStored, writeStored } from './ui/storage'
+import { readStored, STORAGE_KEYS, writeStored } from './ui/storage'
 import { canRecord, recordCanvas, videoBaseName, type Video } from './ui/recorder'
 import { createVideoPanel } from './ui/videoPanel'
 
@@ -182,6 +182,7 @@ async function start() {
   }
 
   function openComposer() {
+    install.refresh()
     leaveBattle()
     menu.close()
     composer.open(params)
@@ -215,6 +216,9 @@ async function start() {
 
   const spriteOf = createSpriteFactory(spritesheet)
   const achievements = createAchievements(element('composer').querySelector('[data-role="achievements"]')!, spriteOf)
+  const install = setUpInstall(element('install-offer'), () =>
+    Object.hasOwn(readStored<Record<string, string>>(STORAGE_KEYS.achievements, {}), 'first-win'),
+  )
   const endActionsPanel = createEndActions(endActions, achievements, {
     onEdit: openComposer,
     onRematch: () => params && startBattle(withNewSeed(params)),
@@ -316,7 +320,6 @@ async function start() {
       void stopRecording()
   })
 
-  setUpInstall(element('install'), element('ios-install'))
   // Read before the address is tidied up, since it tells where the visitor came from.
   trackVisit()
   const friendChallenge = readFriendChallenge(location.search, TEXT.aFriend)

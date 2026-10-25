@@ -404,9 +404,15 @@ input {
   text-align: left;
 }
 
-.composer-header .secondary,
-.composer-header .hint {
+.install-offer {
   grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(2 * var(--u));
+}
+
+.install-offer .hint {
   margin: 0;
   text-align: left;
 }
@@ -507,17 +513,20 @@ input {
   image-rendering: pixelated;
 }
 
+/* The horde in one row that scrolls sideways: a glimpse of what to beat, not a wall of sprites. */
 .sprite-strip {
   display: flex;
-  flex-wrap: wrap;
   align-items: flex-end;
   gap: calc(1 * var(--u));
-  max-height: calc(22 * var(--u));
-  overflow-y: auto;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #343858 transparent;
+  padding-bottom: calc(1 * var(--u));
 }
 
 .sprite-strip .sprite {
-  --size: calc(6.5 * var(--u));
+  --size: calc(6 * var(--u));
+  flex: none;
 }
 
 .budget {
@@ -541,7 +550,7 @@ input {
 .team {
   display: flex;
   flex-wrap: wrap;
-  gap: calc(1.5 * var(--u));
+  gap: calc(1 * var(--u));
 }
 
 .team:empty {
@@ -552,13 +561,17 @@ input {
   position: relative;
   display: grid;
   place-items: center;
-  width: calc(12 * var(--u));
-  height: calc(12 * var(--u));
+  width: calc(9 * var(--u));
+  height: calc(9 * var(--u));
   padding: 0;
   border: calc(0.4 * var(--u)) solid #343858;
   border-radius: calc(2.5 * var(--u));
   background: #1f2236;
   cursor: pointer;
+}
+
+.chip .sprite {
+  --size: calc(7 * var(--u));
 }
 
 .chip-count {
@@ -712,8 +725,29 @@ input {
   white-space: nowrap;
 }
 
+/* Upright, everything stacks: the achievements, the least urgent, go below the catalogue. */
+@container (orientation: portrait) {
+  .composer-side {
+    display: contents;
+  }
+
+  .achievements {
+    order: 1;
+  }
+
+  .composer-footer {
+    order: 2;
+  }
+}
+
 /* Turned sideways: the challenge and the team on the left, the catalogue on the right, each scrolling on its own. */
 @container (orientation: landscape) {
+  /* A wide screen has room for the whole horde. */
+  .sprite-strip {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
   .composer {
     grid-template-columns: 1fr 1.5fr;
     grid-template-rows: auto minmax(0, 1fr) auto;

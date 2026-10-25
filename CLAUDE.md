@@ -180,7 +180,7 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   meilleur Pokémon sur l'écran de fin. Presque tous en OGG Vorbis (Safari depuis iOS 18.4), trois en MP3 sous la
   même extension : le décodage Web Audio lit le contenu, pas le nom. Menu spectateur (`menu.ts`,
   aperçu des équipes derrière), barre de contrôle qui s'efface pendant le combat (`controls.ts`), installation
-  de la PWA (`install.ts`), enregistrement vidéo (`recorder.ts`, `videoPanel.ts`) : le bouton ● rejoue le combat
+  de la PWA (`install.ts`, proposée seulement après une première victoire, fermable pour de bon), enregistrement vidéo (`recorder.ts`, `videoPanel.ts`) : le bouton ● rejoue le combat
   depuis le début en 1080 × 1920 quel que soit l'écran, s'arrête 4,5 s après la fin, puis propose de télécharger la
   vidéo (MP4 si le navigateur sait l'encoder, sinon WebM) ou, sur téléphone, de la partager vers une autre app. Les tailles suivent le petit côté de la scène (unités `cqmin`), dans les deux formats.
 - `src/main.ts` : assemble le tout ; plein écran, écran maintenu allumé pendant un combat (Wake Lock). Un lien de

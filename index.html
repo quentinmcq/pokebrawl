@@ -90,12 +90,23 @@
               Regarder un combat →
             </button>
           </nav>
-          <button class="secondary" type="button" id="install" data-i18n="install" hidden>
-            Installer l'application
-          </button>
-          <p class="hint" id="ios-install" data-i18n="iosInstall" hidden>
-            Pour l'installer&nbsp;: Partager, puis « Sur l'écran d'accueil ».
-          </p>
+          <div class="install-offer" id="install-offer" hidden>
+            <button class="secondary" type="button" data-action="install" data-i18n="install" hidden>
+              Installer l'application
+            </button>
+            <p class="hint" data-role="ios-install" data-i18n="iosInstall" hidden>
+              Pour l'installer&nbsp;: Partager, puis « Sur l'écran d'accueil ».
+            </p>
+            <button
+              class="link"
+              type="button"
+              data-action="dismiss-install"
+              aria-label="Fermer"
+              data-i18n-aria-label="close"
+            >
+              ✕
+            </button>
+          </div>
         </header>
 
         <div class="composer-side">
@@ -216,9 +227,9 @@
             <select name="type" aria-label="Type" data-i18n-aria-label="type"></select>
             <select name="generation" aria-label="Génération" data-i18n-aria-label="generation"></select>
             <select name="sort" aria-label="Trier" data-i18n-aria-label="sort">
-              <option value="cost" data-i18n="cheapest">Moins chers</option>
-              <option value="-cost" data-i18n="dearest">Plus chers</option>
-              <option value="id" data-i18n="pokedexOrder">N° du Pokédex</option>
+              <option value="cost" data-i18n="cheapest">Prix ↑</option>
+              <option value="-cost" data-i18n="dearest">Prix ↓</option>
+              <option value="id" data-i18n="pokedexOrder">N° Pokédex</option>
             </select>
           </div>
           <div class="cards" data-role="cards"></div>

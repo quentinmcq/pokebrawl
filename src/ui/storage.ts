@@ -8,6 +8,7 @@ export const STORAGE_KEYS = {
   collection: 'pokebrawl.collection',
   achievements: 'pokebrawl.achievements',
   achievementStats: 'pokebrawl.achievement-stats',
+  installDismissed: 'pokebrawl.install-dismissed',
 }
 
 // Per-browser conveniences only (the last team, beaten hordes): storage can be missing or full, and the app still works.
