@@ -92,8 +92,8 @@ const TEXTS = {
     playCall: 'Compose ton équipe et joue',
     groups: ['Générations', 'Légendaires', 'Types'],
     groupIntros: [
-      'Chaque génération contre chaque autre, au complet.',
-      'Les Pokémon légendaires et fabuleux contre chaque génération.',
+      'Chaque case donne la part de combats que la génération de la ligne gagne contre celle de la colonne. Touche une case pour le détail.',
+      'La part de combats que les légendaires et fabuleux gagnent contre chaque génération.',
       'Touche un type pour voir ses 17 duels.',
     ],
     versus: 'contre',
@@ -152,8 +152,8 @@ const TEXTS = {
     playCall: 'Build your team and play',
     groups: ['Generations', 'Legendaries', 'Types'],
     groupIntros: [
-      'Every generation against every other, in full.',
-      'The legendary and mythical Pokémon against each generation.',
+      'Each cell is the share of battles the row’s generation wins against the column’s. Tap a cell for the details.',
+      'The share of battles the legendary and mythical Pokémon win against each generation.',
       'Tap a type to see its 17 battles.',
     ],
     versus: 'vs',
@@ -305,6 +305,40 @@ function matchupCard(matchup: Matchup, locale: Locale) {
         </a>`
 }
 
+const GENERATIONS = Array.from({ length: 9 }, (_, index) => `gen${index + 1}`)
+const matchupOfTeams = (first: string, second: string) =>
+  MATCHUPS.find(({ teams }) => teams.includes(first) && teams.includes(second))!
+
+/** One cell: how often `side` beats `opponent`, in blue when it mostly wins, red when it mostly loses. */
+function shareCell(side: string, opponent: string, locale: Locale) {
+  const text = TEXTS[locale]
+  const matchup = matchupOfTeams(side, opponent)
+  const result = results.get(matchup.slug)!
+  const share = result.wins[matchup.teams.indexOf(side)]! / result.runs
+  const strength = Math.abs(share - 0.5) * 2
+  const color =
+    share >= 0.5 ? `rgb(61 155 255 / ${0.15 + 0.7 * strength})` : `rgb(255 77 94 / ${0.15 + 0.7 * strength})`
+  const label = `${shortTitle(side, locale)} ${text.versus} ${shortTitle(opponent, locale)} : ${text.percent(share)}`
+  return `<td><a href="${matchupPath(matchup, locale)}" style="background:${color}" aria-label="${escape(label)}" title="${escape(label)}">${Math.round(share * 100)}</a></td>`
+}
+
+const generationLabel = (selector: string) => `G${selector.slice(3)}`
+
+function generationTable(locale: Locale) {
+  const head = `<tr><th></th>${GENERATIONS.map((column) => `<th scope="col">${generationLabel(column)}</th>`).join('')}</tr>`
+  const rows = GENERATIONS.map(
+    (row) =>
+      `<tr><th scope="row">${generationLabel(row)}</th>${GENERATIONS.map((column) => (row === column ? '<td class="self">—</td>' : shareCell(row, column, locale))).join('')}</tr>`,
+  )
+  return `      <div class="table-wrap"><table class="share-table">${head}${rows.join('')}</table></div>`
+}
+
+function legendariesTable(locale: Locale) {
+  const head = `<tr>${GENERATIONS.map((column) => `<th scope="col">${generationLabel(column)}</th>`).join('')}</tr>`
+  const row = `<tr>${GENERATIONS.map((column) => shareCell('legendaries', column, locale)).join('')}</tr>`
+  return `      <div class="table-wrap"><table class="share-table">${head}${row}</table></div>`
+}
+
 const cardsOf = (matchups: Matchup[], locale: Locale) =>
   `      <div class="matchup-cards">\n${matchups.map((matchup) => matchupCard(matchup, locale)).join('\n')}\n      </div>`
 
@@ -325,18 +359,16 @@ ${cardsOf(matchups, locale)}
 
 function indexPage(locale: Locale) {
   const text = TEXTS[locale]
-  const generations = MATCHUPS.filter(({ teams }) => teams.every(isGeneration))
-  const legendaries = MATCHUPS.filter(({ teams }) => teams.includes('legendaries'))
   const body = `      <nav class="breadcrumb" aria-label="${text.breadcrumb}"><a href="${HOME_PATHS[locale]}">${text.home}</a> › ${text.battles}</nav>
       <h1>${text.indexHeading}</h1>
       <p class="lead">${text.indexLead(MATCHUPS.length)}</p>
       <div class="actions"><a class="button primary" href="${HOME_PATHS[locale]}">${text.playCall}</a></div>
       <h2>${text.groups[0]}</h2>
       <p class="group-intro">${text.groupIntros[0]}</p>
-${cardsOf(generations, locale)}
+${generationTable(locale)}
       <h2>${text.groups[1]}</h2>
       <p class="group-intro">${text.groupIntros[1]}</p>
-${cardsOf(legendaries, locale)}
+${legendariesTable(locale)}
       <h2>${text.groups[2]}</h2>
       <p class="group-intro">${text.groupIntros[2]}</p>
 ${typeGroups(locale)}`
@@ -393,6 +425,13 @@ h2{margin-top:40px}
 .type-group summary::after{content:'▾';margin-left:auto}
 .type-group[open] summary::after{content:'▴'}
 .type-group .matchup-cards{padding:0 14px 14px}
+.table-wrap{overflow-x:auto}
+.share-table{width:100%;max-width:560px;table-layout:fixed;border-collapse:separate;border-spacing:3px;font-variant-numeric:tabular-nums}
+.share-table th{color:var(--muted);font-size:13px;font-weight:700;padding:4px 0}
+.share-table td{padding:0;text-align:center}
+.share-table td a{display:block;padding:8px 0;border-radius:6px;color:var(--text);font-size:14px;font-weight:800;text-decoration:none}
+.share-table td a:hover{outline:2px solid var(--accent)}
+.share-table .self{color:#343858}
 .type-chip{padding:3px 12px;border-radius:999px;font-weight:800;font-size:15px}
 .site-footer{max-width:760px;margin:0 auto;padding:24px 20px;color:var(--muted);font-size:13px;border-top:1px solid #2a2d47}
 `
