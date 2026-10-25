@@ -214,12 +214,23 @@
               <h2 id="opponent-title" data-role="opponent-name"></h2>
               <p class="summary" data-role="horde-summary"></p>
             </div>
-            <div class="row" data-role="training">
-              <select name="horde" aria-label="Horde à battre" data-i18n-aria-label="hordeToBeat"></select>
-              <div class="segmented" role="group" aria-label="Difficulté" data-i18n-aria-label="difficulty">
-                <button type="button" data-level="800" data-i18n="easy">Facile</button>
-                <button type="button" data-level="1000" data-i18n="normal">Normal</button>
-                <button type="button" data-level="1250" data-i18n="hard">Difficile</button>
+            <div class="training-fields" data-role="training">
+              <label class="field-line">
+                <span data-i18n="horde">Horde</span>
+                <select name="horde" aria-label="Horde à battre" data-i18n-aria-label="hordeToBeat"></select>
+              </label>
+              <div class="field-line">
+                <span data-i18n="difficulty">Difficulté</span>
+                <div
+                  class="segmented segmented--wide"
+                  role="group"
+                  aria-label="Difficulté"
+                  data-i18n-aria-label="difficulty"
+                >
+                  <button type="button" data-level="800" data-i18n="easy">Facile</button>
+                  <button type="button" data-level="1000" data-i18n="normal">Normal</button>
+                  <button type="button" data-level="1250" data-i18n="hard">Difficile</button>
+                </div>
               </div>
             </div>
             <div class="advice" data-role="advice"></div>

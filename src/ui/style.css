@@ -527,7 +527,23 @@ input {
 }
 
 .segmented button[aria-pressed='true'] {
-  background: var(--red);
+  background: var(--accent);
+  color: #14162b;
+}
+
+/* Training: the horde and its difficulty, each on a labelled line. */
+.training-fields {
+  display: grid;
+  gap: calc(2 * var(--u));
+}
+
+.field-line {
+  display: grid;
+  grid-template-columns: calc(22 * var(--u)) 1fr;
+  align-items: center;
+  gap: calc(2 * var(--u));
+  color: var(--muted);
+  font-weight: 700;
 }
 
 .summary {
@@ -642,7 +658,7 @@ input {
 }
 
 .card:disabled {
-  opacity: 0.35;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
