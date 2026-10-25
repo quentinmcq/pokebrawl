@@ -177,12 +177,16 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   /** The opponent of the team being built, in the builder's first step. */
   function renderChallenge() {
     query('[data-role="training"]').hidden = challenge.mode !== 'training'
-    query('[data-role="opponent-name"]').textContent =
+    // The label says which mode, the title who the opponent is.
+    const levelName = { 800: TEXT.page.easy, 1000: TEXT.page.normal, 1250: TEXT.page.hard }[challenge.level]
+    const [mode, name] =
       challenge.mode === 'training'
-        ? TEXT.page.training
+        ? [TEXT.page.training, `${teamTitle(hordeSelector(challenge.horde, challenge.level), LOCALE)} · ${levelName}`]
         : challenge.mode === 'friend' && friendChallenge
-          ? TEXT.friendTeam(friendChallenge.name)
-          : `${TEXT.page.daily} · ${teamTitle(dailyChallenge(today()).horde, LOCALE)}`
+          ? [TEXT.page.friendMode, TEXT.friendTeam(friendChallenge.name)]
+          : [TEXT.page.daily, teamTitle(dailyChallenge(today()).horde, LOCALE)]
+    query('[data-role="opponent-mode"]').textContent = mode
+    query('[data-role="opponent-name"]').textContent = name
     hordeSelect.replaceChildren(
       ...TEAM_SELECTORS.map((selector) => {
         const beaten = wins.has(hordeSelector(selector, challenge.level))
