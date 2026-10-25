@@ -1,5 +1,6 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import sharp from 'sharp'
 import matchupResults from '../src/data/matchups.json'
 import { HOME_PATHS, LOCALES, MATCHUPS_PATHS, NUMBER_LOCALES, type Locale } from '../src/locale'
 import { MATCHUPS, matchupPath, matchupTitle, shortTitle, type Matchup } from '../src/matchups'
@@ -14,7 +15,8 @@ import type { MatchupResult } from './matchups'
  * their results, plus each language's index, the sitemap and robots.txt.
  */
 const DIST = join(import.meta.dirname, '..', 'dist')
-const SHEET = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'public', 'sprites.json'), 'utf8')) as {
+const PUBLIC = join(import.meta.dirname, '..', 'public')
+const SHEET = JSON.parse(readFileSync(join(PUBLIC, 'sprites.json'), 'utf8')) as {
   frames: Record<string, { frame: { x: number; y: number; w: number; h: number } }>
   meta: { size: { w: number; h: number } }
 }
@@ -22,11 +24,12 @@ const results = new Map((matchupResults as MatchupResult[]).map((result) => [res
 const RUNS = (matchupResults as MatchupResult[])[0]?.runs ?? 0
 const RELATED_LINKS = 12
 const ONE_SIDED_SHARE = 0.95
-// Counts the page read on the real site only, as the app does, and never for crawlers.
-const COUNT_PAGE_VIEW = `<script>
-      if (location.host === '${new URL(SITE_URL).host}' && !/bot|crawl|spider|slurp|lighthouse|headlesschrome|pagespeed/i.test(navigator.userAgent))
-        navigator.sendBeacon('/api/events', new Blob(['{"name":"matchup-page"}'], { type: 'application/json' }))
-    </script>`
+const SPRITE_SIZE = 48
+// Counts the page read on the real site only, as the app does, and never for crawlers. A file of its own rather than
+// an inline script, which the Content-Security-Policy refuses.
+const COUNT_PAGE_VIEW = `if (location.host === '${new URL(SITE_URL).host}' && !/bot|crawl|spider|slurp|lighthouse|headlesschrome|pagespeed/i.test(navigator.userAgent))
+  navigator.sendBeacon('/api/events', new Blob(['{"name":"matchup-page"}'], { type: 'application/json' }))
+`
 
 const escape = (text: string) => text.replaceAll(/[&<>"']/g, (character) => `&#${character.charCodeAt(0)};`)
 const capitalised = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
@@ -140,11 +143,14 @@ const TEXTS = {
 
 const otherLocale = (locale: Locale): Locale => (locale === 'fr' ? 'en' : 'fr')
 
+// Each page shows a few Pokémon: each gets a small image of its own, cut out of the app's sheet, rather than the
+// whole sheet (some 700 kB) for every page.
+const shownSprites = new Set<number>()
 function sprite(id: number) {
-  const { x, y, w, h } = SHEET.frames[String(id)]!.frame
-  const { w: sheetWidth, h: sheetHeight } = SHEET.meta.size
-  const style = `--x:${x};--y:${y};--w:${w};--h:${h};--extent:${Math.max(w, h)};--sheet-w:${sheetWidth};--sheet-h:${sheetHeight}`
-  return `<span class="sprite" style="${style}" aria-hidden="true"></span>`
+  const { w, h } = SHEET.frames[String(id)]!.frame
+  const scale = SPRITE_SIZE / Math.max(w, h)
+  shownSprites.add(id)
+  return `<img class="sprite" src="/combats/sprites/${id}.webp" width="${Math.round(w * scale)}" height="${Math.round(h * scale)}" alt="" loading="lazy" />`
 }
 
 function outcomeOf(result: MatchupResult) {
@@ -195,7 +201,7 @@ function page(
     <main>
 ${body}
     </main>
-    ${COUNT_PAGE_VIEW}
+    <script src="/combats/count.js" defer></script>
     <footer class="site-footer">
       <p>${text.footer}</p>
     </footer>
@@ -325,7 +331,7 @@ h2{margin-top:40px}
 .top .sprite{grid-row:span 2}
 .top-name{font-weight:800}
 .top-detail{color:var(--muted);font-size:14px}
-.sprite{--size:48px;--k:calc(var(--size) / var(--extent));display:inline-block;width:calc(var(--w) * var(--k));height:calc(var(--h) * var(--k));background:url(/sprites.webp) no-repeat;background-size:calc(var(--sheet-w) * var(--k)) calc(var(--sheet-h) * var(--k));background-position:calc(var(--x) * var(--k) * -1) calc(var(--y) * var(--k) * -1);image-rendering:pixelated;justify-self:center}
+.sprite{image-rendering:pixelated;justify-self:center}
 .links,.index{padding-left:20px}
 .index li{margin:4px 0}
 .index span{color:var(--muted);font-size:14px}
@@ -343,6 +349,51 @@ for (const locale of LOCALES) {
   write(MATCHUPS_PATHS[locale], indexPage(locale))
 }
 writeFileSync(join(DIST, 'combats', 'style.css'), STYLE)
+writeFileSync(join(DIST, 'combats', 'count.js'), COUNT_PAGE_VIEW)
+mkdirSync(join(DIST, 'combats', 'sprites'), { recursive: true })
+const sheet = readFileSync(join(PUBLIC, 'sprites.webp'))
+await Promise.all(
+  [...shownSprites].map((id) => {
+    const { x, y, w, h } = SHEET.frames[String(id)]!.frame
+    return sharp(sheet)
+      .extract({ left: x, top: y, width: w, height: h })
+      .webp({ lossless: true })
+      .toFile(join(DIST, 'combats', 'sprites', `${id}.webp`))
+  }),
+)
+
+// Any other address answers 404 with this page, in both languages, rather than the app under a wrong address.
+writeFileSync(
+  join(DIST, '404.html'),
+  `<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Page introuvable · PokéBrawl</title>
+    <link rel="icon" href="/icons/favicon.png" type="image/png" />
+    <link rel="stylesheet" href="/combats/style.css" />
+  </head>
+  <body>
+    <header class="site-header"><a class="logo" href="/">Poké<span>Brawl</span></a></header>
+    <main>
+      <h1>Page introuvable</h1>
+      <p class="lead">Cette page n’existe pas, ou plus.</p>
+      <div class="actions">
+        <a class="button primary" href="/">Jouer</a>
+        <a class="button" href="/combats/">Qui gagne&nbsp;?</a>
+      </div>
+      <h2 lang="en">Page not found</h2>
+      <div class="actions" lang="en">
+        <a class="button primary" href="/en/">Play</a>
+        <a class="button" href="/en/battles/">Who wins?</a>
+      </div>
+    </main>
+  </body>
+</html>
+`,
+)
 
 // Each address with its translations, so that search engines show each visitor the page in their language.
 const pagesWithAlternates: Paths[] = [
@@ -368,5 +419,5 @@ ${pagesWithAlternates
 )
 writeFileSync(join(DIST, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`)
 console.info(
-  `OK : ${MATCHUPS.length} pages de combat en ${LOCALES.length} langues, les index, le sitemap et robots.txt dans dist/`,
+  `OK : ${MATCHUPS.length} pages de combat en ${LOCALES.length} langues, les index, ${shownSprites.size} sprites, la page 404, le sitemap et robots.txt dans dist/`,
 )
