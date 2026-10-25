@@ -180,6 +180,7 @@ async function start() {
     controls.hide()
     showEndActions(false)
     history.replaceState(null, '', location.pathname)
+    document.title = TEXT.page.title
   }
 
   function openComposer() {

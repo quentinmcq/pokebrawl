@@ -20,6 +20,7 @@ const frenchPercent = (share: number) => `${Math.round(share * 100)}\u00a0%`
  * for an attribute. The French ones repeat the page, which is written in French.
  */
 const frenchPage = {
+  title: 'PokéBrawl · Combats de masse entre Pokémon',
   description: 'Compose ton équipe de Pokémon avec 1 000 points et bats la horde du jour, ou défie tes amis.',
   manifest: '/manifest.webmanifest',
   loading: 'Chargement de l’arène…',
@@ -103,6 +104,7 @@ const frenchPage = {
 export type PageKey = keyof typeof frenchPage
 
 const englishPage: Record<PageKey, string> = {
+  title: 'PokéBrawl · Mass Pokémon battles',
   description: 'Build your Pokémon team with 1,000 points and beat the daily horde, or challenge your friends.',
   manifest: '/manifest-en.webmanifest',
   loading: 'Loading the arena…',
