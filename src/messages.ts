@@ -234,8 +234,7 @@ const french = {
   friendStatus: (size: number, points: number) =>
     `Bats son équipe de ${size} Pokémon (${points} points) avec tes ${budget} points. Même combat pour vous deux.`,
   dailyEyebrow: (day: string) => `Défi du ${dayIn('fr')(day)}`,
-  dailyGoal:
-    'Le même adversaire pour tout le monde. Bats-le avec le moins de points possible pour monter au classement.',
+  dailyGoal: 'Un nouvel adversaire chaque jour, le même pour tous. Gagne en dépensant le moins de points possible.',
   dailyBest: (best: number) => `Ton record du jour\u00a0: ${number(best)} points. Peux-tu gagner avec moins\u00a0?`,
   hordeSummary: (size: number, points: number, beaten: boolean) =>
     `${size} Pokémon · ${number(points)} points${beaten ? ' · déjà battu ✓' : ''}`,
@@ -372,7 +371,7 @@ const english: Messages = {
   friendStatus: (size, points) =>
     `Beat their team of ${size} Pokémon (${points} points) with your ${englishBudget} points. The same battle for you both.`,
   dailyEyebrow: (day) => `${dayIn('en')(day)} challenge`,
-  dailyGoal: 'The same opponent for everyone. Beat it with as few points as you can to climb the ranking.',
+  dailyGoal: 'A new opponent every day, the same for everyone. Win spending as few points as you can.',
   dailyBest: (best) => `Your best today: ${englishNumber(best)} points. Can you win with fewer?`,
   hordeSummary: (size, points, beaten) =>
     `${size} Pokémon · ${englishNumber(points)} points${beaten ? ' · already beaten ✓' : ''}`,
