@@ -13,7 +13,7 @@ const PANEL_HEIGHT = 1230
 const FIT_SHARE = 0.94
 // After a challenge, the next steps (report, result, buttons) take the bottom of an upright screen or the right half
 // of a wide one: the panel keeps to the rest of the arena rather than hide under them.
-const BESIDE_ACTIONS_SHARE = { portrait: 0.53, landscape: 0.5 }
+const BESIDE_ACTIONS_SHARE = { portrait: 0.5, landscape: 0.5 }
 const MVP_SPRITE_SIZE = 230
 const PODIUM_SIZE = 3
 const PODIUM_SPRITE_SIZE = 96

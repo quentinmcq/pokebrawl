@@ -878,9 +878,26 @@ input {
   translate: -50% 0;
   display: grid;
   justify-items: center;
-  gap: calc(2 * var(--u));
+  gap: calc(3 * var(--u));
+  box-sizing: border-box;
   width: max-content;
   max-width: 94%;
+  padding: calc(4 * var(--u));
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: calc(5 * var(--u));
+  background: rgb(26 28 44 / 0.88);
+  backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow: 0 calc(2 * var(--u)) calc(10 * var(--u)) rgb(0 0 0 / 0.5);
+}
+
+/* Upright, the next steps are a sheet on the bottom edge, as the watch menu is. */
+.stage[data-orientation='portrait'] .end-actions {
+  bottom: 0;
+  width: 100%;
+  max-width: none;
+  border-width: 1px 0 0;
+  border-radius: calc(5 * var(--u)) calc(5 * var(--u)) 0 0;
+  padding-bottom: calc(4 * var(--u) + env(safe-area-inset-bottom));
 }
 
 /* On a wide screen, the next steps sit in the right half of the arena, beside the end screen. */
@@ -903,13 +920,9 @@ input {
 
 .end-result {
   margin: 0;
-  padding: calc(2 * var(--u)) calc(4 * var(--u));
-  border-radius: 999px;
-  background: var(--surface);
-  font-size: calc(3.6 * var(--u));
+  font-size: calc(4.6 * var(--u));
   font-weight: 800;
   text-align: center;
-  white-space: nowrap;
 }
 
 .end-actions button {
@@ -1137,9 +1150,6 @@ details[open] > .fold-head .fold-chevron {
   flex-wrap: wrap;
   justify-content: center;
   gap: calc(2 * var(--u));
-  padding: calc(2 * var(--u));
-  border-radius: calc(3 * var(--u));
-  background: var(--surface);
 }
 
 .publish input {
@@ -1209,9 +1219,8 @@ button.type-chip {
   gap: calc(1 * var(--u));
   max-width: calc(86 * var(--u));
   margin: 0;
-  padding: calc(2.5 * var(--u)) calc(3 * var(--u)) calc(2.5 * var(--u)) calc(6 * var(--u));
-  border-radius: calc(3 * var(--u));
-  background: var(--surface);
+  padding: 0 0 0 calc(4 * var(--u));
+  color: var(--muted);
   font-size: calc(3.2 * var(--u));
   line-height: 1.35;
 }
