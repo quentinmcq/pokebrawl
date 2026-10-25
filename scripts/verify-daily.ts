@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import { parseArgs } from 'node:util'
 import { dailyChallenge, dayOf } from '../src/daily'
-import { isDay, scoreOfTeam } from '../src/leaderboard'
+import { isDay } from '../src/leaderboard'
 import { pokedex } from '../src/pokedex'
 import { runBattle } from '../src/simulation/battle'
 import { selectTeam } from '../src/simulation/teams'
@@ -17,8 +17,14 @@ const { values: options } = parseArgs({
     local: { type: 'boolean', default: false },
   },
 })
-const day = options.day
-if (!isDay(day)) throw new Error(`Jour invalide : ${day} (format 2026-10-25)`)
+// « yesterday » is what the nightly job checks: the last complete day, in French time.
+const yesterday = () => {
+  const date = new Date(`${dayOf(new Date())}T12:00:00Z`)
+  date.setUTCDate(date.getUTCDate() - 1)
+  return date.toISOString().slice(0, 10)
+}
+const day = options.day === 'yesterday' ? yesterday() : options.day
+if (!isDay(day)) throw new Error(`Jour invalide : ${day} (format 2026-10-25, ou yesterday)`)
 const target = options.local ? '--local' : '--remote'
 
 function query<Row>(sql: string): Row[] {
@@ -28,19 +34,31 @@ function query<Row>(sql: string): Row[] {
   return (JSON.parse(output) as { results: Row[] }[])[0]?.results ?? []
 }
 
-const { horde, seed } = dailyChallenge(day)
+const { seed } = dailyChallenge(day)
 // The day was checked against a strict pattern above, so it is safe inside the query.
-const scores = query<{ player_hash: string; name: string; points: number; team: string }>(
-  `SELECT player_hash, name, points, team FROM daily_scores WHERE day = '${day}' ORDER BY points`,
+const scores = query<{ player_hash: string; name: string; points: number; team: string; horde: string | null }>(
+  `SELECT player_hash, name, points, team, horde FROM daily_scores WHERE day = '${day}' ORDER BY points`,
 )
-const cheats = scores.filter(({ team, points }) => {
-  const score = scoreOfTeam(team)
-  if (!score || score.points !== points) return true
-  const { result } = runBattle({ teams: [selectTeam(pokedex, team), selectTeam(pokedex, horde)], seed })
-  return result.outcome !== 0
+
+/*
+ * Each score is replayed against the horde the server drew when it arrived: hordes follow the prices, which may have
+ * changed since, and so may the points of the team. Scores sent before hordes were stored cannot be checked fairly
+ * and are left alone.
+ */
+const uncheckable = scores.filter(({ horde }) => horde === null)
+const cheats = scores.filter(({ team, horde }) => {
+  if (horde === null) return false
+  try {
+    const { result } = runBattle({ teams: [selectTeam(pokedex, team), selectTeam(pokedex, horde)], seed })
+    return result.outcome !== 0
+  } catch {
+    return true
+  }
 })
 
-console.info(`${day} : ${scores.length} scores, ${cheats.length} invalides`)
+console.info(
+  `${day} : ${scores.length} scores, ${cheats.length} invalides${uncheckable.length > 0 ? `, ${uncheckable.length} non vérifiables (envoyés avant l’enregistrement des hordes)` : ''}`,
+)
 for (const { name, points, team } of cheats) console.info(`  ${name} — ${points} points — ${team}`)
 if (cheats.length > 0 && options.apply) {
   const hashes = cheats.map(({ player_hash }) => `'${player_hash.replaceAll(/[^0-9a-f]/g, '')}'`).join(',')

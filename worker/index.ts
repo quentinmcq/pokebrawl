@@ -1,4 +1,4 @@
-import { dayOf } from '../src/daily'
+import { dailyChallenge, dayOf } from '../src/daily'
 import { readFriendChallenge } from '../src/friend'
 import {
   isDay,
@@ -10,6 +10,8 @@ import {
   type ScoreSubmission,
 } from '../src/leaderboard'
 import { checkNickname } from '../src/nickname'
+import { pokedex } from '../src/pokedex'
+import { selectorOfFighters, selectTeam } from '../src/simulation/teams'
 
 // The few Cloudflare types this Worker uses, rather than the whole workers-types package.
 interface D1Result<Row> {
@@ -106,13 +108,16 @@ async function submitScore(env: Env, day: string, request: Request) {
 
   const playerHash = await hashOf(body.playerId)
   const now = Date.now()
+  const horde = selectorOfFighters(selectTeam(pokedex, dailyChallenge(day).horde).fighters)
   await env.DB.batch([
     env.DB.prepare(
-      `INSERT INTO daily_scores (day, player_hash, name, points, size, team, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO daily_scores (day, player_hash, name, points, size, team, horde, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT (day, player_hash) DO UPDATE SET
-         points = excluded.points, size = excluded.size, team = excluded.team, updated_at = excluded.updated_at
+         points = excluded.points, size = excluded.size, team = excluded.team, horde = excluded.horde,
+         updated_at = excluded.updated_at
        WHERE excluded.points < daily_scores.points`,
-    ).bind(day, playerHash, nickname.nickname, score.points, score.size, body.team, now),
+    ).bind(day, playerHash, nickname.nickname, score.points, score.size, body.team, horde, now),
     env.DB.prepare('UPDATE daily_scores SET name = ? WHERE day = ? AND player_hash = ?').bind(
       nickname.nickname,
       day,
