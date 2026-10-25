@@ -260,6 +260,7 @@ const french = {
   battleTitle: (first: string, second: string) => `${first} contre ${second} · PokéBrawl`,
   rankLine: (result: string, rank: number, total: number) => `${result} · ${frenchOrdinal(rank)} sur ${total}`,
   sendBack: 'Renvoyer le défi',
+  backHome: 'Retour à l’accueil',
   linkCopied: 'Lien copié !',
   unlocked: (titles: string[]) =>
     `${titles.length > 1 ? 'Succès débloqués' : 'Succès débloqué'} : ${titles.join(', ')}`,
@@ -392,6 +393,7 @@ const english: Messages = {
   battleTitle: (first, second) => `${first} vs ${second} · PokéBrawl`,
   rankLine: (result, rank, total) => `${result} · ${englishOrdinal(rank)} of ${total}`,
   sendBack: 'Send the challenge back',
+  backHome: 'Back to the home page',
   linkCopied: 'Link copied!',
   unlocked: (titles) => `${titles.length > 1 ? 'Achievements unlocked' : 'Achievement unlocked'}: ${titles.join(', ')}`,
   resume: 'Resume',

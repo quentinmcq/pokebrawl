@@ -118,6 +118,8 @@ export function createEndActions(
     // Only a training horde gets a new seed: the daily seed and a friend's are fixed, the same team would replay the
     // same battle.
     query('[data-action="rematch"]').hidden = mode !== 'training'
+    // After another player's battle, the way back leads home, not to « my team ».
+    query('[data-action="edit"]').textContent = mode === 'replay' ? TEXT.backHome : TEXT.page.editTeam
   }
 
   return { fill }

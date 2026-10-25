@@ -372,8 +372,9 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       else if (horde && dailyDayOf(current!.teams[1])) challenge = { ...challenge, mode: 'daily' }
       else if (horde && TEAM_SELECTORS.includes(horde.pool) && LEVELS.includes(horde.value))
         challenge = { mode: 'training', horde: horde.pool, level: horde.value }
+      // Another player's team, replayed from the ranking, never replaces the player's own.
       const fought = parseTeam(current?.teams[0])
-      if ((horde || current?.opponentName) && fought.size > 0) team = fought
+      if ((horde || current?.opponentName) && fought.size > 0 && !(current && isReplay(current))) team = fought
       challengeStatus.hidden = true
       query('[data-role="team-notice"]').hidden = true
       renderChallenge()
@@ -458,7 +459,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
         return { ...nothing, mode: 'training' }
       }
       // A past day's battle, or today's horde fought with another seed than the challenge's, counts for nothing.
-      if (day !== today() || params.seed !== dailyChallenge(day).seed) return { ...nothing, mode: 'replay' }
+      if (isReplay(params)) return { ...nothing, mode: 'replay' }
       if (!won) return { ...nothing, mode: 'daily', message: TEXT.dailyLost }
       const points = teamCost(selectTeam(pokedex, params.teams[0]).fighters)
       dailyRecord = recordDailyWin(dailyRecord, day, points)
@@ -476,6 +477,15 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       }
     },
   }
+}
+
+/**
+ * A daily horde from another day, or today's fought with another seed than the challenge's: a battle replayed from
+ * the ranking, which counts for nothing.
+ */
+export function isReplay({ teams, seed }: BattleParams) {
+  const day = dailyDayOf(teams[1])
+  return day !== null && (day !== dayOf(new Date()) || seed !== dailyChallenge(day).seed)
 }
 
 /** A battle the composer set up: against a horde, or against a friend's team. */
