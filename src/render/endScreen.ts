@@ -10,6 +10,9 @@ const FADE_IN_SECONDS = 0.5
 const PANEL_WIDTH = 880
 const PANEL_HEIGHT = 1230
 const FIT_SHARE = 0.94
+// After a challenge, the next steps (report, result, buttons) take the bottom of an upright screen or the right half
+// of a wide one: the panel keeps to the rest of the arena rather than hide under them.
+const BESIDE_ACTIONS_SHARE = { portrait: 0.53, landscape: 0.5 }
 const MVP_SPRITE_SIZE = 230
 const PODIUM_SIZE = 3
 const PODIUM_SPRITE_SIZE = 96
@@ -68,6 +71,7 @@ export function createEndScreen(
   const ownTextures: Texture[] = []
   let mvpSprite: Sprite | null = null
   let shownForSeconds = 0
+  let besideActions = false
 
   function addText(text: string, textStyle: TextStyleOptions, x: number, y: number, maxWidth = PANEL_WIDTH - 60) {
     const label = new Text({ text, style: textStyle })
@@ -163,11 +167,16 @@ export function createEndScreen(
       view.visible = true
     }
     const progress = Math.min(1, (shownForSeconds - DELAY_SECONDS) / FADE_IN_SECONDS)
-    const fit = Math.min((arena.width * FIT_SHARE) / PANEL_WIDTH, (arena.height * FIT_SHARE) / PANEL_HEIGHT)
+    const share = besideActions ? BESIDE_ACTIONS_SHARE[layout.orientation] : 1
+    const room = {
+      width: layout.orientation === 'landscape' ? arena.width * share : arena.width,
+      height: layout.orientation === 'portrait' ? arena.height * share : arena.height,
+    }
+    const fit = Math.min((room.width * FIT_SHARE) / PANEL_WIDTH, (room.height * FIT_SHARE) / PANEL_HEIGHT)
     view.alpha = progress
     panel.pivot.set(PANEL_WIDTH / 2, PANEL_HEIGHT / 2)
     panel.scale.set(fit * (0.9 + 0.1 * progress))
-    panel.position.set(arena.left + arena.width / 2, arena.top + arena.height / 2)
+    panel.position.set(arena.left + room.width / 2, arena.top + room.height / 2)
     if (mvpSprite) mvpSprite.y = 515 - Math.abs(Math.sin(shownForSeconds * 3)) * BOB_PIXELS
   }
 
@@ -176,5 +185,11 @@ export function createEndScreen(
     for (const texture of ownTextures) texture.destroy(true)
   }
 
-  return { view, update, destroy }
+  return {
+    view,
+    update,
+    destroy,
+    /** Leaves room for the next steps of a challenge, shown in HTML over the arena; never in a video. */
+    setBesideActions: (value: boolean) => (besideActions = value),
+  }
 }

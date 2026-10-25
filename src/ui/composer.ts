@@ -406,6 +406,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     saveNickname(nickname.nickname)
     const { text, url } = challengeOf(nickname.nickname)
     const outcome = await shareLink(text, url)
+    if (outcome === 'cancelled') return
     if (outcome !== 'failed') track('share-challenge')
     showChallengeStatus(
       outcome === 'copied' ? TEXT.challengeCopied : outcome === 'shared' ? TEXT.challengeSent : TEXT.shareFailed,

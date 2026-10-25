@@ -40,9 +40,9 @@ const frenchPage = {
   otherLanguagePath: '/en/',
   otherLanguageCode: 'en',
   composerTagline:
-    'Bats la horde avec 1&nbsp;000&nbsp;points de Pokémon : beaucoup de petits, ou quelques géants&nbsp;?',
+    'Bats la horde avec 1&nbsp;000&nbsp;points de Pokémon : beaucoup de petits, ou quelques géants&nbsp;?',
   install: 'Installer l’application',
-  iosInstall: 'Pour l’installer : Partager, puis « Sur l’écran d’accueil ».',
+  iosInstall: 'Pour l’installer : Partager, puis « Sur l’écran d’accueil ».',
   opponent: 'Adversaire',
   mode: 'Mode',
   daily: 'Défi du jour',
@@ -207,43 +207,43 @@ const french = {
   friendTitle: (name: string) => `Défi de ${name}`,
   friendStatus: (size: number, points: number) =>
     `Bats son équipe de ${size} Pokémon (${points} points) avec tes ${budget} points. Même combat pour vous deux.`,
-  dailyTitle: (day: string, horde: string) => `Défi du ${dayIn('fr')(day)} : ${horde}`,
-  dailyGoal: 'Même combat pour tout le monde : bats-la avec le moins de points possible.',
-  dailyBest: (best: number) => `Battue avec ${best} points : fais encore mieux !`,
+  dailyTitle: (day: string, horde: string) => `Défi du ${dayIn('fr')(day)} : ${horde}`,
+  dailyGoal: 'Même combat pour tout le monde : bats-la avec le moins de points possible.',
+  dailyBest: (best: number) => `Battue avec ${best} points : fais encore mieux !`,
   hordeSummary: (size: number, points: number, beaten: boolean) =>
-    `${size} Pokémon · ${points} points${beaten ? ' · déjà battue ✓' : ''}`,
+    `${size} Pokémon · ${number(points)} points${beaten ? ' · déjà battue ✓' : ''}`,
   mostly: 'Surtout ',
   and: ' et ',
-  aimFor: ' · Vise :',
+  aimFor: ' · Vise :',
   showType: (type: string) => `Montrer les Pokémon de type ${type}`,
   budgetSummary: (used: number, size: number, full: boolean) =>
-    `${used} / ${budget} points · ${size} Pokémon${full ? ' (maximum)' : ''}`,
+    `${number(used)} / ${budget} points · ${size} Pokémon${full ? ' (maximum)' : ''}`,
   remove: (name: string) => `Retirer un ${name}`,
   challengeText: (name: string, size: number, points: number) =>
-    `${name} te défie sur PokéBrawl : bats mon équipe de ${size} Pokémon (${points} points) avec tes ${budget} points !`,
+    `${name} te défie sur PokéBrawl : bats mon équipe de ${size} Pokémon (${points} points) avec tes ${budget} points !`,
   composeFirst: 'Compose d’abord ton équipe.',
-  challengeCopied: 'Lien copié : envoie-le à un ami !',
+  challengeCopied: 'Lien copié : envoie-le à un ami !',
   challengeSent: 'Défi envoyé !',
   shareFailed: 'Partage impossible ici.',
   welcomed: (names: string[]) =>
-    `${names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} et ${names.at(-1)}`} ${names.length === 1 ? 'a' : 'ont'} rejoint ton équipe : complète-la, puis bats la horde du jour !`,
-  noCollection: 'Aucun Pokémon attrapé sur PokéDate pour l’instant : entre des dates là-bas pour en attraper.',
+    `${names.length === 1 ? names[0] : `${names.slice(0, -1).join(', ')} et ${names.at(-1)}`} ${names.length === 1 ? 'a' : 'ont'} rejoint ton équipe : complète-la, puis bats la horde du jour !`,
+  noCollection: 'Aucun Pokémon attrapé sur PokéDate pour l’instant : entre des dates là-bas pour en attraper.',
   collection: (count: number) =>
-    `${count} Pokémon attrapé${count > 1 ? 's' : ''} sur PokéDate : ils portent une ★, et le filtre du catalogue les regroupe.`,
+    `${count} Pokémon attrapé${count > 1 ? 's' : ''} sur PokéDate : ils portent une ★, et le filtre du catalogue les regroupe.`,
   aFriend: 'Un ami',
   friendTeam: (name: string) => `Équipe de ${name}`,
   friendLost: (name: string) => `L’équipe de ${name} a gagné. Change ton équipe !`,
   friendWon: (name: string) => `Tu as battu l’équipe de ${name} !`,
   challengeBackText: (name: string) =>
-    `${name} a battu ton équipe sur PokéBrawl. À ton tour : bats la sienne avec tes ${budget} points !`,
+    `${name} a battu ton équipe sur PokéBrawl. À ton tour : bats la sienne avec tes ${budget} points !`,
   dailyLost: 'Raté ! Change ton équipe et retente ta chance.',
   dailyWon: (points: number, record: number | null, streak: number) =>
-    `Défi réussi avec ${points} points !${record === null ? '' : ` · record : ${record}`} · 🔥 ${frenchPlural(streak, 'jour')}`,
+    `Défi réussi avec ${points} points !${record === null ? '' : ` · record : ${record}`} · 🔥 ${frenchPlural(streak, 'jour')}`,
   dailyShare: (day: string, horde: string, points: number, streak: number) => [
     `PokéBrawl · défi du ${dayIn('fr')(day)}`,
     `${horde} battue avec ${points} points 💪`,
-    `🔥 Série : ${frenchPlural(streak, 'jour')}`,
-    'Fais mieux que moi :',
+    `🔥 Série : ${frenchPlural(streak, 'jour')}`,
+    'Fais mieux que moi :',
   ],
   // After a battle
   battleTitle: (first: string, second: string) => `${first} contre ${second} · PokéBrawl`,
@@ -251,7 +251,7 @@ const french = {
   sendBack: 'Renvoyer le défi',
   linkCopied: 'Lien copié !',
   unlocked: (titles: string[]) =>
-    `${titles.length > 1 ? 'Succès débloqués' : 'Succès débloqué'} : ${titles.join(', ')}`,
+    `${titles.length > 1 ? 'Succès débloqués' : 'Succès débloqué'} : ${titles.join(', ')}`,
   // Controls
   resume: 'Reprendre',
   replay: 'Revoir le combat',
@@ -259,10 +259,10 @@ const french = {
   unmute: 'Remettre le son',
   terrains: { grass: 'Prairie', sand: 'Désert', snow: 'Toundra', cave: 'Grotte' },
   // Ranking
-  rankingUnreachable: 'Classement injoignable : ton score est gardé sur cet appareil.',
+  rankingUnreachable: 'Classement injoignable : ton score est gardé sur cet appareil.',
   rankingUnavailable: 'Classement indisponible pour le moment.',
   rankingSummary: (total: number, you: { rank: number; points: number } | null) =>
-    `${frenchPlural(total, 'joueur')}${you ? ` · toi : ${frenchOrdinal(you.rank)} avec ${you.points} points` : ''}`,
+    `${frenchPlural(total, 'joueur')}${you ? ` · toi : ${frenchOrdinal(you.rank)} avec ${you.points} points` : ''}`,
   rankingEmpty: 'Personne n’a encore battu cette horde.',
   rankingEntry: (points: number, size: number) => `${points} pts · ${size} Pokémon`,
   watch: 'Voir',
@@ -279,13 +279,13 @@ const french = {
   fighterStats: (knockOuts: number, damage: number) => `${knockOuts}\u00a0K.O. · ${number(damage)} dégâts`,
   // Report
   weakHits: (share: number) =>
-    `${frenchPercent(share)} de tes attaques étaient peu efficaces ou sans effet : vise les faiblesses de l’adversaire.`,
+    `${frenchPercent(share)} de tes attaques étaient peu efficaces ou sans effet : vise les faiblesses de l’adversaire.`,
   strongHitsTaken: (share: number, type: string) =>
     `${frenchPercent(share)} des coups reçus étaient super efficaces, surtout sur tes Pokémon ${type}.`,
   bestValue: (name: string, copies: number, knockOuts: number, points: number) =>
-    `Meilleur rapport : ${name}${copiesOf(copies)}, ${knockOuts}\u00a0K.O. pour ${points} points.`,
+    `Meilleur rapport : ${name}${copiesOf(copies)}, ${knockOuts}\u00a0K.O. pour ${points} points.`,
   worstValue: (name: string, copies: number, damage: number, points: number) =>
-    `Le moins rentable : ${name}${copiesOf(copies)}, ${damage} dégâts pour ${points} points.`,
+    `Le moins rentable : ${name}${copiesOf(copies)}, ${damage} dégâts pour ${points} points.`,
   // Nicknames and the server
   nicknameErrors: {
     tooShort: 'Ton pseudo est trop court.',
@@ -336,12 +336,14 @@ const english: Messages = {
   dailyTitle: (day, horde) => `${dayIn('en')(day)} challenge: ${horde}`,
   dailyGoal: 'The same battle for everyone: beat it with as few points as you can.',
   dailyBest: (best) => `Beaten with ${best} points: do even better!`,
-  hordeSummary: (size, points, beaten) => `${size} Pokémon · ${points} points${beaten ? ' · already beaten ✓' : ''}`,
+  hordeSummary: (size, points, beaten) =>
+    `${size} Pokémon · ${englishNumber(points)} points${beaten ? ' · already beaten ✓' : ''}`,
   mostly: 'Mostly ',
   and: ' and ',
   aimFor: ' · Aim for:',
   showType: (type) => `Show ${type}-type Pokémon`,
-  budgetSummary: (used, size, full) => `${used} / ${englishBudget} points · ${size} Pokémon${full ? ' (maximum)' : ''}`,
+  budgetSummary: (used, size, full) =>
+    `${englishNumber(used)} / ${englishBudget} points · ${size} Pokémon${full ? ' (maximum)' : ''}`,
   remove: (name) => `Remove a ${name}`,
   challengeText: (name, size, points) =>
     `${name} challenges you on PokéBrawl: beat my team of ${size} Pokémon (${points} points) with your ${englishBudget} points!`,

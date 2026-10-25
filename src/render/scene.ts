@@ -52,6 +52,7 @@ export function createScene(
     return { arena, effects, hud, endScreen }
   }
   let parts = drawIn(initialLayout)
+  let endScreenBesideActions = false
 
   let waitingSeconds = START_DELAY_SECONDS
 
@@ -92,6 +93,12 @@ export function createScene(
   function relayout(layout: Layout) {
     clear()
     parts = drawIn(layout)
+    parts.endScreen.setBesideActions(endScreenBesideActions)
+  }
+
+  function setEndScreenBesideActions(value: boolean) {
+    endScreenBesideActions = value
+    parts.endScreen.setBesideActions(value)
   }
 
   function destroy() {
@@ -106,6 +113,7 @@ export function createScene(
     advance,
     skipToEnd,
     relayout,
+    setEndScreenBesideActions,
     destroy,
     isOver: () => battle.outcome !== null,
   }

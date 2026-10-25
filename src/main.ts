@@ -52,6 +52,15 @@ function withNewSeed(params: BattleParams): BattleParams {
   return { ...params, seed, terrain }
 }
 
+function isPlayable(battle: BattleParams) {
+  try {
+    buildTeams(battle)
+    return true
+  } catch {
+    return false
+  }
+}
+
 async function start() {
   const spritesheet = await Assets.load<Spritesheet>(`${import.meta.env.BASE_URL}sprites.json`).catch(() => {
     throw new Error('Sprites introuvables : lance « bun run sprites » puis recharge la page.')
@@ -126,6 +135,11 @@ async function start() {
   }
 
   const endActions = element('end-actions')
+  // The end screen moves aside for the next steps of a challenge, then takes the whole arena again.
+  function showEndActions(shown: boolean) {
+    endActions.hidden = !shown
+    scene?.setEndScreenBesideActions(shown)
+  }
 
   function startBattle(next: BattleParams) {
     params = next
@@ -145,7 +159,7 @@ async function start() {
     controls.setSpeed(speed)
     menu.close()
     composer.close()
-    endActions.hidden = true
+    showEndActions(false)
     controls.show()
     setPaused(false)
   }
@@ -164,7 +178,7 @@ async function start() {
     paused = true
     void holdScreen(false)
     controls.hide()
-    endActions.hidden = true
+    showEndActions(false)
     history.replaceState(null, '', location.pathname)
   }
 
@@ -253,14 +267,14 @@ async function start() {
     // The next step replaces the playback controls, which have nothing left to control.
     if (!recording) {
       controls.hide()
-      endActions.hidden = false
+      showEndActions(true)
     }
   }
 
   async function shareResult() {
     if (!share) return
     const outcome = await shareLink(share.text, share.url)
-    if (outcome !== 'failed') track(params?.opponentName ? 'share-back' : 'share-daily')
+    if (outcome === 'shared' || outcome === 'copied') track(params?.opponentName ? 'share-back' : 'share-daily')
     if (outcome === 'copied') shareButton.textContent = TEXT.linkCopied
   }
 
@@ -334,7 +348,7 @@ async function start() {
     controls.show()
     if (scene?.isOver() && isChallenge(params)) {
       controls.hide()
-      endActions.hidden = false
+      showEndActions(true)
     }
   }
 
@@ -405,6 +419,9 @@ async function start() {
   // A link opened in a tab already showing PokéBrawl only changes the hash, without loading the page again.
   window.addEventListener('hashchange', importCollectionFromHash)
 
+  // A link edited by hand may name a team that does not exist: the home page opens rather than an error.
+  const linkedBattle = readBattleParams(location.search)
+
   // What the address asks for: a PokéDate collection, a Pokémon to enrol, a friend's challenge, a battle to watch.
   function openFromAddress() {
     if (importCollectionFromHash()) return
@@ -415,7 +432,7 @@ async function start() {
     } else if (friendChallenge) {
       leaveBattle()
       composer.openFriendChallenge(friendChallenge)
-    } else if (describesBattle(location.search)) startBattle(readBattleParams(location.search))
+    } else if (describesBattle(location.search) && isPlayable(linkedBattle)) startBattle(linkedBattle)
     else openComposer()
   }
   openFromAddress()

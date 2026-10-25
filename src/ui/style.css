@@ -642,6 +642,21 @@ input {
   display: grid;
   justify-items: center;
   gap: calc(2 * var(--u));
+  width: max-content;
+  max-width: 94%;
+}
+
+/* On a wide screen, the next steps sit in the right half of the arena, beside the end screen. */
+.stage[data-orientation='landscape'] .end-actions {
+  left: 71%;
+  top: 50%;
+  bottom: auto;
+  translate: -50% -50%;
+  max-width: 44%;
+}
+
+.end-actions > * {
+  max-width: 100%;
 }
 
 .end-buttons {
@@ -818,6 +833,7 @@ input {
 
 .publish input {
   width: calc(40 * var(--u));
+  min-width: 0;
   padding: calc(2.4 * var(--u)) calc(3 * var(--u));
   border: calc(0.4 * var(--u)) solid #343858;
   border-radius: calc(2.5 * var(--u));

@@ -57,8 +57,8 @@ const TEXTS = {
       `${team} ${verb} presque à chaque fois&nbsp;: à toi de trouver l’équipe qui renverse la tendance, en composant la tienne pour défier les hordes de PokéBrawl.`,
     open: (team: string, verb: string) =>
       `${team} ${verb} ici, mais chaque combat reste ouvert&nbsp;: regarde-en un, ou compose ta propre équipe pour défier les hordes de PokéBrawl.`,
-    pageTitle: (title: string) => `${title} : qui gagne ? · PokéBrawl`,
-    heading: (title: string) => `${title} : qui gagne&nbsp;?`,
+    pageTitle: (title: string) => `${title} : qui gagne ? · PokéBrawl`,
+    heading: (title: string) => `${title} : qui gagne&nbsp;?`,
     averageSeconds: (seconds: number) => `<strong>${seconds}&nbsp;s</strong> de combat en moyenne`,
     averageSurvivors: (survivors: number) => `<strong>${survivors}</strong> survivants en moyenne`,
     draws: (draws: number) => `<strong>${draws}</strong> match${draws > 1 ? 's' : ''} nul${draws > 1 ? 's' : ''}`,
@@ -67,7 +67,7 @@ const TEXTS = {
     topHeading: 'Les Pokémon qui font la différence',
     knockOuts: (value: string) => `${value}&nbsp;K.O. par combat`,
     howHeading: 'Comment sont simulés ces combats&nbsp;?',
-    how: 'Chaque combat met face à face autant de Pokémon de chaque camp, tirés au hasard dans le plus nombreux. Tous sont au niveau 50, avec leurs vraies statistiques, leurs types et des attaques qu’ils apprennent en montant de niveau. Ils foncent sur l’ennemi le plus proche qu’ils peuvent toucher et frappent selon la formule de dégâts des jeux : bonus de type, coups critiques et part de hasard compris.',
+    how: 'Chaque combat met face à face autant de Pokémon de chaque camp, tirés au hasard dans le plus nombreux. Tous sont au niveau 50, avec leurs vraies statistiques, leurs types et des attaques qu’ils apprennent en montant de niveau. Ils foncent sur l’ennemi le plus proche qu’ils peuvent toucher et frappent selon la formule de dégâts des jeux : bonus de type, coups critiques et part de hasard compris.',
     others: 'Autres combats',
     all: 'Tous les combats',
     breadcrumb: 'Fil d’Ariane',
@@ -76,13 +76,13 @@ const TEXTS = {
     play: 'Jouer',
     otherLanguage: 'English',
     footer:
-      'PokéBrawl, projet de fan non officiel et sans but commercial. Pokémon © Nintendo / Game Freak / The Pokémon Company. Données : PokeAPI.',
+      'PokéBrawl, projet de fan non officiel et sans but commercial. Pokémon © Nintendo / Game Freak / The Pokémon Company. Données : PokeAPI.',
     indexTitle: 'Qui gagne ? Générations et types de Pokémon face à face · PokéBrawl',
     indexHeading: 'Qui gagne&nbsp;? Générations et types de Pokémon face à face',
     indexLead: (count: number) =>
       `${count} affiches, chacune jouée ${RUNS} fois par la simulation de PokéBrawl, à nombre égal de chaque côté.`,
     indexDescription:
-      'Gen 1 contre Gen 3, Feu contre Eau, légendaires contre chaque génération : les résultats de centaines de combats de masse simulés entre Pokémon.',
+      'Gen 1 contre Gen 3, Feu contre Eau, légendaires contre chaque génération : les résultats de centaines de combats de masse simulés entre Pokémon.',
     groups: ['Générations', 'Légendaires', 'Types'],
   },
   en: {
