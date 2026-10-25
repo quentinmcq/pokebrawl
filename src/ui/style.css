@@ -563,11 +563,6 @@ input {
   flex: none;
 }
 
-.budget {
-  display: grid;
-  gap: calc(1.5 * var(--u));
-}
-
 .budget-bar {
   height: calc(2 * var(--u));
   overflow: hidden;
@@ -761,14 +756,6 @@ input {
 
 /* Upright, everything stacks: the achievements, the least urgent, go below the catalogue. */
 @container (orientation: portrait) {
-  /* The links go on one tidy line under the logo, rather than piling up beside it. */
-  .composer-header .header-links {
-    grid-column: 1 / -1;
-    justify-content: flex-start;
-    gap: calc(4 * var(--u));
-    font-size: calc(3.2 * var(--u));
-  }
-
   .composer-side {
     display: contents;
   }
@@ -1090,9 +1077,9 @@ button.type-chip {
 
 .header-links {
   display: flex;
-  flex-wrap: wrap;
   justify-content: flex-end;
-  gap: calc(2 * var(--u)) calc(4 * var(--u));
+  gap: calc(2 * var(--u));
+  margin-left: auto;
 }
 
 .achievements summary {
@@ -1182,4 +1169,90 @@ button.type-chip {
   70% {
     transform: scale(1.08);
   }
+}
+
+/* Frosted-glass pills, as on PokéDate: an icon, and its name when there is room. */
+.icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(1.5 * var(--u));
+  min-width: calc(10 * var(--u));
+  height: calc(10 * var(--u));
+  padding: 0 calc(3 * var(--u));
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.07);
+  backdrop-filter: blur(12px) saturate(1.4);
+  color: var(--text);
+  font: inherit;
+  font-size: calc(3 * var(--u));
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.icon-link:hover {
+  background: rgb(255 255 255 / 0.14);
+}
+
+.icon-link svg {
+  width: calc(4.6 * var(--u));
+  height: calc(4.6 * var(--u));
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon-link {
+  box-sizing: border-box;
+}
+
+/* Upright, the header links show as round icons only. */
+@container (orientation: portrait) {
+  .icon-link {
+    width: calc(10 * var(--u));
+    padding: 0;
+  }
+
+  .icon-link span {
+    display: none;
+  }
+}
+
+.icon-link--language {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* The three steps of a challenge, numbered: the opponent, the team, the catalogue. */
+.composer {
+  counter-reset: step;
+}
+
+.step-panel h2::before {
+  counter-increment: step;
+  content: counter(step);
+  display: inline-grid;
+  place-items: center;
+  width: calc(6 * var(--u));
+  height: calc(6 * var(--u));
+  margin-right: calc(2 * var(--u));
+  border-radius: 50%;
+  background: var(--accent);
+  color: #14162b;
+  font-size: calc(3.4 * var(--u));
+  vertical-align: 0.1em;
+}
+
+.team.is-collapsed {
+  max-height: calc(9 * var(--u) + 2px);
+  overflow: hidden;
+}
+
+.team-toggle {
+  justify-self: start;
+  font-size: calc(3 * var(--u));
 }

@@ -74,21 +74,48 @@
         <header class="composer-header">
           <h1 class="logo">Poké<span>Brawl</span></h1>
           <nav class="header-links">
+            <button
+              class="icon-link"
+              type="button"
+              data-action="spectate"
+              aria-label="Regarder un combat"
+              data-i18n-aria-label="watchShort"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <span data-i18n="watchShort">Regarder un combat</span>
+            </button>
             <a
-              class="link"
+              class="icon-link"
+              href="/combats/"
+              data-i18n-href="matchupsPath"
+              aria-label="Qui gagne ?"
+              data-i18n-aria-label="whoWins"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.7V17c0 .6-.5 1-1 1.2C7.8 18.8 7 20.2 7 22M14 14.7V17c0 .6.5 1 1 1.2 1.2.6 2 2 2 3.8M18 2H6v7a6 6 0 0 0 12 0V2z"
+                />
+              </svg>
+              <span data-i18n="whoWins">Qui gagne&nbsp;?</span>
+            </a>
+            <a
+              class="icon-link icon-link--language"
               href="/en/"
               data-i18n-href="otherLanguagePath"
               hreflang="en"
               data-i18n-hreflang="otherLanguageCode"
               lang="en"
               data-i18n-lang="otherLanguageCode"
-              data-i18n="otherLanguage"
-              >English</a
+              aria-label="English"
+              data-i18n-aria-label="otherLanguage"
+              title="English"
+              data-i18n-title="otherLanguage"
+              data-i18n="otherLanguageCode"
+              >en</a
             >
-            <a class="link" href="/combats/" data-i18n-href="matchupsPath" data-i18n="matchups">Qui gagne&nbsp;?</a>
-            <button class="link" type="button" data-action="spectate" data-i18n="watchBattle">
-              Regarder un combat →
-            </button>
           </nav>
           <div class="install-offer" id="install-offer" hidden>
             <button class="secondary" type="button" data-action="install" data-i18n="install" hidden>
@@ -110,7 +137,7 @@
         </header>
 
         <div class="composer-side">
-          <section class="panel panel--red" aria-labelledby="opponent-title">
+          <section class="panel panel--red step-panel" aria-labelledby="opponent-title">
             <div class="panel-head">
               <h2 id="opponent-title" data-i18n="opponent">Adversaire</h2>
               <p class="summary" data-role="horde-summary"></p>
@@ -156,13 +183,14 @@
             <div class="sprite-strip" data-role="horde"></div>
           </section>
 
-          <section class="panel panel--blue" aria-labelledby="team-title">
-            <h2 id="team-title" data-i18n="yourTeam">Ton équipe</h2>
-            <div class="budget">
-              <div class="budget-bar"><div class="budget-fill"></div></div>
+          <section class="panel panel--blue step-panel" aria-labelledby="team-title">
+            <div class="panel-head">
+              <h2 id="team-title" data-i18n="yourTeam">Ton équipe</h2>
               <p class="summary" data-role="budget-summary"></p>
             </div>
-            <div class="team" data-role="team"></div>
+            <div class="budget-bar"><div class="budget-fill"></div></div>
+            <div class="team is-collapsed" data-role="team"></div>
+            <button class="link team-toggle" type="button" data-action="toggle-team" hidden></button>
             <div class="challenge-friend" data-role="challenge-friend" hidden>
               <input
                 hidden
@@ -200,7 +228,7 @@
           </details>
         </div>
 
-        <section class="panel catalog" aria-labelledby="catalog-title">
+        <section class="panel catalog step-panel" aria-labelledby="catalog-title">
           <div class="panel-head">
             <h2 id="catalog-title" data-i18n="catalogue">Catalogue</h2>
             <label class="toggle collection-filter" data-role="collection-filter" hidden>

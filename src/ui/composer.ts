@@ -145,8 +145,13 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     const best = dailyRecord.bestByDay[day]
     const streak = currentStreak(dailyRecord, day)
     query('[data-role="daily-title"]').textContent = TEXT.dailyTitle(day, teamTitle(horde, LOCALE))
-    const goal = best === undefined ? TEXT.dailyGoal : TEXT.dailyBest(best)
-    query('[data-role="daily-status"]').textContent = `${goal}${streak > 0 ? ` · 🔥 ${TEXT.days(streak)}` : ''}`
+    // The rule is told until the player has played a daily challenge; then only their record and streak remain.
+    const hasPlayedDaily = Object.keys(dailyRecord.bestByDay).length > 0
+    const goal = best !== undefined ? TEXT.dailyBest(best) : hasPlayedDaily ? '' : TEXT.dailyGoal
+    const status = [goal, streak > 0 ? `🔥 ${TEXT.days(streak)}` : ''].filter(Boolean).join(' · ')
+    const statusLine = query('[data-role="daily-status"]')
+    statusLine.textContent = status
+    statusLine.hidden = status === ''
     void renderRankingOf(rankingDay === 'today' ? day : previousDay(day))
   }
 
@@ -204,11 +209,10 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
 
   // Clicking a type worth aiming at filters the catalogue on it, the quickest way to a counter.
   function renderAdvice(horde: ReturnType<typeof selectTeam>['fighters']) {
-    const { dominant, targets } = analyseHorde(horde)
+    // The horde's own types show in its sprites: only what beats it is spelled out.
+    const { targets } = analyseHorde(horde)
     const advice = query('[data-role="advice"]')
     advice.replaceChildren()
-    if (dominant.length === 0) return
-    advice.append(adviceLine(TEXT.hordeTypes, ...dominant.map((type) => typeChip(type, 'span'))))
     if (targets.length === 0) return
     const targetChips = targets.map((type) => {
       const chip = typeChip(type, 'button') as HTMLButtonElement
@@ -223,6 +227,21 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     })
     advice.append(adviceLine(TEXT.effectiveTypes, ...targetChips, hint))
   }
+
+  // A big team folds into one row, to keep the catalogue within reach; a tap shows it whole.
+  const teamElement = query('[data-role="team"]')
+  const teamToggle = query<HTMLButtonElement>('[data-action="toggle-team"]')
+  let isTeamExpanded = false
+  function renderTeamToggle() {
+    teamElement.classList.toggle('is-collapsed', !isTeamExpanded)
+    const overflows = teamElement.scrollHeight > teamElement.clientHeight + 1
+    teamToggle.hidden = !isTeamExpanded && !overflows
+    teamToggle.textContent = isTeamExpanded ? TEXT.showLessTeam : TEXT.showWholeTeam(teamSize())
+  }
+  teamToggle.addEventListener('click', () => {
+    isTeamExpanded = !isTeamExpanded
+    renderTeamToggle()
+  })
 
   function renderTeam() {
     const used = spent()
@@ -249,6 +268,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
         }),
     )
     query('[data-role="team-hint"]').hidden = size > 0
+    renderTeamToggle()
     fightButton.disabled = size === 0
     catalogue.setLimits(TEAM_BUDGET - used, size >= MAX_TEAM_SIZE)
   }
@@ -381,6 +401,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       catalogue.render()
       renderTeam()
       section.hidden = false
+      // Only a shown team can tell whether it overflows its row.
+      renderTeamToggle()
       section.scrollTop = 0
     },
     close: () => (section.hidden = true),
