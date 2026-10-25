@@ -3,6 +3,7 @@ import { Application, Assets, type Spritesheet } from 'pixi.js'
 import { COLORS, createLayout, orientationOf, type Layout } from './render/layout'
 import { battleSearch, describesBattle, randomSeed, readBattleParams, type BattleParams } from './render/params'
 import { buildTeams, createScene, type Scene } from './render/scene'
+import { summarizeBattle } from './simulation/battle'
 import { battleReport } from './report'
 import { terrainForSeed } from './render/terrain'
 import { readCollectionHash } from './collection'
@@ -24,6 +25,7 @@ const SPEED_KEYS: Record<string, number> = { Digit1: 1, Digit2: 2, Digit4: 4 }
 // Challenges get replayed often: they start faster than watched battles, and each remembers its own speed.
 const DEFAULT_SPEEDS = { challenge: 2, watch: 1 }
 const SPEED_STORAGE_KEY = 'pokebrawl.speeds'
+const END_SCREEN_DELAY_SECONDS = 0.8
 // The end screen fades in after 1.3 s; the video then holds it for a few seconds before stopping.
 const END_SCREEN_HOLD_SECONDS = 4.5
 
@@ -103,7 +105,10 @@ async function start() {
 
   function showScene(next: BattleParams) {
     scene?.destroy()
-    scene = createScene(next, spritesheet, layout, (events) => sound.play(events, speed))
+    const shown = createScene(next, spritesheet, layout, (events) =>
+      sound.play(events, speed, (fighter) => shown.battle.fighters[fighter]!.species.id),
+    )
+    scene = shown
     app.stage.addChild(scene.view)
     document.title = `${scene.teamTitles[0]} contre ${scene.teamTitles[1]} · PokéBrawl`
   }
@@ -120,6 +125,7 @@ async function start() {
     params = next
     history.replaceState(null, '', battleSearch(next))
     showScene(next)
+    void sound.loadCries(scene!.battle.fighters.map(({ species }) => species.id))
     speed = speeds[speedMode()]
     controls.setSpeed(speed)
     menu.close()
@@ -196,6 +202,8 @@ async function start() {
   function finishBattle() {
     if (!scene || !params) return
     sound.fanfare(!isChallenge(params) || scene.battle.outcome === 0)
+    // The end screen fades in 0.8 s of battle time after the last knock-out.
+    sound.champion(summarizeBattle(scene.battle).mostValuable.species.id, END_SCREEN_DELAY_SECONDS / speed)
     if (!isChallenge(params)) return
     const result = composer.finish(params, scene.battle.outcome === 0)
     share = result.shareText === null ? null : { text: result.shareText, url: result.shareUrl }

@@ -7,6 +7,10 @@ const MASTER_VOLUME = 0.22
 // A crowd battle lands up to a hundred blows a second: past this many sounds at once, plain hits stay silent.
 const MAX_SOUNDS_PER_WINDOW = 6
 const SOUND_WINDOW_SECONDS = 0.1
+// One cry at a time: a melee knocks out several Pokémon a second, and overlapping cries turn into noise.
+const CRY_GAP_SECONDS = 0.6
+const CRY_VOLUME = 0.55
+const PARALLEL_CRY_DOWNLOADS = 6
 
 // Each type gets its own pitch, so that a fire battle does not sound like a water one.
 const TYPE_PITCHES: Record<TypeKey, number> = {
@@ -33,6 +37,7 @@ const TYPE_PITCHES: Record<TypeKey, number> = {
 /**
  * The battle's sound, synthesised on the spot (no files to download): a thump for physical blows, a zap for special
  * ones, pitched by type, louder when super effective, a falling blip for each knock-out and a short tune at the end.
+ * Knock-outs play the fallen Pokémon's cry when it has loaded, and the end of a battle the cry of its best Pokémon.
  * Browsers only start sound after a tap, so the audio wakes up on the first one.
  */
 export function createSound() {
@@ -41,15 +46,59 @@ export function createSound() {
   let master: GainNode | null = null
   let windowStart = 0
   let soundsInWindow = 0
+  let lastCryAt = Number.NEGATIVE_INFINITY
+  const cries = new Map<number, AudioBuffer>()
+  const requestedCries = new Set<number>()
 
-  function wake() {
+  // Decoding works before the first tap, with the audio still suspended: cries can load ahead of the battle.
+  function ensureContext() {
     if (!context) {
       context = new AudioContext()
       master = context.createGain()
       master.gain.value = MASTER_VOLUME
       master.connect(context.destination)
     }
-    if (context.state === 'suspended') void context.resume()
+    return context
+  }
+
+  function wake() {
+    const audio = ensureContext()
+    if (audio.state === 'suspended') void audio.resume()
+  }
+
+  /** Fetches and decodes, in the background, the cries a battle may play; any that fails simply stays silent. */
+  async function loadCries(ids: number[]) {
+    if (!enabled) return
+    const audio = ensureContext()
+    const queue = [...new Set(ids)].filter((id) => !requestedCries.has(id))
+    for (const id of queue) requestedCries.add(id)
+    await Promise.all(
+      Array.from({ length: PARALLEL_CRY_DOWNLOADS }, async () => {
+        for (let id = queue.shift(); id !== undefined; id = queue.shift()) {
+          try {
+            const response = await fetch(`${import.meta.env.BASE_URL}cries/${id}.ogg`)
+            if (response.ok) cries.set(id, await audio.decodeAudioData(await response.arrayBuffer()))
+          } catch {
+            // An unsupported format (Safari before 18.4) or a network hiccup: that Pokémon stays silent.
+          }
+        }
+      }),
+    )
+  }
+
+  /** Plays a Pokémon's cry if it has loaded; `force` skips the gap kept between cries. Says whether it played. */
+  function cry(id: number, start: number, force = false) {
+    const buffer = cries.get(id)
+    if (!enabled || !context || context.state !== 'running' || !buffer) return false
+    if (!force && start - lastCryAt < CRY_GAP_SECONDS) return false
+    lastCryAt = start
+    const source = context.createBufferSource()
+    const gain = context.createGain()
+    source.buffer = buffer
+    gain.gain.value = CRY_VOLUME
+    source.connect(gain).connect(master!)
+    source.start(start)
+    return true
   }
 
   // Lets a sound through unless the moment is already crowded; notable sounds always pass.
@@ -94,13 +143,16 @@ export function createSound() {
     tone(start, pitch, pitch / 2, 0.08, volume * 0.6, 'sine')
   }
 
-  /** Sounds each event when its blow lands, `travelSeconds` later on the battle's clock, played at `speed`. */
-  function play(events: ShownEvent[], speed: number) {
+  /**
+   * Sounds each event when its blow lands, `travelSeconds` later on the battle's clock, played at `speed`;
+   * `speciesOf` tells which Pokémon a fighter is, for its cry.
+   */
+  function play(events: ShownEvent[], speed: number, speciesOf: (fighter: number) => number) {
     if (!enabled || !context || context.state !== 'running') return
     for (const { event, travelSeconds } of events) {
       const start = context.currentTime + travelSeconds / speed
       if (event.kind === 'knockOut') {
-        if (admit(true)) tone(start, 520, 90, 0.22, 0.5, 'square')
+        if (!cry(speciesOf(event.fighter), start) && admit(true)) tone(start, 520, 90, 0.22, 0.5, 'square')
         continue
       }
       if (event.kind !== 'hit') continue
@@ -121,10 +173,17 @@ export function createSound() {
     notes.forEach((note, index) => tone(context!.currentTime + index * 0.13, note, note, 0.2, 0.45, 'square'))
   }
 
+  /** The cry of the battle's best Pokémon, as the end screen shows it `delaySeconds` from now. */
+  function champion(id: number, delaySeconds: number) {
+    if (context) cry(id, context.currentTime + delaySeconds, true)
+  }
+
   return {
     wake,
+    loadCries,
     play,
     fanfare,
+    champion,
     isEnabled: () => enabled,
     setEnabled(value: boolean) {
       enabled = value
