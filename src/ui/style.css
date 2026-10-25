@@ -1043,29 +1043,6 @@ input {
   font-size: calc(3.4 * var(--u));
 }
 
-.advice {
-  display: grid;
-  gap: calc(1.2 * var(--u));
-  color: var(--muted);
-}
-
-.advice-line {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: calc(1.2 * var(--u));
-  margin: 0;
-}
-
-.advice-line button.type-chip {
-  cursor: pointer;
-}
-
-.advice-hint {
-  font-size: calc(2.8 * var(--u));
-  font-style: italic;
-}
-
 .type-chip {
   padding: calc(0.6 * var(--u)) calc(2 * var(--u));
   border: 0;
@@ -1470,4 +1447,31 @@ button.type-chip {
   .segmented-indicator {
     transition: none;
   }
+}
+
+/* The types that beat the horde, as quick filters of the catalogue: dimmed until chosen. */
+.suggested {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(1.5 * var(--u));
+  color: var(--muted);
+  font-size: calc(3 * var(--u));
+  font-weight: 700;
+}
+
+.suggested .type-chip {
+  border: 0;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.suggested .type-chip:hover,
+.suggested .type-chip[aria-pressed='true'] {
+  opacity: 1;
+}
+
+.suggested .type-chip[aria-pressed='true'] {
+  box-shadow: 0 0 0 calc(0.5 * var(--u)) var(--text);
 }

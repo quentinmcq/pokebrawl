@@ -62,6 +62,7 @@ const frenchPage = {
   loadingShort: 'Chargement…',
   horde: 'Horde',
   hordeToBeat: 'Horde à battre',
+  effectiveTypes: 'Efficaces contre la horde',
   difficulty: 'Difficulté',
   easy: 'Facile',
   normal: 'Normal',
@@ -152,6 +153,7 @@ const englishPage: Record<PageKey, string> = {
   loadingShort: 'Loading…',
   horde: 'Horde',
   hordeToBeat: 'Horde to beat',
+  effectiveTypes: 'Effective against the horde',
   difficulty: 'Difficulty',
   easy: 'Easy',
   normal: 'Normal',
@@ -232,8 +234,6 @@ const french = {
   dailyBest: (best: number) => `Ton record du jour\u00a0: ${number(best)} points. Peux-tu gagner avec moins\u00a0?`,
   hordeSummary: (size: number, points: number, beaten: boolean) =>
     `${size} Pokémon · ${number(points)} points${beaten ? ' · déjà battue ✓' : ''}`,
-  effectiveTypes: 'Efficaces contre elle :',
-  tapToFilter: 'touche pour filtrer',
   showType: (type: string) => `Montrer les Pokémon de type ${type}`,
   budgetSummary: (used: number, size: number, full: boolean) =>
     `${number(used)} / ${budget} points · ${size} Pokémon${full ? ' (maximum)' : ''}`,
@@ -370,8 +370,6 @@ const english: Messages = {
   dailyBest: (best) => `Your best today: ${englishNumber(best)} points. Can you win with fewer?`,
   hordeSummary: (size, points, beaten) =>
     `${size} Pokémon · ${englishNumber(points)} points${beaten ? ' · already beaten ✓' : ''}`,
-  effectiveTypes: 'Effective against it:',
-  tapToFilter: 'tap to filter',
   showType: (type) => `Show ${type}-type Pokémon`,
   budgetSummary: (used, size, full) =>
     `${englishNumber(used)} / ${englishBudget} points · ${size} Pokémon${full ? ' (maximum)' : ''}`,

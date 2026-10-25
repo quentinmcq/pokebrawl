@@ -20,13 +20,11 @@ import {
   selectorOfCounts,
   selectTeam,
   TEAM_SELECTORS,
-  TYPE_NAMES,
   teamTitle,
   toFighterSetup,
 } from '../simulation/teams'
-import type { TypeKey } from '../simulation/types'
 import { slideSegmented } from './segmented'
-import { createCatalogue, searchNameOf, typeHex, typeTextColor, type CatalogueEntry } from './catalogue'
+import { createCatalogue, searchNameOf, type CatalogueEntry } from './catalogue'
 import { LOCALE, nameOf, TEXT } from './i18n'
 import { fetchRanking, renderRanking, savedNickname, saveNickname } from './ranking'
 import { shareLink, siteUrl } from './share'
@@ -45,7 +43,6 @@ interface ComposerHandlers {
 
 const hordeSelector = (horde: string, level: number) => `horde:${horde}:${level}`
 const today = () => dayOf(new Date())
-const TYPE_NAME = TYPE_NAMES[LOCALE]
 
 /** What the end of a challenge says, and what to share after it. */
 export interface ChallengeResult {
@@ -55,21 +52,6 @@ export interface ChallengeResult {
   share: { text: string; url: string } | null
   /** Today's daily horde beaten: the score can go to the ranking. */
   publishable: { day: string; team: string } | null
-}
-
-const typeChip = (type: TypeKey, tag: 'span' | 'button') => {
-  const chip = document.createElement(tag)
-  chip.className = 'type-chip'
-  chip.textContent = TYPE_NAME[type]
-  chip.style.background = typeHex(type)
-  chip.style.color = typeTextColor(type)
-  return chip
-}
-
-const adviceLine = (label: string, ...content: (Node | string)[]) => {
-  const line = Object.assign(document.createElement('p'), { className: 'advice-line' })
-  line.append(Object.assign(document.createElement('span'), { textContent: label }), ...content)
-  return line
 }
 
 /** `ids:25*3,6` back into how many of each Pokémon; anything malformed gives an empty team. */
@@ -214,28 +196,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     const beaten = challenge.mode === 'training' && wins.has(hordeSelector(challenge.horde, challenge.level))
     query('[data-role="horde-summary"]').textContent = TEXT.hordeSummary(horde.length, teamCost(horde), beaten)
     query('[data-role="horde"]').replaceChildren(...horde.map(({ species }) => spriteOf(species.id)))
-    renderAdvice(horde)
-  }
-
-  // Clicking a type worth aiming at filters the catalogue on it, the quickest way to a counter.
-  function renderAdvice(horde: ReturnType<typeof selectTeam>['fighters']) {
-    // The horde's own types show in its sprites: only what beats it is spelled out.
-    const { targets } = analyseHorde(horde)
-    const advice = query('[data-role="advice"]')
-    advice.replaceChildren()
-    if (targets.length === 0) return
-    const targetChips = targets.map((type) => {
-      const chip = typeChip(type, 'button') as HTMLButtonElement
-      chip.type = 'button'
-      chip.title = TEXT.showType(TYPE_NAME[type])
-      chip.addEventListener('click', () => catalogue.showType(type))
-      return chip
-    })
-    const hint = Object.assign(document.createElement('span'), {
-      className: 'advice-hint',
-      textContent: TEXT.tapToFilter,
-    })
-    advice.append(adviceLine(TEXT.effectiveTypes, ...targetChips, hint))
+    // The horde's own types show in its sprites: only what beats it is suggested, as filters of the catalogue.
+    catalogue.setSuggestedTypes(analyseHorde(horde).targets)
   }
 
   // A big team folds into one row, to keep the catalogue within reach: its last place says how many more there are,

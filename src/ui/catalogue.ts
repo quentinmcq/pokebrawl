@@ -58,6 +58,11 @@ export function createCatalogue(
   const cards = new Map<number, HTMLButtonElement>()
   let collection = caught
   let limits = { left: Number.POSITIVE_INFINITY, full: false }
+  const suggested = query('[data-role="suggested"]')
+  let suggestedChips: HTMLButtonElement[] = []
+  const renderSuggested = () => {
+    for (const chip of suggestedChips) chip.ariaPressed = String(typeSelect.value === chip.dataset.type)
+  }
 
   typeSelect.replaceChildren(
     new Option(TEXT.allTypes, ALL),
@@ -121,6 +126,7 @@ export function createCatalogue(
       )
     query('[data-role="cards"]').replaceChildren(...shown.map(cardOf))
     applyLimits()
+    renderSuggested()
   }
 
   function renderCollection() {
@@ -143,11 +149,27 @@ export function createCatalogue(
       limits = { left, full }
       applyLimits()
     },
-    /** Shows only one type, then brings the catalogue into view: the quickest way to a counter. */
-    showType(type: TypeKey) {
-      typeSelect.value = type
-      render()
-      panel.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    /** The types that beat the horde, as one-tap filters: a tap shows that type, another shows them all again. */
+    setSuggestedTypes(types: TypeKey[]) {
+      suggestedChips = types.map((type) => {
+        const chip = Object.assign(document.createElement('button'), {
+          type: 'button',
+          className: 'type-chip',
+          textContent: TYPE_NAME[type],
+          title: TEXT.showType(TYPE_NAME[type]),
+        })
+        chip.dataset.type = type
+        chip.style.background = typeHex(type)
+        chip.style.color = typeTextColor(type)
+        chip.addEventListener('click', () => {
+          typeSelect.value = typeSelect.value === type ? ALL : type
+          render()
+        })
+        return chip
+      })
+      suggested.replaceChildren(suggested.firstElementChild!, ...suggestedChips)
+      suggested.hidden = types.length === 0
+      renderSuggested()
     },
     /** The Pokémon caught on PokéDate; `showOnly` turns the filter on, right after they arrive. */
     setCollection(ids: Set<number>, { showOnly = false } = {}) {
