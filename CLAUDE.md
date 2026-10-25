@@ -9,7 +9,7 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 ## Commandes
 
 - `bun dev` : l'application sur http://localhost:5173/ (composition d'équipe), ou un combat direct avec
-  `?a=gen1&b=gen3&seed=42&terrain=grass` (`&same=0` pour garder tous les Pokémon des deux équipes). Clavier : Espace pause, 1/2/4 vitesse, R nouveau combat,
+  `?a=gen1&b=gen3&seed=42&terrain=grass` (`&same=0` pour garder tous les Pokémon des deux équipes). Clavier : Espace pause, 1/2/4 vitesse, R nouveau combat (hors défi du jour et défi d'ami),
   F plein écran, S résultat immédiat ; au toucher, une barre de contrôle apparaît. Défis en ×2 par défaut, combats
   regardés en ×1, chaque mode retient sa vitesse ; ⏭ joue la fin du combat d'un coup (même résultat). `bun dev --host` pour tester sur le téléphone (Wi-Fi).
 - `bun run dev:api` (dans un second terminal) : le Worker et une base D1 locale sur le port 8787, pour le classement
@@ -179,7 +179,7 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   combat pour les espèces présentes, joués au K.O. (un à la fois, 0,6 s d'écart, sinon le « bip ») et pour le
   meilleur Pokémon sur l'écran de fin. Presque tous en OGG Vorbis (Safari depuis iOS 18.4), trois en MP3 sous la
   même extension : le décodage Web Audio lit le contenu, pas le nom. Menu spectateur (`menu.ts`,
-  aperçu des équipes derrière), barre de contrôle qui s'efface pendant le combat (`controls.ts`), installation
+  aperçu des équipes derrière), barre de contrôle qui s'efface pendant le combat (`controls.ts` : pause, vitesse, « Résultat », et un menu « ⋯ » aux actions nommées ; pas de nouvelle graine pour le défi du jour ni le défi d'un ami), installation
   de la PWA (`install.ts`, proposée seulement après une première victoire, fermable pour de bon), enregistrement vidéo (`recorder.ts`, `videoPanel.ts`) : le bouton ● rejoue le combat
   depuis le début en 1080 × 1920 quel que soit l'écran, s'arrête 4,5 s après la fin, puis propose de télécharger la
   vidéo (MP4 si le navigateur sait l'encoder, sinon WebM) ou, sur téléphone, de la partager vers une autre app. Les tailles suivent le petit côté de la scène (unités `cqmin`), dans les deux formats.
