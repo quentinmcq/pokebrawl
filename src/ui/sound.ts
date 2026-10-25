@@ -7,9 +7,13 @@ const MASTER_VOLUME = 0.22
 // A crowd battle lands up to a hundred blows a second: past this many sounds at once, plain hits stay silent.
 const MAX_SOUNDS_PER_WINDOW = 6
 const SOUND_WINDOW_SECONDS = 0.1
-// One cry at a time: a melee knocks out several Pokémon a second, and overlapping cries turn into noise.
-const CRY_GAP_SECONDS = 0.6
-const CRY_VOLUME = 0.55
+// A melee knocks out several Pokémon a second: one short, quiet cry now and then marks them, more is a din.
+const CRY_GAP_SECONDS = 2
+const CRY_VOLUME = 0.28
+const KNOCK_OUT_CRY_SECONDS = 0.8
+// At ×4, knock-outs follow each other too fast for any cry to make sense.
+const MAX_SPEED_WITH_CRIES = 2
+const CHAMPION_CRY_VOLUME = 0.5
 const PARALLEL_CRY_DOWNLOADS = 6
 
 // Each type gets its own pitch, so that a fire battle does not sound like a water one.
@@ -110,18 +114,26 @@ export function createSound() {
     )
   }
 
-  /** Plays a Pokémon's cry if it has loaded; `force` skips the gap kept between cries. Says whether it played. */
-  function cry(id: number, start: number, force = false) {
+  /**
+   * Plays a Pokémon's cry if it has loaded, cut short with a fade for a knock-out; the champion's plays whole and
+   * skips the gap kept between cries. Says whether it played.
+   */
+  function cry(id: number, start: number, isChampion = false) {
     const buffer = cries.get(id)
     if (!enabled || !context || context.state !== 'running' || !buffer) return false
-    if (!force && start - lastCryAt < CRY_GAP_SECONDS) return false
+    if (!isChampion && start - lastCryAt < CRY_GAP_SECONDS) return false
     lastCryAt = start
     const source = context.createBufferSource()
     const gain = context.createGain()
     source.buffer = buffer
-    gain.gain.value = CRY_VOLUME
+    gain.gain.setValueAtTime(isChampion ? CHAMPION_CRY_VOLUME : CRY_VOLUME, start)
+    if (!isChampion) {
+      gain.gain.setValueAtTime(CRY_VOLUME, start + KNOCK_OUT_CRY_SECONDS * 0.6)
+      gain.gain.linearRampToValueAtTime(0, start + KNOCK_OUT_CRY_SECONDS)
+    }
     source.connect(gain).connect(master!)
     source.start(start)
+    if (!isChampion) source.stop(start + KNOCK_OUT_CRY_SECONDS)
     return true
   }
 
@@ -176,7 +188,8 @@ export function createSound() {
     for (const { event, travelSeconds } of events) {
       const start = context.currentTime + travelSeconds / speed
       if (event.kind === 'knockOut') {
-        if (!cry(speciesOf(event.fighter), start) && admit(true)) tone(start, 520, 90, 0.22, 0.5, 'square')
+        const cried = speed <= MAX_SPEED_WITH_CRIES && cry(speciesOf(event.fighter), start)
+        if (!cried && admit(true)) tone(start, 520, 90, 0.22, 0.5, 'square')
         continue
       }
       if (event.kind !== 'hit') continue

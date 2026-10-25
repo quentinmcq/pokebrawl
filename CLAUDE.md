@@ -179,7 +179,7 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   hauteur selon le type, plus fort si super efficace, note descendante au K.O., air de victoire ou de défaite ;
   6 sons par 0,1 s au plus hors coups notables ; bouton pour couper, mémorisé. Cris des Pokémon (ceux de PokeAPI,
   comme PokéDate, téléchargés par `bun run sprites` dans `public/cries/`, hors dépôt) : préchargés au lancement d'un
-  combat pour les espèces présentes, joués au K.O. (un à la fois, 0,6 s d'écart, sinon le « bip ») et pour le
+  combat pour les espèces présentes, joués au K.O. (un toutes les 2 s au plus, bas et coupé en fondu à 0,8 s, aucun en ×4, sinon le « bip ») et pour le
   meilleur Pokémon sur l'écran de fin. Presque tous en OGG Vorbis (Safari depuis iOS 18.4), trois en MP3 sous la
   même extension : le décodage Web Audio lit le contenu, pas le nom. Menu spectateur (`menu.ts`,
   aperçu des équipes derrière), barre de contrôle qui s'efface pendant le combat (`controls.ts` : pause, vitesse, « Résultat », et un menu « ⋯ » aux actions nommées ; pas de nouvelle graine pour le défi du jour ni le défi d'un ami), installation
