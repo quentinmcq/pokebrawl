@@ -65,6 +65,12 @@ const typeChip = (type: TypeKey, tag: 'span' | 'button') => {
   return chip
 }
 
+const adviceLine = (label: string, ...content: (Node | string)[]) => {
+  const line = Object.assign(document.createElement('p'), { className: 'advice-line' })
+  line.append(Object.assign(document.createElement('span'), { textContent: label }), ...content)
+  return line
+}
+
 /** `ids:25*3,6` back into how many of each Pokémon; anything malformed gives an empty team. */
 function parseTeam(selector: string | undefined) {
   const team = new Map<number, number>()
@@ -202,19 +208,20 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     const advice = query('[data-role="advice"]')
     advice.replaceChildren()
     if (dominant.length === 0) return
-    advice.append(
-      TEXT.mostly,
-      ...dominant.flatMap((type, index) => [...(index > 0 ? [TEXT.and] : []), typeChip(type, 'span')]),
-    )
+    advice.append(adviceLine(TEXT.hordeTypes, ...dominant.map((type) => typeChip(type, 'span'))))
     if (targets.length === 0) return
-    advice.append(TEXT.aimFor)
-    for (const type of targets) {
+    const targetChips = targets.map((type) => {
       const chip = typeChip(type, 'button') as HTMLButtonElement
       chip.type = 'button'
       chip.title = TEXT.showType(TYPE_NAME[type])
       chip.addEventListener('click', () => catalogue.showType(type))
-      advice.append(chip)
-    }
+      return chip
+    })
+    const hint = Object.assign(document.createElement('span'), {
+      className: 'advice-hint',
+      textContent: TEXT.tapToFilter,
+    })
+    advice.append(adviceLine(TEXT.effectiveTypes, ...targetChips, hint))
   }
 
   function renderTeam() {

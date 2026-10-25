@@ -216,9 +216,9 @@ const french = {
   dailyBest: (best: number) => `Battue avec ${best} points : fais encore mieux !`,
   hordeSummary: (size: number, points: number, beaten: boolean) =>
     `${size} Pokémon · ${number(points)} points${beaten ? ' · déjà battue ✓' : ''}`,
-  mostly: 'Surtout ',
-  and: ' et ',
-  aimFor: ' · Vise :',
+  hordeTypes: 'Types de la horde :',
+  effectiveTypes: 'Efficaces contre elle :',
+  tapToFilter: 'touche pour filtrer',
   showType: (type: string) => `Montrer les Pokémon de type ${type}`,
   budgetSummary: (used: number, size: number, full: boolean) =>
     `${number(used)} / ${budget} points · ${size} Pokémon${full ? ' (maximum)' : ''}`,
@@ -344,9 +344,9 @@ const english: Messages = {
   dailyBest: (best) => `Beaten with ${best} points: do even better!`,
   hordeSummary: (size, points, beaten) =>
     `${size} Pokémon · ${englishNumber(points)} points${beaten ? ' · already beaten ✓' : ''}`,
-  mostly: 'Mostly ',
-  and: ' and ',
-  aimFor: ' · Aim for:',
+  hordeTypes: 'Horde’s types:',
+  effectiveTypes: 'Effective against it:',
+  tapToFilter: 'tap to filter',
   showType: (type) => `Show ${type}-type Pokémon`,
   budgetSummary: (used, size, full) =>
     `${englishNumber(used)} / ${englishBudget} points · ${size} Pokémon${full ? ' (maximum)' : ''}`,

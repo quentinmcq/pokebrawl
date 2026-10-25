@@ -727,6 +727,14 @@ input {
 
 /* Upright, everything stacks: the achievements, the least urgent, go below the catalogue. */
 @container (orientation: portrait) {
+  /* The links go on one tidy line under the logo, rather than piling up beside it. */
+  .composer-header .header-links {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    gap: calc(4 * var(--u));
+    font-size: calc(3.2 * var(--u));
+  }
+
   .composer-side {
     display: contents;
   }
@@ -972,12 +980,26 @@ input {
 }
 
 .advice {
+  display: grid;
+  gap: calc(1.2 * var(--u));
+  color: var(--muted);
+}
+
+.advice-line {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: calc(1.2 * var(--u));
   margin: 0;
-  color: var(--muted);
+}
+
+.advice-line button.type-chip {
+  cursor: pointer;
+}
+
+.advice-hint {
+  font-size: calc(2.8 * var(--u));
+  font-style: italic;
 }
 
 .type-chip {
