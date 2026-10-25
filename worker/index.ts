@@ -12,6 +12,7 @@ import {
 import { checkNickname } from '../src/nickname'
 import { pokedex } from '../src/pokedex'
 import { selectorOfFighters, selectTeam } from '../src/simulation/teams'
+import { isTrackedEvent } from '../src/tracking'
 
 // The few Cloudflare types this Worker uses, rather than the whole workers-types package.
 interface D1Result<Row> {
@@ -31,10 +32,14 @@ declare class HTMLRewriter {
   on(selector: string, handlers: { element(element: RewrittenElement): void }): HTMLRewriter
   transform(response: Response): Response
 }
+interface RateLimiter {
+  limit(options: { key: string }): Promise<{ success: boolean }>
+}
 interface Env {
   ASSETS: { fetch(request: Request): Promise<Response> }
   DB: { prepare(query: string): D1PreparedStatement; batch(statements: D1PreparedStatement[]): Promise<unknown> }
-  SUBMIT_RATE_LIMITER?: { limit(options: { key: string }): Promise<{ success: boolean }> }
+  SUBMIT_RATE_LIMITER?: RateLimiter
+  EVENT_RATE_LIMITER?: RateLimiter
 }
 
 interface ScoreRow {
@@ -127,14 +132,33 @@ async function submitScore(env: Env, day: string, request: Request) {
   return json(await readRanking(env, day, body.playerId))
 }
 
+const isSameOrigin = (request: Request, url: URL) => {
+  const origin = request.headers.get('origin')
+  return !origin || new URL(origin).host === url.host
+}
+
+/** Adds one to today's count of an event; a refused or rate-limited event is dropped without a word. */
+async function countEvent(request: Request, env: Env, url: URL) {
+  const body = (await request.json().catch(() => null)) as { name?: unknown } | null
+  if (!isSameOrigin(request, url) || !isTrackedEvent(body?.name)) return new Response(null, { status: 204 })
+  const ip = request.headers.get('cf-connecting-ip') ?? 'unknown'
+  if (!((await env.EVENT_RATE_LIMITER?.limit({ key: ip }))?.success ?? true)) return new Response(null, { status: 204 })
+  await env.DB.prepare(
+    'INSERT INTO event_counts (day, name, count) VALUES (?, ?, 1) ON CONFLICT (day, name) DO UPDATE SET count = count + 1',
+  )
+    .bind(dayOf(new Date()), body.name)
+    .run()
+  return new Response(null, { status: 204 })
+}
+
 async function handleApi(request: Request, env: Env, url: URL) {
+  if (url.pathname === '/api/events' && request.method === 'POST') return countEvent(request, env, url)
   const day = /^\/api\/daily\/([\d-]+)$/.exec(url.pathname)?.[1]
   if (!day || !isDay(day)) return failure('Introuvable.', 404)
   if (request.method === 'GET') return json(await readRanking(env, day, request.headers.get('x-player-id')))
   if (request.method !== 'POST') return failure('Méthode non permise.', 405)
 
-  const origin = request.headers.get('origin')
-  if (origin && new URL(origin).host !== url.host) return failure('Requête refusée.', 403)
+  if (!isSameOrigin(request, url)) return failure('Requête refusée.', 403)
   const ip = request.headers.get('cf-connecting-ip') ?? 'unknown'
   const allowed = (await env.SUBMIT_RATE_LIMITER?.limit({ key: ip }))?.success ?? true
   if (!allowed) return failure('Trop d’envois, réessaie dans une minute.', 429)

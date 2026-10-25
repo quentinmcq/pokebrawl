@@ -20,6 +20,7 @@ import { parseHorde, selectTeam, TEAM_SELECTORS, TYPE_NAMES_FR, teamTitle, toFig
 import type { Species, TypeKey } from '../simulation/types'
 import { fetchRanking, renderRanking, savedNickname, saveNickname } from './ranking'
 import { shareLink, siteUrl } from './share'
+import { track } from './track'
 import { readStored, writeStored } from './storage'
 
 const LEVELS = [800, 1000, 1250]
@@ -422,6 +423,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     saveNickname(nickname.nickname)
     const { text, url } = challengeOf(nickname.nickname)
     const outcome = await shareLink(text, url)
+    if (outcome !== 'failed') track('share-challenge')
     showChallengeStatus(
       outcome === 'copied'
         ? 'Lien copié : envoie-le à un ami\u00a0!'

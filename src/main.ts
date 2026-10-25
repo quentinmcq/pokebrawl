@@ -7,6 +7,7 @@ import { summarizeBattle } from './simulation/battle'
 import { battleReport } from './report'
 import { terrainForSeed } from './render/terrain'
 import { readCollectionHash } from './collection'
+import { dailyDayOf } from './daily'
 import { readFriendChallenge } from './friend'
 import { createComposer, isChallenge } from './ui/composer'
 import { createControls } from './ui/controls'
@@ -15,6 +16,7 @@ import { createMenu } from './ui/menu'
 import { ordinal, savedNickname, saveNickname, submitScore } from './ui/ranking'
 import { shareLink } from './ui/share'
 import { createSound } from './ui/sound'
+import { track, trackVisit } from './ui/track'
 import { createSpriteFactory } from './ui/sprites'
 import { readStored, writeStored } from './ui/storage'
 import { canRecord, recordCanvas, videoBaseName, type Video } from './ui/recorder'
@@ -123,6 +125,15 @@ async function start() {
 
   function startBattle(next: BattleParams) {
     params = next
+    track(
+      next.opponentName
+        ? 'battle-friend'
+        : dailyDayOf(next.teams[1])
+          ? 'battle-daily'
+          : isChallenge(next)
+            ? 'battle-training'
+            : 'battle-watch',
+    )
     history.replaceState(null, '', battleSearch(next))
     showScene(next)
     void sound.loadCries(scene!.battle.fighters.map(({ species }) => species.id))
@@ -188,6 +199,7 @@ async function start() {
       return
     }
     saveNickname(name)
+    track('publish')
     publishForm.hidden = true
     const { you, total } = outcome.ranking
     if (you) resultLine.textContent = `${resultMessage} · ${ordinal(you.rank)} sur ${total}`
@@ -205,7 +217,11 @@ async function start() {
     // The end screen fades in 0.8 s of battle time after the last knock-out.
     sound.champion(summarizeBattle(scene.battle).mostValuable.species.id, END_SCREEN_DELAY_SECONDS / speed)
     if (!isChallenge(params)) return
-    const result = composer.finish(params, scene.battle.outcome === 0)
+    const won = scene.battle.outcome === 0
+    const result = composer.finish(params, won)
+    if (won && result.publishable) track('win-daily')
+    else if (won && params.opponentName) track('win-friend')
+    else if (won && !result.daily) track('win-training')
     share = result.shareText === null ? null : { text: result.shareText, url: result.shareUrl }
     publishable = result.publishable
     resultMessage = result.message ?? ''
@@ -233,7 +249,9 @@ async function start() {
 
   async function shareResult() {
     if (!share) return
-    if ((await shareLink(share.text, share.url)) === 'copied') shareButton.textContent = 'Lien copié\u00a0!'
+    const outcome = await shareLink(share.text, share.url)
+    if (outcome !== 'failed') track(params?.opponentName ? 'share-back' : 'share-daily')
+    if (outcome === 'copied') shareButton.textContent = 'Lien copié\u00a0!'
   }
 
   const composer = createComposer(element('composer'), {
@@ -277,6 +295,7 @@ async function start() {
     const finished = recording
     recording = null
     videoPanel.showVideo(await finished.stop())
+    track('video')
     applyLayout(windowLayout())
     controls.show()
     if (scene?.isOver() && isChallenge(params)) {
@@ -337,6 +356,8 @@ async function start() {
   })
 
   setUpInstall(element('install'), element('ios-install'))
+  // Read before the address is tidied up, since it tells where the visitor came from.
+  trackVisit()
   const friendChallenge = readFriendChallenge(location.search)
   const welcomedTeam = new URLSearchParams(location.search).get('equipe')
   function importCollectionFromHash() {

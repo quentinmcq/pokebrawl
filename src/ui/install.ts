@@ -1,3 +1,5 @@
+import { track } from './track'
+
 interface InstallPromptEvent extends Event {
   prompt(): Promise<void>
 }
@@ -21,7 +23,10 @@ export function setUpInstall(installButton: HTMLButtonElement, iosHint: HTMLElem
     deferredPrompt = event as InstallPromptEvent
     installButton.hidden = false
   })
-  window.addEventListener('appinstalled', () => (installButton.hidden = true))
+  window.addEventListener('appinstalled', () => {
+    installButton.hidden = true
+    track('install')
+  })
   installButton.addEventListener('click', async () => {
     await deferredPrompt?.prompt()
     deferredPrompt = null

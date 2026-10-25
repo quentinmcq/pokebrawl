@@ -24,7 +24,8 @@
     "check": "bun run lint && bun run fmt:check && bun run typecheck && bun run test",
     "test": "vitest run",
     "test:watch": "vitest",
-    "verify-daily": "bun scripts/verify-daily.ts"
+    "verify-daily": "bun scripts/verify-daily.ts",
+    "audience": "bun scripts/audience.ts"
   },
   "dependencies": {
     "pixi.js": "^8.22.0"

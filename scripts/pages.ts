@@ -18,6 +18,11 @@ const SHEET = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'public', 
 }
 const results = new Map((matchupResults as MatchupResult[]).map((result) => [result.slug, result]))
 const RELATED_LINKS = 12
+// Counts the page read on the real site only, as the app does, and never for crawlers.
+const COUNT_PAGE_VIEW = `<script>
+      if (location.host === '${new URL(SITE_URL).host}' && !/bot|crawl|spider|slurp|lighthouse|headlesschrome|pagespeed/i.test(navigator.userAgent))
+        navigator.sendBeacon('/api/events', new Blob(['{"name":"matchup-page"}'], { type: 'application/json' }))
+    </script>`
 const ONE_SIDED_SHARE = 0.95
 
 const escape = (text: string) => text.replaceAll(/[&<>"']/g, (character) => `&#${character.charCodeAt(0)};`)
@@ -79,6 +84,7 @@ function page({ title, description, path, body }: { title: string; description: 
     <main>
 ${body}
     </main>
+    ${COUNT_PAGE_VIEW}
     <footer class="site-footer">
       <p>PokéBrawl, projet de fan non officiel et sans but commercial. Pokémon © Nintendo / Game Freak / The Pokémon Company. Données : PokeAPI.</p>
     </footer>
