@@ -63,8 +63,32 @@ export function createSound() {
 
   function wake() {
     const audio = ensureContext()
-    if (audio.state === 'suspended') void audio.resume()
+    if (audio.state === 'running') return
+    void audio.resume()
+    // Safari on iPhone only lets sound out once something has played within the gesture: an empty sample will do.
+    const silence = audio.createBufferSource()
+    silence.buffer = audio.createBuffer(1, 1, audio.sampleRate)
+    silence.connect(audio.destination)
+    silence.start()
   }
+
+  /**
+   * Starts the sound on the player's first gestures. Safari on iPhone ignores a bare touch on the screen and waits
+   * for a tap or a click, so every kind of gesture tries until the sound actually runs.
+   */
+  function unlockOnGesture() {
+    const gestures = ['pointerdown', 'touchend', 'click', 'keydown'] as const
+    const unlock = () => {
+      if (!enabled) return
+      wake()
+      if (context?.state === 'running') for (const gesture of gestures) window.removeEventListener(gesture, unlock)
+    }
+    for (const gesture of gestures) window.addEventListener(gesture, unlock)
+  }
+  // Back from another app, iPhone has often suspended the sound again: the next gesture restarts it.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && context && context.state !== 'running') unlockOnGesture()
+  })
 
   /** Fetches and decodes, in the background, the cries a battle may play; any that fails simply stays silent. */
   async function loadCries(ids: number[]) {
@@ -180,6 +204,7 @@ export function createSound() {
 
   return {
     wake,
+    unlockOnGesture,
     loadCries,
     play,
     fanfare,

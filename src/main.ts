@@ -89,7 +89,7 @@ async function start() {
   let recording: { stop: () => Promise<Video>; heldSeconds: number } | null = null
   const sound = createSound()
   // Browsers keep sound off until the page is touched: the first tap anywhere wakes it.
-  window.addEventListener('pointerdown', () => sound.isEnabled() && sound.wake(), { once: true })
+  sound.unlockOnGesture()
   let scene: Scene | null = null
   let params: BattleParams | null = null
   const speeds = { ...DEFAULT_SPEEDS, ...readStored<Partial<typeof DEFAULT_SPEEDS>>(SPEED_STORAGE_KEY, {}) }
