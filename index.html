@@ -70,10 +70,26 @@
         </button>
       </form>
 
-      <section id="composer" class="composer" aria-label="Composer ton équipe" data-i18n-aria-label="composer" hidden>
+      <section
+        id="composer"
+        class="composer"
+        data-screen="lobby"
+        aria-label="Composer ton équipe"
+        data-i18n-aria-label="composer"
+        hidden
+      >
         <header class="composer-header">
+          <button
+            class="icon-link builder-only"
+            type="button"
+            data-action="lobby"
+            aria-label="Retour"
+            data-i18n-aria-label="back"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+          </button>
           <h1 class="logo">Poké<span>Brawl</span></h1>
-          <nav class="header-links">
+          <nav class="header-links lobby-only">
             <button
               class="icon-link"
               type="button"
@@ -136,40 +152,67 @@
           </div>
         </header>
 
-        <div class="composer-side">
+        <section class="lobby lobby-only" aria-label="Accueil" data-i18n-aria-label="homeLabel">
+          <article class="hero" data-role="daily">
+            <p class="eyebrow" data-role="daily-eyebrow">Défi du jour</p>
+            <h2 class="daily-title" data-role="daily-title"></h2>
+            <div class="sprite-strip" data-role="daily-horde"></div>
+            <p class="hint" data-role="daily-status"></p>
+            <button class="primary play" type="button" data-open="daily" data-i18n="play">Jouer</button>
+            <details class="ranking">
+              <summary class="ranking-head">
+                <h3 data-i18n="ranking">Classement</h3>
+                <span class="hint" data-role="ranking-summary" data-i18n="loadingShort">Chargement…</span>
+              </summary>
+              <div
+                class="segmented segmented--small"
+                role="group"
+                aria-label="Jour du classement"
+                data-i18n-aria-label="rankingDay"
+              >
+                <button type="button" data-ranking="today" data-i18n="today">Aujourd'hui</button>
+                <button type="button" data-ranking="yesterday" data-i18n="yesterday">Hier</button>
+              </div>
+              <ol class="ranking-list" data-role="ranking-list"></ol>
+            </details>
+          </article>
+          <article class="hero hero--friend" data-role="friend" hidden>
+            <p class="eyebrow" data-i18n="friendMode">Défi d’un ami</p>
+            <h2 class="daily-title" data-role="friend-title"></h2>
+            <p class="hint" data-role="friend-status"></p>
+            <button class="primary play" type="button" data-open="friend" data-i18n="takeChallenge">
+              Relever le défi
+            </button>
+          </article>
+          <nav class="lobby-menu" aria-label="Autres modes" data-i18n-aria-label="otherModes">
+            <button class="lobby-row" type="button" data-open="training">
+              <span>
+                <b data-i18n="training">Entraînement</b>
+                <small data-i18n="trainingHint">Bats une horde au choix, autant de fois que tu veux.</small>
+              </span>
+              <span class="lobby-chevron" aria-hidden="true">›</span>
+            </button>
+            <button class="lobby-row" type="button" data-action="challenge-how">
+              <span>
+                <b data-i18n="challengeFriend">Défier un ami</b>
+                <small data-i18n="challengeFriendHint">Envoie-lui ton équipe à battre.</small>
+              </span>
+              <span class="lobby-chevron" aria-hidden="true">›</span>
+            </button>
+          </nav>
+          <details class="panel achievements" data-role="achievements">
+            <summary>
+              <h2><span data-i18n="achievements">Succès</span> <span data-role="achievements-count"></span></h2>
+            </summary>
+            <ul class="badges" data-role="badges"></ul>
+          </details>
+        </section>
+
+        <div class="composer-side builder-only">
           <section class="panel panel--red step-panel" aria-labelledby="opponent-title">
             <div class="panel-head">
-              <h2 id="opponent-title" data-i18n="opponent">Adversaire</h2>
+              <h2 id="opponent-title" data-role="opponent-name"></h2>
               <p class="summary" data-role="horde-summary"></p>
-            </div>
-            <div class="segmented segmented--wide" role="group" aria-label="Mode" data-i18n-aria-label="mode">
-              <button type="button" data-mode="daily" data-i18n="daily">Défi du jour</button>
-              <button type="button" data-mode="training" data-i18n="training">Entraînement</button>
-              <button type="button" data-mode="friend" data-i18n="friendMode" hidden>Défi d'un ami</button>
-            </div>
-            <div class="daily" data-role="friend" hidden>
-              <p class="daily-title" data-role="friend-title"></p>
-              <p class="hint" data-role="friend-status"></p>
-            </div>
-            <div class="daily" data-role="daily">
-              <p class="daily-title" data-role="daily-title"></p>
-              <p class="hint" data-role="daily-status"></p>
-              <details class="ranking">
-                <summary class="ranking-head">
-                  <h3 data-i18n="ranking">Classement</h3>
-                  <span class="hint" data-role="ranking-summary" data-i18n="loadingShort">Chargement…</span>
-                </summary>
-                <div
-                  class="segmented segmented--small"
-                  role="group"
-                  aria-label="Jour du classement"
-                  data-i18n-aria-label="rankingDay"
-                >
-                  <button type="button" data-ranking="today" data-i18n="today">Aujourd'hui</button>
-                  <button type="button" data-ranking="yesterday" data-i18n="yesterday">Hier</button>
-                </div>
-                <ol class="ranking-list" data-role="ranking-list"></ol>
-              </details>
             </div>
             <div class="row" data-role="training">
               <select name="horde" aria-label="Horde à battre" data-i18n-aria-label="hordeToBeat"></select>
@@ -220,15 +263,9 @@
               >★ Tu joues à PokéDate&nbsp;? Récupère tes Pokémon attrapés</a
             >
           </section>
-          <details class="panel achievements" data-role="achievements">
-            <summary>
-              <h2><span data-i18n="achievements">Succès</span> <span data-role="achievements-count"></span></h2>
-            </summary>
-            <ul class="badges" data-role="badges"></ul>
-          </details>
         </div>
 
-        <section class="panel catalog step-panel" aria-labelledby="catalog-title">
+        <section class="panel catalog step-panel builder-only" aria-labelledby="catalog-title">
           <div class="panel-head">
             <h2 id="catalog-title" data-i18n="catalogue">Catalogue</h2>
             <label class="toggle collection-filter" data-role="collection-filter" hidden>
@@ -260,7 +297,7 @@
           <div class="cards" data-role="cards"></div>
         </section>
 
-        <footer class="composer-footer">
+        <footer class="composer-footer builder-only">
           <button class="secondary" type="button" data-action="clear" data-i18n="clear">Vider</button>
           <button
             class="secondary"

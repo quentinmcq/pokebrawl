@@ -147,7 +147,9 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 - `src/daily.ts` : défi du jour. À minuit heure de Paris, une horde de 1 000 points (`horde:gen8:1000:2026-10-24`,
   différente de la horde d'entraînement) et une graine sont tirées de la date, les mêmes pour tous : le résultat ne
   dépend que de l'équipe, c'est une énigme. Score : le moins de points pour gagner ; série de jours réussis.
-- `src/ui/` : HTML par-dessus le canvas, donc jamais dans une vidéo enregistrée. `composer.ts` : l'accueil, défi du
+- `src/ui/` : HTML par-dessus le canvas, donc jamais dans une vidéo enregistrée. `composer.ts` : deux écrans,
+  l'accueil (`lobby` : défi du jour en grand avec « Jouer » et le classement, défi d'un ami reçu, Entraînement, Défier
+  un ami, Succès) puis le constructeur d'équipe (`builder` : adversaire, équipe, catalogue, « ← » pour revenir) ; défi du
   jour (par défaut, avec record et série) ou entraînement contre une horde au choix (Facile 800, Normal 1 000,
   Difficile 1 250 points) et de l'équipe (doublons permis), catalogue filtrable (`catalogue.ts`)
   avec sprites découpés en CSS dans la planche (`sprites.ts`), dernière équipe et hordes battues retenues dans le

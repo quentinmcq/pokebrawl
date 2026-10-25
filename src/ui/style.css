@@ -427,8 +427,8 @@ input {
 }
 
 .composer-header {
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: calc(1.5 * var(--u)) calc(3 * var(--u));
 }
@@ -439,7 +439,7 @@ input {
 }
 
 .install-offer {
-  grid-column: 1 / -1;
+  flex-basis: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -758,14 +758,6 @@ input {
 @container (orientation: portrait) {
   .composer-side {
     display: contents;
-  }
-
-  .achievements {
-    order: 1;
-  }
-
-  .composer-footer {
-    order: 2;
   }
 }
 
@@ -1255,4 +1247,111 @@ button.type-chip {
 .team-toggle {
   justify-self: start;
   font-size: calc(3 * var(--u));
+}
+
+/* Two screens: the lobby picks the challenge, the builder makes the team. */
+.composer[data-screen='lobby'] .builder-only,
+.composer[data-screen='builder'] .lobby-only {
+  display: none !important;
+}
+
+.lobby {
+  display: grid;
+  align-content: start;
+  gap: calc(3 * var(--u));
+  width: 100%;
+  max-width: 720px;
+  justify-self: center;
+  padding-bottom: calc(6 * var(--u));
+}
+
+.hero {
+  display: grid;
+  gap: calc(2.5 * var(--u));
+  padding: calc(5 * var(--u)) calc(4 * var(--u));
+  border: 1px solid rgb(255 77 94 / 0.45);
+  border-radius: calc(5 * var(--u));
+  background: linear-gradient(160deg, #2a1d33, #1a1c2c 60%);
+  box-shadow: 0 calc(3 * var(--u)) calc(12 * var(--u)) rgb(255 77 94 / 0.12);
+}
+
+.hero--friend {
+  border-color: rgb(61 155 255 / 0.5);
+  background: linear-gradient(160deg, #172a4a, #1a1c2c 60%);
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--accent);
+  font-size: calc(3 * var(--u));
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero .daily-title {
+  margin: 0;
+  font-size: calc(6 * var(--u));
+  line-height: 1.15;
+}
+
+.hero .hint {
+  margin: 0;
+  text-align: left;
+}
+
+.hero .play {
+  margin: calc(1 * var(--u)) 0 0;
+  padding: calc(4 * var(--u));
+  font-size: calc(5 * var(--u));
+}
+
+.lobby-menu {
+  display: grid;
+  gap: calc(2 * var(--u));
+}
+
+.lobby-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(3 * var(--u));
+  padding: calc(3.5 * var(--u)) calc(4 * var(--u));
+  border: 0;
+  border-radius: calc(4 * var(--u));
+  background: #1a1c2c;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lobby-row:hover {
+  background: #22253a;
+}
+
+.lobby-row b {
+  display: block;
+  font-size: calc(4 * var(--u));
+}
+
+.lobby-row small {
+  color: var(--muted);
+  font-size: calc(3.1 * var(--u));
+}
+
+.lobby-chevron {
+  color: var(--muted);
+  font-size: calc(6 * var(--u));
+}
+
+/* On a wide screen, the lobby is one centred column. */
+@container (orientation: landscape) {
+  .composer[data-screen='lobby'] {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .lobby {
+    min-height: 0;
+    overflow-y: auto;
+  }
 }

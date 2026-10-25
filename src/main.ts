@@ -335,7 +335,7 @@ async function start() {
     const collection = readCollectionHash(location.hash)
     if (!collection) return false
     leaveBattle()
-    composer.open(null)
+    composer.open(null, 'builder')
     composer.importCollection(collection)
     return true
   }
@@ -350,7 +350,7 @@ async function start() {
     if (importCollectionFromHash()) return
     if (welcomedTeam) {
       leaveBattle()
-      composer.open(null)
+      composer.open(null, 'builder')
       composer.welcome(welcomedTeam)
     } else if (friendChallenge) {
       leaveBattle()

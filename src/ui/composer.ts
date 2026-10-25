@@ -87,7 +87,6 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   const query = <Element extends HTMLElement>(selector: string) => section.querySelector<Element>(selector)!
   const hordeSelect = query<HTMLSelectElement>('select[name="horde"]')
   const levelButtons = [...section.querySelectorAll<HTMLButtonElement>('[data-level]')]
-  const modeButtons = [...section.querySelectorAll<HTMLButtonElement>('[data-mode]')]
   const rankingButtons = [...section.querySelectorAll<HTMLButtonElement>('[data-ranking]')]
   let rankingDay: 'today' | 'yesterday' = 'today'
   const fightButton = query<HTMLButtonElement>('[data-action="fight"]')
@@ -135,16 +134,20 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   function renderFriend() {
     if (!friendChallenge) return
     const { name, size, points } = friendChallenge
-    query('[data-role="friend-title"]').textContent = TEXT.friendTitle(name)
+    query('[data-role="friend-title"]').textContent = TEXT.friendTeam(name)
     query('[data-role="friend-status"]').textContent = TEXT.friendStatus(size, points)
   }
 
   function renderDaily() {
     const day = today()
     const { horde } = dailyChallenge(day)
+    query('[data-role="daily-horde"]').replaceChildren(
+      ...selectTeam(pokedex, horde).fighters.map(({ species }) => spriteOf(species.id)),
+    )
     const best = dailyRecord.bestByDay[day]
     const streak = currentStreak(dailyRecord, day)
-    query('[data-role="daily-title"]').textContent = TEXT.dailyTitle(day, teamTitle(horde, LOCALE))
+    query('[data-role="daily-eyebrow"]').textContent = TEXT.dailyEyebrow(day)
+    query('[data-role="daily-title"]').textContent = teamTitle(horde, LOCALE)
     // The rule is told until the player has played a daily challenge; then only their record and streak remain.
     const hasPlayedDaily = Object.keys(dailyRecord.bestByDay).length > 0
     const goal = best !== undefined ? TEXT.dailyBest(best) : hasPlayedDaily ? '' : TEXT.dailyGoal
@@ -179,19 +182,22 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     )
   }
 
+  /** The lobby: today's challenge, and a friend's when a link brought one. */
+  function renderLobby() {
+    renderDaily()
+    query('[data-role="friend"]').hidden = !friendChallenge
+    renderFriend()
+  }
+
+  /** The opponent of the team being built, in the builder's first step. */
   function renderChallenge() {
-    const daily = challenge.mode === 'daily'
-    for (const button of modeButtons) {
-      button.ariaPressed = String(button.dataset.mode === challenge.mode)
-      if (button.dataset.mode !== 'friend') continue
-      button.hidden = !friendChallenge
-      if (friendChallenge) button.textContent = TEXT.friendTitle(friendChallenge.name)
-    }
-    query('[data-role="daily"]').hidden = !daily
-    query('[data-role="friend"]').hidden = challenge.mode !== 'friend'
     query('[data-role="training"]').hidden = challenge.mode !== 'training'
-    if (daily) renderDaily()
-    if (challenge.mode === 'friend') renderFriend()
+    query('[data-role="opponent-name"]').textContent =
+      challenge.mode === 'training'
+        ? TEXT.page.training
+        : challenge.mode === 'friend' && friendChallenge
+          ? TEXT.friendTeam(friendChallenge.name)
+          : `${TEXT.page.daily} · ${teamTitle(dailyChallenge(today()).horde, LOCALE)}`
     hordeSelect.replaceChildren(
       ...TEAM_SELECTORS.map((selector) => {
         const beaten = wins.has(hordeSelector(selector, challenge.level))
@@ -312,8 +318,25 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       rankingDay = button.dataset.ranking as typeof rankingDay
       renderDaily()
     })
-  for (const button of modeButtons)
-    button.addEventListener('click', () => setChallenge({ ...challenge, mode: button.dataset.mode as Mode }))
+  // The lobby leads to the builder: its big buttons pick the opponent, the arrow goes back.
+  function showScreen(screen: 'lobby' | 'builder') {
+    section.dataset.screen = screen
+    section.scrollTop = 0
+    if (screen === 'lobby') renderLobby()
+    else renderTeamToggle()
+  }
+  for (const button of section.querySelectorAll<HTMLButtonElement>('[data-open]'))
+    button.addEventListener('click', () => {
+      setChallenge({ ...challenge, mode: button.dataset.open as Mode })
+      showScreen('builder')
+    })
+  query('[data-action="lobby"]').addEventListener('click', () => showScreen('lobby'))
+  query('[data-action="challenge-how"]').addEventListener('click', () => {
+    showScreen('builder')
+    const notice = query('[data-role="team-notice"]')
+    notice.replaceChildren(TEXT.challengeHowTo)
+    notice.hidden = false
+  })
 
   fightButton.addEventListener('click', () => {
     if (team.size === 0) return
@@ -386,7 +409,11 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
 
   return {
     /** Reopens on the battle just fought, or on the last team and horde this browser remembers. */
-    open(current: BattleParams | null) {
+    /**
+     * Back from a challenge, the builder reopens on the team just fought, to improve it; otherwise the lobby shows,
+     * or the builder when `screen` asks for it.
+     */
+    open(current: BattleParams | null, screen?: 'lobby' | 'builder') {
       const horde = parseHorde(current?.teams[1] ?? '')
       if (current?.opponentName && friendChallenge) challenge = { ...challenge, mode: 'friend' }
       else if (horde && dailyDayOf(current!.teams[1])) challenge = { ...challenge, mode: 'daily' }
@@ -402,8 +429,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       renderTeam()
       section.hidden = false
       // Only a shown team can tell whether it overflows its row.
-      renderTeamToggle()
-      section.scrollTop = 0
+      showScreen(screen ?? (current && isChallenge(current) && !isReplay(current) ? 'builder' : 'lobby'))
     },
     close: () => (section.hidden = true),
     /**
@@ -453,7 +479,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       friendChallenge = received
       writeStored(STORAGE_KEYS.friend, received)
       setChallenge({ ...challenge, mode: 'friend' })
-      this.open(null)
+      this.open(null, 'builder')
     },
     /** Records the end of a challenge: a tick on a beaten training horde, the score and streak of the daily one. */
     finish(params: BattleParams, won: boolean): ChallengeResult {
