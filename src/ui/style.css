@@ -462,19 +462,12 @@ input {
 
 .panel {
   display: grid;
+  align-content: start;
   gap: calc(2 * var(--u));
-  padding: calc(3 * var(--u));
-  border-left: calc(1 * var(--u)) solid #343858;
-  border-radius: calc(3 * var(--u));
+  padding: calc(3.5 * var(--u));
+  border: 1px solid rgb(255 255 255 / 0.06);
+  border-radius: calc(4 * var(--u));
   background: #1a1c2c;
-}
-
-.panel--blue {
-  border-color: var(--blue);
-}
-
-.panel--red {
-  border-color: var(--red);
 }
 
 .panel h2 {
@@ -1300,26 +1293,6 @@ button.type-chip {
   letter-spacing: 0.04em;
 }
 
-/* The three steps of a challenge, numbered: the opponent, the team, the catalogue. */
-.composer {
-  counter-reset: step;
-}
-
-.step-panel h2::before {
-  counter-increment: step;
-  content: counter(step);
-  display: inline-grid;
-  place-items: center;
-  width: calc(6 * var(--u));
-  height: calc(6 * var(--u));
-  margin-right: calc(2 * var(--u));
-  border-radius: 50%;
-  background: var(--accent);
-  color: #14162b;
-  font-size: calc(3.4 * var(--u));
-  vertical-align: 0.1em;
-}
-
 .team-more {
   color: var(--accent);
   font-size: calc(3.4 * var(--u));
@@ -1546,5 +1519,39 @@ button.type-chip {
 @container (orientation: portrait) {
   .filter-menu .filter-count:not([hidden]) {
     display: grid;
+  }
+}
+
+.eyebrow--red {
+  margin-bottom: calc(-1 * var(--u));
+  color: var(--red);
+}
+
+/* On a wide screen, the team fills the left column down to the bottom, with the whole team or room waiting for it. */
+@container (orientation: landscape) {
+  .composer-side {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .team-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .team-panel .team-actions {
+    margin-top: auto;
+  }
+
+  .team-panel [data-role='team-hint']:not([hidden]) {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    min-height: calc(30 * var(--u));
+    margin: 0;
+    padding: calc(4 * var(--u));
+    border: 2px dashed #343858;
+    border-radius: calc(3 * var(--u));
   }
 }

@@ -211,7 +211,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     for (const chip of chips) chip.hidden = false
     const firstRowTop = chips[0]?.offsetTop
     const wrapsAt = chips.findIndex((chip) => chip.offsetTop > firstRowTop!)
-    if (wrapsAt === -1) return
+    // A wide screen has room for the whole team: it never folds there.
+    if (wrapsAt === -1 || section.closest<HTMLElement>('.stage')?.dataset.orientation === 'landscape') return
     if (isTeamExpanded) {
       teamToggle.textContent = '−'
       teamToggle.ariaLabel = TEXT.showLessTeam
@@ -225,6 +226,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     }
     teamElement.append(teamToggle)
   }
+  window.addEventListener('resize', () => renderTeamToggle())
   teamToggle.addEventListener('click', (event) => {
     event.stopPropagation()
     isTeamExpanded = !isTeamExpanded
