@@ -3,13 +3,6 @@ import { createRandom, type Random } from '../simulation/random'
 export const TERRAINS = ['grass', 'sand', 'snow', 'cave'] as const
 export type Terrain = (typeof TERRAINS)[number]
 
-export const TERRAIN_NAMES: Record<Terrain, string> = {
-  grass: 'Prairie',
-  sand: 'Désert',
-  snow: 'Toundra',
-  cave: 'Grotte',
-}
-
 export const isTerrain = (value: unknown): value is Terrain => TERRAINS.includes(value as Terrain)
 
 // The ground has its own random stream, so that changing a terrain never changes the battle itself.

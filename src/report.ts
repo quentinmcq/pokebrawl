@@ -1,14 +1,14 @@
 import { runBattle, type BattleSetup, type Fighter } from './simulation/battle'
 import { costOf } from './simulation/cost'
-import { TYPE_NAMES_FR } from './simulation/teams'
+import type { Locale } from './locale'
+import { MESSAGES } from './messages'
+import { TYPE_NAMES } from './simulation/teams'
 import type { TypeKey } from './simulation/types'
 
 // Past these shares, the type matchups explain the battle better than luck does.
 const WEAK_HITS_WORTH_A_WORD = 0.3
 const STRONG_HITS_TAKEN_WORTH_A_WORD = 0.35
 const MAX_LINES = 3
-
-const percent = (share: number) => `${Math.round(share * 100)} %`
 
 interface SpeciesTally {
   name: string
@@ -23,7 +23,8 @@ interface SpeciesTally {
  * weak spots, which of its types the opponents punished, and which Pokémon were worth their price. Battles replay
  * identically from their setup, so the report replays it rather than recording anything while it plays.
  */
-export function battleReport(setup: BattleSetup) {
+export function battleReport(setup: BattleSetup, locale: Locale) {
+  const text = MESSAGES[locale]
   const given = { strong: 0, weak: 0, total: 0 }
   const taken = { strong: 0, total: 0 }
   const strongHitsTakenByType = new Map<TypeKey, number>()
@@ -48,19 +49,15 @@ export function battleReport(setup: BattleSetup) {
 
   const lines: string[] = []
   if (given.total > 0 && given.weak / given.total >= WEAK_HITS_WORTH_A_WORD)
-    lines.push(
-      `${percent(given.weak / given.total)} de tes attaques étaient peu efficaces ou sans effet : vise les faiblesses de l’adversaire.`,
-    )
+    lines.push(text.weakHits(given.weak / given.total))
   const [mostHitType] = [...strongHitsTakenByType].toSorted(([, a], [, b]) => b - a)
   if (taken.total > 0 && taken.strong / taken.total >= STRONG_HITS_TAKEN_WORTH_A_WORD && mostHitType)
-    lines.push(
-      `${percent(taken.strong / taken.total)} des coups reçus étaient super efficaces, surtout sur tes Pokémon ${TYPE_NAMES_FR[mostHitType[0]]}.`,
-    )
+    lines.push(text.strongHitsTaken(taken.strong / taken.total, TYPE_NAMES[locale][mostHitType[0]]))
 
   const tallies = new Map<number, SpeciesTally>()
   for (const fighter of battle.fighters.filter((candidate: Fighter) => candidate.team === 0)) {
     const tally = tallies.get(fighter.species.id) ?? {
-      name: fighter.species.names.fr,
+      name: fighter.species.names[locale],
       copies: 0,
       points: 0,
       knockOuts: 0,
@@ -75,13 +72,8 @@ export function battleReport(setup: BattleSetup) {
   const byValue = [...tallies.values()].toSorted((a, b) => b.damage / b.points - a.damage / a.points)
   const best = byValue[0]
   const worst = byValue.at(-1)
-  if (best && best.damage > 0)
-    lines.push(
-      `Meilleur rapport : ${best.name}${best.copies > 1 ? ` (×${best.copies})` : ''}, ${best.knockOuts} K.O. pour ${best.points} points.`,
-    )
+  if (best && best.damage > 0) lines.push(text.bestValue(best.name, best.copies, best.knockOuts, best.points))
   if (worst && worst !== best)
-    lines.push(
-      `Le moins rentable : ${worst.name}${worst.copies > 1 ? ` (×${worst.copies})` : ''}, ${Math.round(worst.damage)} dégâts pour ${worst.points} points.`,
-    )
+    lines.push(text.worstValue(worst.name, worst.copies, Math.round(worst.damage), worst.points))
   return lines.slice(0, MAX_LINES)
 }

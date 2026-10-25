@@ -1,3 +1,5 @@
+import { TEXT } from './i18n'
+
 // Stroke icons in a 24 × 24 grid, after the Lucide set.
 const ICONS = {
   pause: '<path d="M8 5v14M16 5v14"/>',
@@ -79,7 +81,7 @@ export function createControls(nav: HTMLElement, stage: HTMLElement, handlers: C
   function setState(next: PlayState) {
     state = next
     toggleButton.innerHTML = icon(state === 'playing' ? 'pause' : state === 'paused' ? 'play' : 'replay')
-    toggleButton.ariaLabel = state === 'playing' ? 'Pause' : state === 'paused' ? 'Reprendre' : 'Revoir le combat'
+    toggleButton.ariaLabel = state === 'playing' ? TEXT.page.pause : state === 'paused' ? TEXT.resume : TEXT.replay
     button('skip').hidden = state === 'over'
     wake()
   }
@@ -92,13 +94,13 @@ export function createControls(nav: HTMLElement, stage: HTMLElement, handlers: C
   function setFullscreen(available: boolean, active: boolean) {
     fullscreenButton.hidden = !available
     fullscreenButton.innerHTML = icon(active ? 'exitFullscreen' : 'enterFullscreen')
-    fullscreenButton.ariaLabel = active ? 'Quitter le plein écran' : 'Plein écran'
+    fullscreenButton.ariaLabel = active ? TEXT.exitFullscreen : TEXT.page.fullscreen
   }
 
   function setSound(enabled: boolean) {
     const soundButton = button('sound')
     soundButton.innerHTML = icon(enabled ? 'soundOn' : 'soundOff')
-    soundButton.ariaLabel = enabled ? 'Couper le son' : 'Remettre le son'
+    soundButton.ariaLabel = enabled ? TEXT.page.mute : TEXT.unmute
   }
 
   return {

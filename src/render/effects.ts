@@ -4,6 +4,7 @@ import { createRandom, type Random } from '../simulation/random'
 import type { TypeKey } from '../simulation/types'
 import { FONT_FAMILY, type Layout } from './layout'
 import { displayedPosition, secondsSince, type Playback, type ShownEvent } from './playback'
+import { nameOf } from '../ui/i18n'
 
 type ProjectileKind = 'orb' | 'beam' | 'bolt' | 'shards' | 'leaves' | 'wave' | 'crescent'
 type ImpactKind = 'burst' | 'ring' | 'star' | 'splash' | 'cloud' | 'slash'
@@ -195,7 +196,7 @@ export function createEffectsView(playback: Playback, seed: number, layout: Layo
     const slot = labels.indexOf(null)
     if (slot === -1) return
     const text = labelTexts[slot]!
-    text.text = event.move.names.fr
+    text.text = nameOf(event.move)
     text.style.fill = color
     text.style.fontSize = event.multiplier >= 2 ? 36 : 30
     text.visible = true

@@ -1,6 +1,7 @@
 import { Container, Graphics, Sprite, Text, Texture, type Spritesheet, type TextStyleOptions } from 'pixi.js'
 import { summarizeBattle, type Battle, type Fighter } from '../simulation/battle'
 import { COLORS, FONT_FAMILY, type Layout } from './layout'
+import { nameOf, TEXT } from '../ui/i18n'
 
 // The last knock-out finishes its animation before the screen covers the arena.
 const DELAY_SECONDS = 0.8
@@ -25,9 +26,7 @@ const style = (fontSize: number, fill: number, fontWeight: TextStyleOptions['fon
 })
 
 const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`
-const plural = (count: number, word: string) => `${count} ${word}${count > 1 ? 's' : ''}`
-const statsOf = (fighter: Fighter) =>
-  `${fighter.knockOuts} K.O. · ${Math.round(fighter.damageDealt).toLocaleString('fr-FR')} dégâts`
+const statsOf = (fighter: Fighter) => TEXT.fighterStats(fighter.knockOuts, Math.round(fighter.damageDealt))
 
 /**
  * Pixel sprites blown up several times turn to mush when smoothed: the end screen copies its few large sprites out
@@ -107,16 +106,16 @@ export function createEndScreen(
         .fill({ color: COLORS.background, alpha: 0.92 })
         .stroke({ color: winnerColor, width: 6 }),
     )
-    const headline = outcome === 'draw' ? 'Égalité !' : `${teamTitles[outcome]} gagne !`
+    const headline = outcome === 'draw' ? TEXT.draw : TEXT.teamWins(teamTitles[outcome])
     addText(headline, style(88, winnerColor, '900'), PANEL_WIDTH / 2, 44)
     addText(
-      `${plural(winners.length, 'survivant')} · ${clock(durationSeconds)}`,
+      `${TEXT.survivorCount(winners.length)} · ${clock(durationSeconds)}`,
       style(40, COLORS.mutedText, '600'),
       PANEL_WIDTH / 2,
       150,
     )
 
-    addHeading('Meilleur Pokémon', 240)
+    addHeading(TEXT.mostValuable, 240)
     const mvpColor = COLORS.teams[mostValuable.team]
     panel.addChild(
       new Graphics()
@@ -126,24 +125,24 @@ export function createEndScreen(
     )
     mvpSprite = addSprite(mostValuable, MVP_SPRITE_SIZE, PANEL_WIDTH / 2, 515, true)
     mvpSprite.scale.x = -Math.abs(mvpSprite.scale.x)
-    addText(mostValuable.species.names.fr, style(60, COLORS.text, '900'), PANEL_WIDTH / 2, 535)
+    addText(nameOf(mostValuable.species), style(60, COLORS.text, '900'), PANEL_WIDTH / 2, 535)
     addText(statsOf(mostValuable), style(36, mvpColor, '700'), PANEL_WIDTH / 2, 610)
 
     const podium = battle.fighters
       .filter((fighter) => fighter !== mostValuable)
       .toSorted((a, b) => b.knockOuts - a.knockOuts || b.damageDealt - a.damageDealt)
       .slice(0, PODIUM_SIZE)
-    addHeading('Ensuite', 690)
+    addHeading(TEXT.runnersUp, 690)
     const columnWidth = PANEL_WIDTH / PODIUM_SIZE
     podium.forEach((fighter, rank) => {
       const x = columnWidth * (rank + 0.5)
       addSprite(fighter, PODIUM_SPRITE_SIZE, x, 840, true)
-      addText(fighter.species.names.fr, style(30, COLORS.teams[fighter.team], '800'), x, 850, columnWidth - 20)
-      addText(`${fighter.knockOuts} K.O.`, style(28, COLORS.mutedText, '600'), x, 890, columnWidth - 20)
+      addText(nameOf(fighter.species), style(30, COLORS.teams[fighter.team], '800'), x, 850, columnWidth - 20)
+      addText(TEXT.knockOuts(fighter.knockOuts), style(28, COLORS.mutedText, '600'), x, 890, columnWidth - 20)
     })
 
     if (winners.length === 0) return
-    addHeading('Survivants', 960)
+    addHeading(TEXT.survivors, 960)
     const shown = winners.slice(0, SURVIVORS_PER_ROW * SURVIVOR_ROWS)
     const cellWidth = (PANEL_WIDTH - 60) / SURVIVORS_PER_ROW
     shown.forEach((fighter, index) => {
@@ -152,7 +151,7 @@ export function createEndScreen(
       addSprite(fighter, SURVIVOR_SPRITE_SIZE, 30 + cellWidth * (column + 0.5), 1075 + row * 80, false)
     })
     const hidden = winners.length - shown.length
-    if (hidden > 0) addText(`et ${hidden} autres`, style(26, COLORS.mutedText, '600'), PANEL_WIDTH / 2, 1170)
+    if (hidden > 0) addText(TEXT.others(hidden), style(26, COLORS.mutedText, '600'), PANEL_WIDTH / 2, 1170)
   }
 
   function update(deltaSeconds: number) {

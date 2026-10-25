@@ -3,14 +3,14 @@
   "name": "pokebrawl",
   "account_id": "ea93a11f9c4cf5128fd1deffb3908158",
   "compatibility_date": "2026-10-01",
-  // The app runs in the browser; the Worker answers the daily ranking under /api and dresses up the link previews
-  // of the home page.
+  // The app runs in the browser; the Worker answers the daily ranking under /api and dresses up the home page, in
+  // French and in English, for link previews and search engines.
   "main": "worker/index.ts",
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/"],
+    "run_worker_first": ["/api/*", "/", "/en", "/en/"],
   },
   "d1_databases": [
     {

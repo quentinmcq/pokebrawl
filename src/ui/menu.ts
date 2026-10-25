@@ -1,7 +1,8 @@
 import { pokedex } from '../pokedex'
 import { randomSeed, type BattleParams } from '../render/params'
-import { TERRAIN_NAMES, TERRAINS, terrainForSeed, isTerrain } from '../render/terrain'
+import { TERRAINS, terrainForSeed, isTerrain } from '../render/terrain'
 import { selectTeam, TEAM_SELECTORS, teamTitle } from '../simulation/teams'
+import { LOCALE, TEXT } from './i18n'
 
 const RANDOM_TERRAIN = ''
 
@@ -28,13 +29,13 @@ export function createMenu(form: HTMLFormElement, { onPreview, onStart }: MenuHa
 
   const teamEntries = TEAM_SELECTORS.map((selector): [string, string] => [
     selector,
-    `${teamTitle(selector)} (${selectTeam(pokedex, selector).fighters.length})`,
+    `${teamTitle(selector, LOCALE)} (${selectTeam(pokedex, selector).fighters.length})`,
   ])
   optionsOf(firstTeam, teamEntries)
   optionsOf(secondTeam, teamEntries)
   optionsOf(terrain, [
-    [RANDOM_TERRAIN, 'Au hasard'],
-    ...TERRAINS.map((key): [string, string] => [key, TERRAIN_NAMES[key]]),
+    [RANDOM_TERRAIN, TEXT.page.random],
+    ...TERRAINS.map((key): [string, string] => [key, TEXT.terrains[key]]),
   ])
 
   // An empty seed means a new one at each launch; the preview keeps one so that it does not reshuffle on every change.

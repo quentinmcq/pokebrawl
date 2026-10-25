@@ -5,7 +5,6 @@ import {
   dailyDayOf,
   dayOf,
   EMPTY_DAILY_RECORD,
-  formatDay,
   recordDailyWin,
   type DailyRecord,
 } from '../daily'
@@ -16,8 +15,9 @@ import { typeColor } from '../render/effects'
 import { randomSeed, type BattleParams } from '../render/params'
 import { terrainForSeed } from '../render/terrain'
 import { costOf, MAX_TEAM_SIZE, TEAM_BUDGET, teamCost } from '../simulation/cost'
-import { parseHorde, selectTeam, TEAM_SELECTORS, TYPE_NAMES_FR, teamTitle, toFighterSetup } from '../simulation/teams'
+import { parseHorde, selectTeam, TEAM_SELECTORS, TYPE_NAMES, teamTitle, toFighterSetup } from '../simulation/teams'
 import type { Species, TypeKey } from '../simulation/types'
+import { LOCALE, nameOf, TEXT } from './i18n'
 import { fetchRanking, renderRanking, savedNickname, saveNickname } from './ranking'
 import { shareLink, siteUrl } from './share'
 import { track } from './track'
@@ -48,9 +48,7 @@ const normalized = (text: string) =>
 const hordeSelector = (horde: string, level: number) => `horde:${horde}:${level}`
 const today = () => dayOf(new Date())
 const typeHex = (type: TypeKey) => `#${typeColor(type).toString(16).padStart(6, '0')}`
-// « 1 000 », as French writes thousands.
-const BUDGET_TEXT = TEAM_BUDGET.toLocaleString('fr-FR')
-const plural = (count: number, word: string) => `${count} ${word}${count > 1 ? 's' : ''}`
+const TYPE_NAME = TYPE_NAMES[LOCALE]
 
 /** What the end of a challenge says, and the message to share after beating the daily horde. */
 export interface ChallengeResult {
@@ -71,7 +69,7 @@ const previousDayOf = (day: string) => {
 const typeChip = (type: TypeKey, tag: 'span' | 'button') => {
   const chip = document.createElement(tag)
   chip.className = 'type-chip'
-  chip.textContent = TYPE_NAMES_FR[type]
+  chip.textContent = TYPE_NAME[type]
   chip.style.background = typeHex(type)
   return chip
 }
@@ -128,11 +126,11 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   const collectionCheckbox = query<HTMLInputElement>('input[name="collection"]')
 
   typeSelect.replaceChildren(
-    new Option('Tous les types', ALL),
-    ...Object.entries(TYPE_NAMES_FR).map(([key, name]) => new Option(name, key)),
+    new Option(TEXT.allTypes, ALL),
+    ...Object.entries(TYPE_NAME).map(([key, name]) => new Option(name, key)),
   )
   generationSelect.replaceChildren(
-    new Option('Toutes les générations', ALL),
+    new Option(TEXT.allGenerations, ALL),
     ...Array.from({ length: 9 }, (_, index) => new Option(`Gen ${index + 1}`, String(index + 1))),
   )
 
@@ -152,9 +150,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   function renderFriend() {
     if (!friendChallenge) return
     const { name, size, points } = friendChallenge
-    query('[data-role="friend-title"]').textContent = `Défi de ${name}`
-    query('[data-role="friend-status"]').textContent =
-      `Bats son équipe de ${size} Pokémon (${points} points) avec tes ${BUDGET_TEXT} points. Même combat pour vous deux.`
+    query('[data-role="friend-title"]').textContent = TEXT.friendTitle(name)
+    query('[data-role="friend-status"]').textContent = TEXT.friendStatus(size, points)
   }
 
   function renderDaily() {
@@ -162,12 +159,9 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     const { horde } = dailyChallenge(day)
     const best = dailyRecord.bestByDay[day]
     const streak = currentStreak(dailyRecord, day)
-    query('[data-role="daily-title"]').textContent = `Défi du ${formatDay(day)} : ${teamTitle(horde)}`
-    const goal =
-      best === undefined
-        ? 'Même combat pour tout le monde : bats-la avec le moins de points possible.'
-        : `Battue avec ${best} points : fais encore mieux\u00a0!`
-    query('[data-role="daily-status"]').textContent = `${goal}${streak > 0 ? ` · 🔥 ${plural(streak, 'jour')}` : ''}`
+    query('[data-role="daily-title"]').textContent = TEXT.dailyTitle(day, teamTitle(horde, LOCALE))
+    const goal = best === undefined ? TEXT.dailyGoal : TEXT.dailyBest(best)
+    query('[data-role="daily-status"]').textContent = `${goal}${streak > 0 ? ` · 🔥 ${TEXT.days(streak)}` : ''}`
     void renderRankingOf(rankingDay === 'today' ? day : previousDayOf(day))
   }
 
@@ -176,7 +170,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   async function renderRankingOf(day: string) {
     for (const button of rankingButtons) button.ariaPressed = String(button.dataset.ranking === rankingDay)
     const request = ++rankingRequest
-    query('[data-role="ranking-summary"]').textContent = 'Chargement…'
+    query('[data-role="ranking-summary"]').textContent = TEXT.page.loadingShort
     const ranking = await fetchRanking(day)
     if (request !== rankingRequest) return
     const { horde, seed } = dailyChallenge(day)
@@ -201,7 +195,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       button.ariaPressed = String(button.dataset.mode === challenge.mode)
       if (button.dataset.mode !== 'friend') continue
       button.hidden = !friendChallenge
-      if (friendChallenge) button.textContent = `Défi de ${friendChallenge.name}`
+      if (friendChallenge) button.textContent = TEXT.friendTitle(friendChallenge.name)
     }
     query('[data-role="daily"]').hidden = !daily
     query('[data-role="friend"]').hidden = challenge.mode !== 'friend'
@@ -211,15 +205,14 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     hordeSelect.replaceChildren(
       ...TEAM_SELECTORS.map((selector) => {
         const beaten = wins.has(hordeSelector(selector, challenge.level))
-        return new Option(`${teamTitle(selector)}${beaten ? ' ✓' : ''}`, selector)
+        return new Option(`${teamTitle(selector, LOCALE)}${beaten ? ' ✓' : ''}`, selector)
       }),
     )
     hordeSelect.value = challenge.horde
     for (const button of levelButtons) button.ariaPressed = String(Number(button.dataset.level) === challenge.level)
     const horde = selectTeam(pokedex, opponent().horde).fighters
     const beaten = challenge.mode === 'training' && wins.has(hordeSelector(challenge.horde, challenge.level))
-    query('[data-role="horde-summary"]').textContent =
-      `${horde.length} Pokémon · ${teamCost(horde)} points${beaten ? ' · déjà battue ✓' : ''}`
+    query('[data-role="horde-summary"]').textContent = TEXT.hordeSummary(horde.length, teamCost(horde), beaten)
     query('[data-role="horde"]').replaceChildren(...horde.map(({ species }) => spriteOf(species.id)))
     renderAdvice(horde)
   }
@@ -231,15 +224,15 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     advice.replaceChildren()
     if (dominant.length === 0) return
     advice.append(
-      'Surtout ',
-      ...dominant.flatMap((type, index) => [...(index > 0 ? [' et '] : []), typeChip(type, 'span')]),
+      TEXT.mostly,
+      ...dominant.flatMap((type, index) => [...(index > 0 ? [TEXT.and] : []), typeChip(type, 'span')]),
     )
     if (targets.length === 0) return
-    advice.append(' · Vise :')
+    advice.append(TEXT.aimFor)
     for (const type of targets) {
       const chip = typeChip(type, 'button') as HTMLButtonElement
       chip.type = 'button'
-      chip.title = `Montrer les Pokémon de type ${TYPE_NAMES_FR[type]}`
+      chip.title = TEXT.showType(TYPE_NAME[type])
       chip.addEventListener('click', () => {
         typeSelect.value = type
         renderCards()
@@ -253,8 +246,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     const used = spent()
     const size = teamSize()
     query<HTMLElement>('.budget-fill').style.width = `${(100 * used) / TEAM_BUDGET}%`
-    query('[data-role="budget-summary"]').textContent =
-      `${used} / ${BUDGET_TEXT} points · ${size} Pokémon${size >= MAX_TEAM_SIZE ? ' (maximum)' : ''}`
+    query('[data-role="budget-summary"]').textContent = TEXT.budgetSummary(used, size, size >= MAX_TEAM_SIZE)
     query('[data-role="team"]').replaceChildren(
       ...[...team]
         .toSorted(([a], [b]) => a - b)
@@ -263,7 +255,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
           chip.type = 'button'
           chip.className = 'chip'
           chip.dataset.id = String(id)
-          chip.title = `Retirer un ${entryOf(id).species.names.fr}`
+          chip.title = TEXT.remove(nameOf(entryOf(id).species))
           chip.append(spriteOf(id))
           if (count > 1)
             chip.append(
@@ -292,14 +284,14 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     for (const type of species.types) {
       const dot = document.createElement('i')
       dot.style.background = typeHex(type)
-      dot.title = TYPE_NAMES_FR[type]
+      dot.title = TYPE_NAME[type]
       types.append(dot)
     }
     if (collection.has(species.id))
       card.append(Object.assign(document.createElement('span'), { className: 'card-star', textContent: '★' }))
     card.append(
       spriteOf(species.id),
-      Object.assign(document.createElement('span'), { className: 'card-name', textContent: species.names.fr }),
+      Object.assign(document.createElement('span'), { className: 'card-name', textContent: nameOf(species) }),
       Object.assign(document.createElement('span'), { className: 'card-cost', textContent: String(cost) }),
       types,
     )
@@ -398,8 +390,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   /** A link to send: the team as it stands, under the player's nickname, with a fresh seed for both players. */
   function challengeOf(name: string) {
     const url = siteUrl(friendChallengeSearch({ team: teamSelector(team), name, seed: randomSeed() }))
-    const text = `${name} te défie sur PokéBrawl : bats mon équipe de ${teamSize()} Pokémon (${spent()} points) avec tes ${BUDGET_TEXT} points\u00a0!`
-    return { text, url }
+    return { text: TEXT.challengeText(name, teamSize(), spent()), url }
   }
 
   function showChallengeStatus(message: string) {
@@ -409,19 +400,15 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
 
   challengerInput.value = savedNickname() ?? ''
   query('[data-action="challenge"]').addEventListener('click', async () => {
-    if (team.size === 0) return showChallengeStatus('Compose d’abord ton équipe.')
+    if (team.size === 0) return showChallengeStatus(TEXT.composeFirst)
     const nickname = checkNickname(challengerInput.value)
-    if (!nickname.ok) return showChallengeStatus(nickname.error)
+    if (!nickname.ok) return showChallengeStatus(TEXT.nicknameErrors[nickname.error])
     saveNickname(nickname.nickname)
     const { text, url } = challengeOf(nickname.nickname)
     const outcome = await shareLink(text, url)
     if (outcome !== 'failed') track('share-challenge')
     showChallengeStatus(
-      outcome === 'copied'
-        ? 'Lien copié : envoie-le à un ami\u00a0!'
-        : outcome === 'shared'
-          ? 'Défi envoyé\u00a0!'
-          : 'Partage impossible ici.',
+      outcome === 'copied' ? TEXT.challengeCopied : outcome === 'shared' ? TEXT.challengeSent : TEXT.shareFailed,
     )
   })
   query('[data-action="spectate"]').addEventListener('click', onSpectate)
@@ -454,15 +441,14 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
         for (let copy = 0; copy < count; copy++) {
           if (spent() + entryOf(id).cost > TEAM_BUDGET || teamSize() >= MAX_TEAM_SIZE) break
           team.set(id, (team.get(id) ?? 0) + 1)
-          if (!added.includes(entryOf(id).species.names.fr)) added.push(entryOf(id).species.names.fr)
+          if (!added.includes(nameOf(entryOf(id).species))) added.push(nameOf(entryOf(id).species))
         }
       }
       if (added.length === 0) return
       saveTeam()
       renderTeam()
       const notice = query('[data-role="team-notice"]')
-      const names = added.length === 1 ? added[0] : `${added.slice(0, -1).join(', ')} et ${added.at(-1)}`
-      notice.textContent = `${names} ${added.length === 1 ? 'a' : 'ont'} rejoint ton équipe : complète-la, puis bats la horde du jour\u00a0!`
+      notice.textContent = TEXT.welcomed(added)
       notice.hidden = false
     },
     /** Keeps the Pokémon caught on PokéDate, received by link, and says how to find them. */
@@ -476,10 +462,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       }
       renderCollection()
       const notice = query('[data-role="team-notice"]')
-      notice.textContent =
-        ids.length === 0
-          ? 'Aucun Pokémon attrapé sur PokéDate pour l’instant : entre des dates là-bas pour en attraper.'
-          : `${ids.length} Pokémon attrapé${ids.length > 1 ? 's' : ''} sur PokéDate : ils portent une ★, et le filtre du catalogue les regroupe.`
+      notice.textContent = ids.length === 0 ? TEXT.noCollection : TEXT.collection(ids.length)
       notice.hidden = false
     },
     /** Opens on a friend's team, received by link, to beat with the player's own. */
@@ -494,17 +477,17 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       if (params.opponentName) {
         if (!won)
           return {
-            message: `L’équipe de ${params.opponentName} a gagné. Change ton équipe\u00a0!`,
+            message: TEXT.friendLost(params.opponentName),
             shareText: null,
             shareUrl: siteUrl(),
             daily: true,
             publishable: null,
           }
         // The winner sends the challenge back, with the team that just won.
-        const name = savedNickname() ?? 'Un ami'
+        const name = savedNickname() ?? TEXT.aFriend
         return {
-          message: `Tu as battu l’équipe de ${params.opponentName}\u00a0!`,
-          shareText: `${name} a battu ton équipe sur PokéBrawl. À ton tour : bats la sienne avec tes ${BUDGET_TEXT} points\u00a0!`,
+          message: TEXT.friendWon(params.opponentName),
+          shareText: TEXT.challengeBackText(name),
           shareUrl: siteUrl(friendChallengeSearch({ team: params.teams[0], name, seed: randomSeed() })),
           daily: true,
           publishable: null,
@@ -523,7 +506,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
         return { message: null, shareText: null, shareUrl: siteUrl(), daily: true, publishable: null }
       if (!won)
         return {
-          message: 'Raté\u00a0! Change ton équipe et retente ta chance.',
+          message: TEXT.dailyLost,
           shareText: null,
           shareUrl: siteUrl(),
           daily: true,
@@ -534,15 +517,9 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       writeStored(STORAGE_KEYS.daily, dailyRecord)
       const best = dailyRecord.bestByDay[day]!
       const streak = currentStreak(dailyRecord, day)
-      const record = best < points ? ` · record : ${best}` : ''
       return {
-        message: `Défi réussi avec ${points} points\u00a0!${record} · 🔥 ${plural(streak, 'jour')}`,
-        shareText: [
-          `PokéBrawl · défi du ${formatDay(day)}`,
-          `${teamTitle(params.teams[1])} battue avec ${points} points 💪`,
-          `🔥 Série : ${plural(streak, 'jour')}`,
-          'Fais mieux que moi :',
-        ].join('\n'),
+        message: TEXT.dailyWon(points, best < points ? best : null, streak),
+        shareText: TEXT.dailyShare(day, teamTitle(params.teams[1], LOCALE), points, streak).join('\n'),
         shareUrl: siteUrl(),
         daily: true,
         publishable: { day, team: params.teams[0] },

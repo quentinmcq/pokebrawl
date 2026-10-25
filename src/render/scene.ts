@@ -1,7 +1,6 @@
 import { Container, type Spritesheet } from 'pixi.js'
 import { pokedex } from '../pokedex'
 import { createBattle, type TeamSetup } from '../simulation/battle'
-import { friendTeamTitle } from '../friend'
 import { checkNickname } from '../nickname'
 import { selectTeam, teamTitle, trimToSameSize } from '../simulation/teams'
 import { createArenaView } from './arenaView'
@@ -11,6 +10,7 @@ import { createHud } from './hud'
 import type { Layout } from './layout'
 import type { BattleParams } from './params'
 import { advancePlayback, createPlayback, takePendingEvents, type ShownEvent } from './playback'
+import { LOCALE, TEXT } from '../ui/i18n'
 
 // Leaves a moment to take in both crowds before they charge.
 const START_DELAY_SECONDS = 1.5
@@ -36,8 +36,8 @@ export function createScene(
   const battle = createBattle({ teams: buildTeams(params), seed: params.seed })
   const opponent = params.opponentName === null ? null : checkNickname(params.opponentName)
   const teamTitles: [string, string] = [
-    teamTitle(params.teams[0]),
-    opponent ? friendTeamTitle(opponent.ok ? opponent.nickname : 'Un ami') : teamTitle(params.teams[1]),
+    teamTitle(params.teams[0], LOCALE),
+    opponent ? TEXT.friendTeam(opponent.ok ? opponent.nickname : TEXT.aFriend) : teamTitle(params.teams[1], LOCALE),
   ]
   const playback = createPlayback(battle)
   const view = new Container()

@@ -16,7 +16,8 @@ import { createComposer, isChallenge, type ChallengeResult } from './ui/composer
 import { createControls } from './ui/controls'
 import { setUpInstall, isInstalled } from './ui/install'
 import { createMenu } from './ui/menu'
-import { ordinal, savedNickname, saveNickname, submitScore } from './ui/ranking'
+import { LOCALE, TEXT, translatePage } from './ui/i18n'
+import { savedNickname, saveNickname, submitScore } from './ui/ranking'
 import { shareLink } from './ui/share'
 import { createSound } from './ui/sound'
 import { track, trackVisit } from './ui/track'
@@ -115,7 +116,7 @@ async function start() {
     )
     scene = shown
     app.stage.addChild(scene.view)
-    document.title = `${scene.teamTitles[0]} contre ${scene.teamTitles[1]} · PokéBrawl`
+    document.title = TEXT.battleTitle(...scene.teamTitles)
   }
 
   function setPaused(value: boolean) {
@@ -208,7 +209,7 @@ async function start() {
     publishForm.hidden = true
     const { you, total } = outcome.ranking
     if (you) {
-      resultLine.textContent = `${resultMessage} · ${ordinal(you.rank)} sur ${total}`
+      resultLine.textContent = TEXT.rankLine(resultMessage, you.rank, total)
       showUnlocked([...shownUnlocked, ...achievements.recordRank(you.rank)])
     }
   }
@@ -240,13 +241,13 @@ async function start() {
     publishForm.hidden = publishable === null || nickname !== null
     if (publishable && nickname) void publish(nickname)
     resultLine.hidden = result.message === null
-    const report = battleReport({ teams: buildTeams(params), seed: params.seed })
+    const report = battleReport({ teams: buildTeams(params), seed: params.seed }, LOCALE)
     reportList.replaceChildren(
       ...report.map((line) => Object.assign(document.createElement('li'), { textContent: line })),
     )
     reportList.hidden = report.length === 0
     shareButton.hidden = share === null
-    shareButton.textContent = params.opponentName ? 'Renvoyer le défi' : 'Partager'
+    shareButton.textContent = params.opponentName ? TEXT.sendBack : TEXT.page.share
     // The daily seed is fixed: the same team would only replay the same battle.
     endActions.querySelector<HTMLElement>('[data-action="rematch"]')!.hidden = result.daily
     // The next step replaces the playback controls, which have nothing left to control.
@@ -260,7 +261,7 @@ async function start() {
     if (!share) return
     const outcome = await shareLink(share.text, share.url)
     if (outcome !== 'failed') track(params?.opponentName ? 'share-back' : 'share-daily')
-    if (outcome === 'copied') shareButton.textContent = 'Lien copié\u00a0!'
+    if (outcome === 'copied') shareButton.textContent = TEXT.linkCopied
   }
 
   const spriteOf = createSpriteFactory(spritesheet)
@@ -271,7 +272,7 @@ async function start() {
   function showUnlocked(earned: Achievement[]) {
     shownUnlocked = earned
     unlockedLine.hidden = earned.length === 0
-    unlockedLine.textContent = `${earned.length > 1 ? 'Succès débloqués' : 'Succès débloqué'} : ${earned.map(({ title }) => title).join(', ')}`
+    unlockedLine.textContent = TEXT.unlocked(earned.map(({ title }) => title[LOCALE]))
   }
 
   // Only the player's own team counts: today's daily horde, a training horde or a friend, never a replayed team.
@@ -391,7 +392,7 @@ async function start() {
   setUpInstall(element('install'), element('ios-install'))
   // Read before the address is tidied up, since it tells where the visitor came from.
   trackVisit()
-  const friendChallenge = readFriendChallenge(location.search)
+  const friendChallenge = readFriendChallenge(location.search, TEXT.aFriend)
   const welcomedTeam = new URLSearchParams(location.search).get('equipe')
   function importCollectionFromHash() {
     const collection = readCollectionHash(location.hash)
@@ -420,4 +421,5 @@ async function start() {
   openFromAddress()
 }
 
+translatePage()
 start().catch((error: unknown) => showError(error instanceof Error ? error.message : String(error)))

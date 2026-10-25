@@ -1,5 +1,6 @@
 import { ACHIEVEMENTS, newlyUnlocked, type Achievement, type AchievementState, type CountedWin } from '../achievements'
 import { currentStreak, dayOf, EMPTY_DAILY_RECORD, type DailyRecord } from '../daily'
+import { LOCALE } from './i18n'
 import { readStored, STORAGE_KEYS, writeStored } from './storage'
 
 interface Stats {
@@ -44,11 +45,11 @@ export function createAchievements(panel: HTMLElement, spriteOf: (speciesId: num
         const progress = unlocked.has(achievement.id) ? null : achievement.progress?.(state())
         badge.append(
           spriteOf(achievement.emblem),
-          Object.assign(document.createElement('b'), { textContent: achievement.title }),
+          Object.assign(document.createElement('b'), { textContent: achievement.title[LOCALE] }),
           Object.assign(document.createElement('span'), {
             textContent: progress
-              ? `${achievement.description} (${progress.done}/${progress.total})`
-              : achievement.description,
+              ? `${achievement.description[LOCALE]} (${progress.done}/${progress.total})`
+              : achievement.description[LOCALE],
           }),
         )
         return badge

@@ -1,3 +1,5 @@
+import { MATCHUPS_PATHS } from './locale'
+
 /**
  * What PokéBrawl counts, per day and nothing more: no visitor is identified, only totals are kept. The server
  * refuses any other name, so that the counters stay a short, readable list.
@@ -59,7 +61,10 @@ export function arrivalOf({
   } catch {
     return 'arrival-direct'
   }
-  if (from.host === host) return from.pathname.startsWith('/combats/') ? 'arrival-matchup-page' : 'arrival-direct'
+  if (from.host === host)
+    return Object.values(MATCHUPS_PATHS).some((path) => from.pathname.startsWith(path))
+      ? 'arrival-matchup-page'
+      : 'arrival-direct'
   if (from.host.endsWith('pokedate.fr')) return 'arrival-pokedate'
   if (SEARCH_ENGINES.test(from.host)) return 'arrival-search'
   return 'arrival-other-site'

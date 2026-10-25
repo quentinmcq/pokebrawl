@@ -1,3 +1,5 @@
+import { HOME_PATH } from './i18n'
+
 /**
  * Hands a message and its link to the phone's share sheet, or copies both where there is none (most computers).
  * Says what happened, so that the button can tell the player.
@@ -19,4 +21,5 @@ export async function shareLink(text: string, url: string): Promise<'shared' | '
   }
 }
 
-export const siteUrl = (search = '') => `${location.origin}${import.meta.env.BASE_URL}${search}`
+/** The address of the home page in the page's language, with the given query. */
+export const siteUrl = (search = '') => `${location.origin}${HOME_PATH}${search}`

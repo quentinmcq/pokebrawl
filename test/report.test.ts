@@ -13,19 +13,24 @@ const setupOf = (first: string, second: string) => ({
 
 describe('battleReport', () => {
   it('points out the types the opponents punished', () => {
-    const lines = battleReport(setupOf('ids:5*20', 'horde:type:water:1000'))
+    const lines = battleReport(setupOf('ids:5*20', 'horde:type:water:1000'), 'fr')
     expect(lines.some((line) => line.includes('super efficaces') && line.includes('Feu'))).toBe(true)
   })
 
   it('points out attacks that hit resistant opponents', () => {
     // Magikarp only knows Tackle, a Normal move that Rock Pokémon resist.
-    const lines = battleReport(setupOf('ids:129*100', 'horde:type:rock:1000'))
+    const lines = battleReport(setupOf('ids:129*100', 'horde:type:rock:1000'), 'fr')
     expect(lines.some((line) => line.includes('peu efficaces'))).toBe(true)
   })
 
   it('names the best value in the team, in a few lines at most', () => {
-    const lines = battleReport(setupOf('ids:66*10,129*20', 'horde:gen1:1000'))
+    const lines = battleReport(setupOf('ids:66*10,129*20', 'horde:gen1:1000'), 'fr')
     expect(lines.length).toBeLessThanOrEqual(3)
     expect(lines.some((line) => line.startsWith('Meilleur rapport') || line.includes('peu efficaces'))).toBe(true)
+  })
+
+  it('speaks English on the English site', () => {
+    const lines = battleReport(setupOf('ids:5*20', 'horde:type:water:1000'), 'en')
+    expect(lines.some((line) => line.includes('super effective') && line.includes('Fire'))).toBe(true)
   })
 })

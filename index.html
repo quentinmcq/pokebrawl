@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta
       name="description"
+      data-i18n-content="description"
       content="Compose ton équipe de Pokémon avec 1 000 points et bats la horde du jour, ou défie tes amis."
     />
     <meta property="og:type" content="website" />
@@ -12,6 +13,7 @@
     <meta property="og:title" content="PokéBrawl" />
     <meta
       property="og:description"
+      data-i18n-content="description"
       content="Compose ton équipe de Pokémon avec 1 000 points et bats la horde du jour, ou défie tes amis."
     />
     <meta property="og:image" content="/og.png" />
@@ -21,63 +23,89 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="PokéBrawl" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="manifest" data-i18n-href="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/icons/favicon.png" type="image/png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <title>PokéBrawl</title>
   </head>
   <body>
     <main id="stage" class="stage">
-      <p class="loading">Chargement de l'arène…</p>
+      <p class="loading" data-i18n="loading">Chargement de l’arène…</p>
 
       <form id="menu" class="menu" hidden>
         <h1 class="logo">Poké<span>Brawl</span></h1>
-        <p class="tagline">Choisis deux camps et regarde-les s'affronter.</p>
+        <p class="tagline" data-i18n="menuTagline">Choisis deux camps et regarde-les s’affronter.</p>
         <label class="field field--blue">
-          <span>Camp bleu</span>
+          <span data-i18n="blueSide">Camp bleu</span>
           <select name="a"></select>
         </label>
         <label class="field field--red">
-          <span>Camp rouge</span>
+          <span data-i18n="redSide">Camp rouge</span>
           <select name="b"></select>
         </label>
         <label class="field">
-          <span>Terrain</span>
+          <span data-i18n="terrain">Terrain</span>
           <select name="terrain"></select>
         </label>
         <label class="field">
-          <span>Graine</span>
-          <input name="seed" inputmode="numeric" pattern="[0-9]*" placeholder="Au hasard" autocomplete="off" />
+          <span data-i18n="seed">Graine</span>
+          <input
+            name="seed"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            placeholder="Au hasard"
+            data-i18n-placeholder="random"
+            autocomplete="off"
+          />
         </label>
         <label class="toggle">
           <input type="checkbox" name="same" checked />
-          <span>Même nombre de Pokémon par camp</span>
+          <span data-i18n="sameSize">Même nombre de Pokémon par camp</span>
         </label>
-        <button class="primary" type="submit">Lancer le combat</button>
-        <button class="link" type="button" data-action="compose">← Composer ton équipe</button>
+        <button class="primary" type="submit" data-i18n="startBattle">Lancer le combat</button>
+        <button class="link" type="button" data-action="compose" data-i18n="backToComposer">
+          ← Composer ton équipe
+        </button>
       </form>
 
-      <section id="composer" class="composer" aria-label="Composer ton équipe" hidden>
+      <section id="composer" class="composer" aria-label="Composer ton équipe" data-i18n-aria-label="composer" hidden>
         <header class="composer-header">
           <h1 class="logo">Poké<span>Brawl</span></h1>
           <nav class="header-links">
-            <a class="link" href="/combats/">Qui gagne&nbsp;?</a>
-            <button class="link" type="button" data-action="spectate">Regarder un combat →</button>
+            <a
+              class="link"
+              href="/en/"
+              data-i18n-href="otherLanguagePath"
+              hreflang="en"
+              data-i18n-hreflang="otherLanguageCode"
+              lang="en"
+              data-i18n-lang="otherLanguageCode"
+              data-i18n="otherLanguage"
+              >English</a
+            >
+            <a class="link" href="/combats/" data-i18n-href="matchupsPath" data-i18n="matchups">Qui gagne&nbsp;?</a>
+            <button class="link" type="button" data-action="spectate" data-i18n="watchBattle">
+              Regarder un combat →
+            </button>
           </nav>
-          <p class="tagline">
+          <p class="tagline" data-i18n="composerTagline">
             Bats la horde avec 1&nbsp;000&nbsp;points de Pokémon : beaucoup de petits, ou quelques géants&nbsp;?
           </p>
-          <button class="secondary" type="button" id="install" hidden>Installer l'application</button>
-          <p class="hint" id="ios-install" hidden>Pour l'installer : Partager, puis « Sur l'écran d'accueil ».</p>
+          <button class="secondary" type="button" id="install" data-i18n="install" hidden>
+            Installer l'application
+          </button>
+          <p class="hint" id="ios-install" data-i18n="iosInstall" hidden>
+            Pour l'installer : Partager, puis « Sur l'écran d'accueil ».
+          </p>
         </header>
 
         <div class="composer-side">
           <section class="panel panel--red" aria-labelledby="opponent-title">
-            <h2 id="opponent-title">Adversaire</h2>
-            <div class="segmented segmented--wide" role="group" aria-label="Mode">
-              <button type="button" data-mode="daily">Défi du jour</button>
-              <button type="button" data-mode="training">Entraînement</button>
-              <button type="button" data-mode="friend" hidden>Défi d'un ami</button>
+            <h2 id="opponent-title" data-i18n="opponent">Adversaire</h2>
+            <div class="segmented segmented--wide" role="group" aria-label="Mode" data-i18n-aria-label="mode">
+              <button type="button" data-mode="daily" data-i18n="daily">Défi du jour</button>
+              <button type="button" data-mode="training" data-i18n="training">Entraînement</button>
+              <button type="button" data-mode="friend" data-i18n="friendMode" hidden>Défi d'un ami</button>
             </div>
             <div class="daily" data-role="friend" hidden>
               <p class="daily-title" data-role="friend-title"></p>
@@ -88,22 +116,27 @@
               <p class="hint" data-role="daily-status"></p>
               <div class="ranking">
                 <div class="ranking-head">
-                  <h3>Classement</h3>
-                  <div class="segmented segmented--small" role="group" aria-label="Jour du classement">
-                    <button type="button" data-ranking="today">Aujourd'hui</button>
-                    <button type="button" data-ranking="yesterday">Hier</button>
+                  <h3 data-i18n="ranking">Classement</h3>
+                  <div
+                    class="segmented segmented--small"
+                    role="group"
+                    aria-label="Jour du classement"
+                    data-i18n-aria-label="rankingDay"
+                  >
+                    <button type="button" data-ranking="today" data-i18n="today">Aujourd'hui</button>
+                    <button type="button" data-ranking="yesterday" data-i18n="yesterday">Hier</button>
                   </div>
                 </div>
-                <p class="hint" data-role="ranking-summary">Chargement…</p>
+                <p class="hint" data-role="ranking-summary" data-i18n="loadingShort">Chargement…</p>
                 <ol class="ranking-list" data-role="ranking-list"></ol>
               </div>
             </div>
             <div class="row" data-role="training">
-              <select name="horde" aria-label="Horde à battre"></select>
-              <div class="segmented" role="group" aria-label="Difficulté">
-                <button type="button" data-level="800">Facile</button>
-                <button type="button" data-level="1000">Normal</button>
-                <button type="button" data-level="1250">Difficile</button>
+              <select name="horde" aria-label="Horde à battre" data-i18n-aria-label="hordeToBeat"></select>
+              <div class="segmented" role="group" aria-label="Difficulté" data-i18n-aria-label="difficulty">
+                <button type="button" data-level="800" data-i18n="easy">Facile</button>
+                <button type="button" data-level="1000" data-i18n="normal">Normal</button>
+                <button type="button" data-level="1250" data-i18n="hard">Difficile</button>
               </div>
             </div>
             <p class="summary" data-role="horde-summary"></p>
@@ -112,7 +145,7 @@
           </section>
 
           <section class="panel panel--blue" aria-labelledby="team-title">
-            <h2 id="team-title">Ton équipe</h2>
+            <h2 id="team-title" data-i18n="yourTeam">Ton équipe</h2>
             <div class="budget" data-role="budget">
               <div class="budget-bar"><div class="budget-fill"></div></div>
               <p class="summary" data-role="budget-summary"></p>
@@ -123,53 +156,64 @@
                 name="challenger"
                 maxlength="20"
                 placeholder="Ton pseudo"
+                data-i18n-placeholder="nickname"
                 autocomplete="nickname"
                 aria-label="Ton pseudo pour le défi"
+                data-i18n-aria-label="nicknameForChallenge"
               />
-              <button class="secondary" type="button" data-action="challenge">Défier un ami</button>
+              <button class="secondary" type="button" data-action="challenge" data-i18n="challengeFriend">
+                Défier un ami
+              </button>
               <p class="hint" data-role="challenge-status" hidden></p>
             </div>
             <p class="notice" data-role="team-notice" hidden></p>
-            <p class="hint" data-role="team-hint">
+            <p class="hint" data-role="team-hint" data-i18n="teamHint">
               Touche un Pokémon du catalogue pour l'ajouter, et un Pokémon de ton équipe pour le retirer.
             </p>
           </section>
           <details class="panel achievements" data-role="achievements">
             <summary>
-              <h2>Succès <span data-role="achievements-count"></span></h2>
+              <h2><span data-i18n="achievements">Succès</span> <span data-role="achievements-count"></span></h2>
             </summary>
             <ul class="badges" data-role="badges"></ul>
           </details>
         </div>
 
         <section class="panel catalog" aria-labelledby="catalog-title">
-          <h2 id="catalog-title">Catalogue</h2>
+          <h2 id="catalog-title" data-i18n="catalogue">Catalogue</h2>
           <div class="filters">
             <input
               name="search"
               type="search"
               placeholder="Rechercher"
+              data-i18n-placeholder="search"
               autocomplete="off"
               aria-label="Rechercher un Pokémon"
+              data-i18n-aria-label="searchPokemon"
             />
-            <select name="type" aria-label="Type"></select>
-            <select name="generation" aria-label="Génération"></select>
-            <select name="sort" aria-label="Trier">
-              <option value="cost">Moins chers</option>
-              <option value="-cost">Plus chers</option>
-              <option value="id">N° du Pokédex</option>
+            <select name="type" aria-label="Type" data-i18n-aria-label="type"></select>
+            <select name="generation" aria-label="Génération" data-i18n-aria-label="generation"></select>
+            <select name="sort" aria-label="Trier" data-i18n-aria-label="sort">
+              <option value="cost" data-i18n="cheapest">Moins chers</option>
+              <option value="-cost" data-i18n="dearest">Plus chers</option>
+              <option value="id" data-i18n="pokedexOrder">N° du Pokédex</option>
             </select>
           </div>
           <label class="toggle collection-filter" data-role="collection-filter" hidden>
             <input type="checkbox" name="collection" />
-            <span>★ Mes Pokémon PokéDate (<span data-role="collection-count"></span>)</span>
+            <span
+              ><span data-i18n="myPokedate">★ Mes Pokémon PokéDate</span> (<span data-role="collection-count"></span
+              >)</span
+            >
           </label>
           <a
             class="link"
             data-role="collection-import"
             href="https://pokedate.fr/pokedex"
+            data-i18n-href="pokedatePokedex"
             target="_blank"
             rel="noopener"
+            data-i18n="pokedateImport"
           >
             ★ Joue avec les Pokémon que tu as attrapés sur PokéDate
           </a>
@@ -177,11 +221,18 @@
         </section>
 
         <footer class="composer-footer">
-          <button class="secondary" type="button" data-action="clear">Vider</button>
-          <button class="secondary" type="button" data-action="fill" title="Compléter l'équipe au hasard">
+          <button class="secondary" type="button" data-action="clear" data-i18n="clear">Vider</button>
+          <button
+            class="secondary"
+            type="button"
+            data-action="fill"
+            title="Compléter l'équipe au hasard"
+            data-i18n-title="fillTitle"
+            data-i18n="fill"
+          >
             Compléter
           </button>
-          <button class="primary" type="button" data-action="fight">Lancer le combat</button>
+          <button class="primary" type="button" data-action="fight" data-i18n="startBattle">Lancer le combat</button>
         </footer>
       </section>
 
@@ -194,45 +245,60 @@
             name="nickname"
             maxlength="20"
             placeholder="Ton pseudo"
+            data-i18n-placeholder="nickname"
             autocomplete="nickname"
             aria-label="Ton pseudo"
+            data-i18n-aria-label="nickname"
           />
-          <button class="primary" type="submit">Publier au classement</button>
+          <button class="primary" type="submit" data-i18n="publish">Publier au classement</button>
           <p class="publish-error" data-role="publish-error" hidden></p>
         </form>
         <div class="end-buttons">
-          <button class="primary" type="button" data-action="edit">Modifier mon équipe</button>
-          <button class="secondary" type="button" data-action="rematch">Revanche</button>
-          <button class="secondary" type="button" data-action="share" hidden>Partager</button>
+          <button class="primary" type="button" data-action="edit" data-i18n="editTeam">Modifier mon équipe</button>
+          <button class="secondary" type="button" data-action="rematch" data-i18n="rematch">Revanche</button>
+          <button class="secondary" type="button" data-action="share" data-i18n="share" hidden>Partager</button>
         </div>
       </div>
 
-      <nav id="controls" class="controls" aria-label="Contrôles du combat" hidden>
+      <nav id="controls" class="controls" aria-label="Contrôles du combat" data-i18n-aria-label="battleControls" hidden>
         <button type="button" data-action="toggle" aria-label="Pause"></button>
-        <div class="speeds" role="group" aria-label="Vitesse">
+        <div class="speeds" role="group" aria-label="Vitesse" data-i18n-aria-label="speed">
           <button type="button" data-speed="1">×1</button>
           <button type="button" data-speed="2">×2</button>
           <button type="button" data-speed="4">×4</button>
         </div>
-        <button type="button" data-action="skip" aria-label="Voir le résultat"></button>
-        <button type="button" data-action="new" aria-label="Nouveau combat"></button>
-        <button type="button" data-action="record" class="record" aria-label="Enregistrer la vidéo"></button>
-        <button type="button" data-action="menu" aria-label="Paramètres"></button>
+        <button type="button" data-action="skip" aria-label="Voir le résultat" data-i18n-aria-label="skip"></button>
+        <button type="button" data-action="new" aria-label="Nouveau combat" data-i18n-aria-label="newBattle"></button>
+        <button
+          type="button"
+          data-action="record"
+          class="record"
+          aria-label="Enregistrer la vidéo"
+          data-i18n-aria-label="record"
+        ></button>
+        <button type="button" data-action="menu" aria-label="Paramètres" data-i18n-aria-label="settings"></button>
         <button type="button" data-action="sound" aria-label="Couper le son"></button>
         <button type="button" data-action="fullscreen" aria-label="Plein écran"></button>
       </nav>
 
       <div id="recording" class="recording" role="status" hidden>
         <span class="recording-dot" aria-hidden="true"></span>
-        <span>Enregistrement…</span>
-        <button type="button">Arrêter</button>
+        <span data-i18n="recording">Enregistrement…</span>
+        <button type="button" data-i18n="stop">Arrêter</button>
       </div>
 
-      <div id="video-ready" class="video-ready" role="dialog" aria-label="Vidéo prête" hidden>
-        <p>Ta vidéo est prête&nbsp;!</p>
-        <button class="primary" type="button" data-action="share">Partager</button>
-        <a class="secondary" data-action="download">Télécharger</a>
-        <button class="secondary" type="button" data-action="close">Fermer</button>
+      <div
+        id="video-ready"
+        class="video-ready"
+        role="dialog"
+        aria-label="Vidéo prête"
+        data-i18n-aria-label="videoReadyLabel"
+        hidden
+      >
+        <p data-i18n="videoReady">Ta vidéo est prête&nbsp;!</p>
+        <button class="primary" type="button" data-action="share" data-i18n="share">Partager</button>
+        <a class="secondary" data-action="download" data-i18n="download">Télécharger</a>
+        <button class="secondary" type="button" data-action="close" data-i18n="close">Fermer</button>
       </div>
     </main>
     <script type="module" src="/src/main.ts"></script>

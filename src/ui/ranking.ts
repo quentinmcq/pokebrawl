@@ -1,4 +1,6 @@
 import type { Ranking, ScoreSubmission } from '../leaderboard'
+import type { ServerError } from '../messages'
+import { TEXT } from './i18n'
 import { readStored, writeStored } from './storage'
 
 const PLAYER_KEY = 'pokebrawl.player'
@@ -36,14 +38,21 @@ export async function submitScore(day: string, name: string, team: string) {
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(body),
     })
-    const payload = (await response.json()) as Ranking | { error: string }
-    return 'error' in payload ? { error: payload.error } : { ranking: payload }
+    const payload = (await response.json()) as Ranking | ServerFailure
+    return 'error' in payload ? { error: errorText(payload) } : { ranking: payload }
   } catch {
-    return { error: 'Classement injoignable : ton score est gardé sur cet appareil.' }
+    return { error: TEXT.rankingUnreachable }
   }
 }
 
-export const ordinal = (rank: number) => (rank === 1 ? '1er' : `${rank}e`)
+/** What the server says when it refuses a score: a code, and the French text older versions of the app show. */
+interface ServerFailure {
+  error: string
+  code?: { server: ServerError } | { nickname: keyof typeof TEXT.nicknameErrors }
+}
+
+const errorText = ({ error, code }: ServerFailure) =>
+  !code ? error : 'server' in code ? TEXT.serverErrors[code.server] : TEXT.nicknameErrors[code.nickname]
 
 /** Lists a ranking; once the day is over, each line can replay its team against that day's horde. */
 export function renderRanking(
@@ -53,23 +62,24 @@ export function renderRanking(
   onReplay: (team: string) => void,
 ) {
   if (!ranking) {
-    summary.textContent = 'Classement indisponible pour le moment.'
+    summary.textContent = TEXT.rankingUnavailable
     list.replaceChildren()
     return
   }
-  const players = `${ranking.total} joueur${ranking.total > 1 ? 's' : ''}`
-  const you = ranking.you ? ` · toi : ${ordinal(ranking.you.rank)} avec ${ranking.you.points} points` : ''
-  summary.textContent = ranking.total === 0 ? 'Personne n’a encore battu cette horde.' : `${players}${you}`
+  summary.textContent = ranking.total === 0 ? TEXT.rankingEmpty : TEXT.rankingSummary(ranking.total, ranking.you)
   list.replaceChildren(
     ...ranking.entries.map((entry) => {
       const item = document.createElement('li')
       item.className = 'ranking-entry'
       item.append(
-        Object.assign(document.createElement('span'), { className: 'ranking-rank', textContent: ordinal(entry.rank) }),
+        Object.assign(document.createElement('span'), {
+          className: 'ranking-rank',
+          textContent: TEXT.ordinal(entry.rank),
+        }),
         Object.assign(document.createElement('span'), { className: 'ranking-name', textContent: entry.name }),
         Object.assign(document.createElement('span'), {
           className: 'ranking-points',
-          textContent: `${entry.points} pts · ${entry.size} Pokémon`,
+          textContent: TEXT.rankingEntry(entry.points, entry.size),
         }),
       )
       const { team } = entry
@@ -77,8 +87,8 @@ export function renderRanking(
         const replay = Object.assign(document.createElement('button'), {
           type: 'button',
           className: 'ranking-replay',
-          textContent: 'Voir',
-          title: `Revoir le combat de ${entry.name}`,
+          textContent: TEXT.watch,
+          title: TEXT.watchBattleOf(entry.name),
         })
         replay.addEventListener('click', () => onReplay(team))
         item.append(replay)

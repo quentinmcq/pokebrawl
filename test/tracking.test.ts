@@ -11,6 +11,7 @@ describe('arrivals', () => {
     expect(arrival({ referrer: 'https://pokedate.fr/pokemon/25-pikachu' })).toBe('arrival-pokedate')
     expect(arrival({ search: '?defi=ids:25&de=Sacha&seed=1' })).toBe('arrival-friend')
     expect(arrival({ referrer: 'https://pokebrawl.example/combats/gen-1-contre-gen-3/' })).toBe('arrival-matchup-page')
+    expect(arrival({ referrer: 'https://pokebrawl.example/en/battles/gen-1-vs-gen-3/' })).toBe('arrival-matchup-page')
     expect(arrival({ referrer: 'https://www.google.fr/' })).toBe('arrival-search')
     expect(arrival({ referrer: 'https://www.reddit.com/r/pokemon' })).toBe('arrival-other-site')
     expect(arrival({})).toBe('arrival-direct')

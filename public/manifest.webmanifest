@@ -1,7 +1,7 @@
 {
   "name": "PokéBrawl",
   "short_name": "PokéBrawl",
-  "description": "Des centaines de Pokémon s'affrontent en même temps : choisis deux camps et regarde.",
+  "description": "Compose ton équipe de Pokémon avec 1 000 points et bats la horde du jour, ou défie tes amis.",
   "lang": "fr",
   "start_url": "/",
   "scope": "/",

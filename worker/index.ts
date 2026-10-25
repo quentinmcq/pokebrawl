@@ -9,6 +9,8 @@ import {
   type RankingEntry,
   type ScoreSubmission,
 } from '../src/leaderboard'
+import { HOME_PATHS, LOCALES, localeOfPath, type Locale } from '../src/locale'
+import { MESSAGES, TRANSLATED_ATTRIBUTES, type PageKey, type ServerError } from '../src/messages'
 import { checkNickname } from '../src/nickname'
 import { pokedex } from '../src/pokedex'
 import { selectorOfFighters, selectTeam } from '../src/simulation/teams'
@@ -25,8 +27,10 @@ interface D1PreparedStatement {
   run(): Promise<unknown>
 }
 interface RewrittenElement {
+  getAttribute(name: string): string | null
   setAttribute(name: string, value: string): void
-  setInnerContent(content: string): void
+  setInnerContent(content: string, options?: { html: boolean }): void
+  append(content: string, options?: { html: boolean }): void
 }
 declare class HTMLRewriter {
   on(selector: string, handlers: { element(element: RewrittenElement): void }): HTMLRewriter
@@ -55,7 +59,10 @@ const json = (body: unknown, status = 200) =>
     status,
     headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
   })
-const failure = (message: string, status: number) => json({ error: message }, status)
+// Errors carry a code the app words in its language, and the French text older versions of the app show as it is.
+const SERVER_ERROR_TEXTS = MESSAGES.fr.serverErrors
+const failure = (code: ServerError, status: number) =>
+  json({ error: SERVER_ERROR_TEXTS[code], code: { server: code } }, status)
 
 // The player id stays a secret in the browser: only its hash is stored, so a ranking never leaks it.
 async function hashOf(playerId: string) {
@@ -103,13 +110,14 @@ async function readRanking(env: Env, day: string, playerId: string | null): Prom
  * scores afterwards and removes any team that does not actually win; teams are also shown once the day is over.
  */
 async function submitScore(env: Env, day: string, request: Request) {
-  if (day !== dayOf(new Date())) return failure('Ce défi est terminé.', 409)
+  if (day !== dayOf(new Date())) return failure('finished', 409)
   const body = (await request.json().catch(() => null)) as Partial<ScoreSubmission> | null
-  if (!body || !isPlayerId(body.playerId)) return failure('Requête invalide.', 400)
+  if (!body || !isPlayerId(body.playerId)) return failure('invalidRequest', 400)
   const nickname = checkNickname(body.name)
-  if (!nickname.ok) return failure(nickname.error, 422)
+  if (!nickname.ok)
+    return json({ error: MESSAGES.fr.nicknameErrors[nickname.error], code: { nickname: nickname.error } }, 422)
   const score = scoreOfTeam(body.team)
-  if (!score) return failure('Équipe invalide.', 422)
+  if (!score) return failure('invalidTeam', 422)
 
   const playerHash = await hashOf(body.playerId)
   const now = Date.now()
@@ -154,29 +162,57 @@ async function countEvent(request: Request, env: Env, url: URL) {
 async function handleApi(request: Request, env: Env, url: URL) {
   if (url.pathname === '/api/events' && request.method === 'POST') return countEvent(request, env, url)
   const day = /^\/api\/daily\/([\d-]+)$/.exec(url.pathname)?.[1]
-  if (!day || !isDay(day)) return failure('Introuvable.', 404)
+  if (!day || !isDay(day)) return failure('notFound', 404)
   if (request.method === 'GET') return json(await readRanking(env, day, request.headers.get('x-player-id')))
-  if (request.method !== 'POST') return failure('Méthode non permise.', 405)
+  if (request.method !== 'POST') return failure('methodNotAllowed', 405)
 
-  if (!isSameOrigin(request, url)) return failure('Requête refusée.', 403)
+  if (!isSameOrigin(request, url)) return failure('refused', 403)
   const ip = request.headers.get('cf-connecting-ip') ?? 'unknown'
   const allowed = (await env.SUBMIT_RATE_LIMITER?.limit({ key: ip }))?.success ?? true
-  if (!allowed) return failure('Trop d’envois, réessaie dans une minute.', 429)
+  if (!allowed) return failure('tooMany', 429)
   return submitScore(env, day, request)
 }
 
 /**
- * Messaging apps read a link's preview without running the app, so the Worker writes it into the page: an absolute
- * image address, and for a friend's challenge, who sends it and the team to beat. Cheap enough for a free Worker.
+ * Messaging apps and search engines read the page without running the app, so the Worker writes into it what they
+ * need: its language and texts (the HTML is French, `/en/` gets the English ones), the address of each translation,
+ * an absolute image address, and for a friend's challenge, who sends it and the team to beat. Cheap enough for a free
+ * Worker.
  */
-function withLinkPreview(response: Response, url: URL) {
-  const rewriter = new HTMLRewriter().on('meta[property="og:image"]', {
-    element: (element) => element.setAttribute('content', `${url.origin}/og.png`),
-  })
-  const challenge = readFriendChallenge(url.search)
+function homePage(response: Response, url: URL, locale: Locale) {
+  const text = MESSAGES[locale]
+  const alternates = [...LOCALES, 'x-default' as const]
+    .map((code) => {
+      const path = HOME_PATHS[code === 'x-default' ? 'fr' : code]
+      return `<link rel="alternate" hreflang="${code}" href="${url.origin}${path}" />`
+    })
+    .join('')
+  let rewriter = new HTMLRewriter()
+    .on('html', { element: (element) => element.setAttribute('lang', locale) })
+    .on('head', {
+      element: (element) =>
+        element.append(`<link rel="canonical" href="${url.origin}${HOME_PATHS[locale]}" />${alternates}`, {
+          html: true,
+        }),
+    })
+    .on('meta[property="og:image"]', {
+      element: (element) => element.setAttribute('content', `${url.origin}/og.png`),
+    })
+  if (locale !== 'fr') {
+    rewriter = rewriter.on('[data-i18n]', {
+      element: (element) =>
+        element.setInnerContent(text.page[element.getAttribute('data-i18n') as PageKey], { html: true }),
+    })
+    for (const attribute of TRANSLATED_ATTRIBUTES)
+      rewriter = rewriter.on(`[data-i18n-${attribute}]`, {
+        element: (element) =>
+          element.setAttribute(attribute, text.page[element.getAttribute(`data-i18n-${attribute}`) as PageKey]),
+      })
+  }
+  const challenge = readFriendChallenge(url.search, text.aFriend)
   if (!challenge) return rewriter.transform(response)
-  const title = `${challenge.name} te défie sur PokéBrawl`
-  const description = `Bats son équipe de ${challenge.size} Pokémon (${challenge.points} points) avec tes 1 000 points.`
+  const title = text.challengePreviewTitle(challenge.name)
+  const description = text.challengePreviewDescription(challenge.size, challenge.points)
   return rewriter
     .on('title', { element: (element) => element.setInnerContent(title) })
     .on('meta[property="og:title"]', { element: (element) => element.setAttribute('content', title) })
@@ -188,11 +224,15 @@ function withLinkPreview(response: Response, url: URL) {
 export default {
   async fetch(request: Request, env: Env) {
     const url = new URL(request.url)
-    if (url.pathname === '/') return withLinkPreview(await env.ASSETS.fetch(request), url)
+    if (url.pathname === '/en') return Response.redirect(`${url.origin}/en/${url.search}`, 301)
+    if (Object.values(HOME_PATHS).includes(url.pathname)) {
+      const page = await env.ASSETS.fetch(new Request(new URL('/', url), request))
+      return homePage(page, url, localeOfPath(url.pathname))
+    }
     if (!url.pathname.startsWith('/api/')) return env.ASSETS.fetch(request)
     return handleApi(request, env, url).catch((error: unknown) => {
       console.error(error)
-      return failure('Erreur du serveur.', 500)
+      return failure('server', 500)
     })
   },
 }

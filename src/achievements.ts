@@ -1,3 +1,4 @@
+import type { Locale } from './locale'
 import { parseHorde, TEAM_SELECTORS } from './simulation/teams'
 
 /** What a player has done so far, from what the browser keeps. */
@@ -21,8 +22,8 @@ export interface CountedWin {
 
 export interface Achievement {
   id: string
-  title: string
-  description: string
+  title: Record<Locale, string>
+  description: Record<Locale, string>
   /** The Pokémon pictured on the badge. */
   emblem: number
   /** How far along a long-term goal stands, for the ones that take several battles. */
@@ -43,110 +44,122 @@ const countIn = (pools: string[]) => (state: AchievementState) =>
 export const ACHIEVEMENTS: Achievement[] = [
   {
     id: 'first-win',
-    title: 'Premier succès',
-    description: 'Gagne ton premier défi.',
+    title: { fr: 'Premier succès', en: 'First win' },
+    description: { fr: 'Gagne ton premier défi.', en: 'Win your first challenge.' },
     emblem: 25,
     isUnlocked: (_, win) => win !== null,
   },
   {
     id: 'generations',
-    title: 'Maître des générations',
-    description: 'Bats les 9 hordes de génération à l’entraînement.',
+    title: { fr: 'Maître des générations', en: 'Master of generations' },
+    description: {
+      fr: 'Bats les 9 hordes de génération à l’entraînement.',
+      en: 'Beat all 9 generation hordes in training.',
+    },
     emblem: 493,
     progress: countIn(GENERATION_POOLS),
     isUnlocked: (state) => countIn(GENERATION_POOLS)(state).done === GENERATION_POOLS.length,
   },
   {
     id: 'types',
-    title: 'Maître des types',
-    description: 'Bats les 18 hordes de type à l’entraînement.',
+    title: { fr: 'Maître des types', en: 'Master of types' },
+    description: { fr: 'Bats les 18 hordes de type à l’entraînement.', en: 'Beat all 18 type hordes in training.' },
     emblem: 133,
     progress: countIn(TYPE_POOLS),
     isUnlocked: (state) => countIn(TYPE_POOLS)(state).done === TYPE_POOLS.length,
   },
   {
     id: 'legendaries',
-    title: 'Chasseur de légendes',
-    description: 'Bats la horde des légendaires.',
+    title: { fr: 'Chasseur de légendes', en: 'Legend hunter' },
+    description: { fr: 'Bats la horde des légendaires.', en: 'Beat the legendaries horde.' },
     emblem: 150,
     isUnlocked: (state) => poolsBeaten(state).has('legendaries'),
   },
   {
     id: 'hard',
-    title: 'Sans pitié',
-    description: 'Bats une horde en difficulté Difficile.',
+    title: { fr: 'Sans pitié', en: 'Merciless' },
+    description: { fr: 'Bats une horde en difficulté Difficile.', en: 'Beat a horde on Hard.' },
     emblem: 248,
     isUnlocked: (state) => state.trainingWins.some((win) => parseHorde(win)?.value === HARD_LEVEL),
   },
   {
     id: 'streak-7',
-    title: 'Une semaine de feu',
-    description: 'Réussis le défi du jour 7 jours de suite.',
+    title: { fr: 'Une semaine de feu', en: 'A week on fire' },
+    description: { fr: 'Réussis le défi du jour 7 jours de suite.', en: 'Beat the daily challenge 7 days in a row.' },
     emblem: 77,
     progress: (state) => goal(state.dailyStreak, 7),
     isUnlocked: (state) => state.dailyStreak >= 7,
   },
   {
     id: 'streak-30',
-    title: 'Un mois sans faillir',
-    description: 'Réussis le défi du jour 30 jours de suite.',
+    title: { fr: 'Un mois sans faillir', en: 'A flawless month' },
+    description: { fr: 'Réussis le défi du jour 30 jours de suite.', en: 'Beat the daily challenge 30 days in a row.' },
     emblem: 250,
     progress: (state) => goal(state.dailyStreak, 30),
     isUnlocked: (state) => state.dailyStreak >= 30,
   },
   {
     id: 'podium',
-    title: 'Sur le podium',
-    description: 'Finis dans les 3 premiers du classement du jour.',
+    title: { fr: 'Sur le podium', en: 'On the podium' },
+    description: {
+      fr: 'Finis dans les 3 premiers du classement du jour.',
+      en: 'Finish in the top 3 of the daily ranking.',
+    },
     emblem: 249,
     isUnlocked: (state) => state.bestRank !== null && state.bestRank <= 3,
   },
   {
     id: 'friend',
-    title: 'Le plus fort',
-    description: 'Bats l’équipe d’un ami.',
+    title: { fr: 'Le plus fort', en: 'The strongest' },
+    description: { fr: 'Bats l’équipe d’un ami.', en: 'Beat a friend’s team.' },
     emblem: 68,
     isUnlocked: (state) => state.friendWins > 0,
   },
   {
     id: 'thrifty',
-    title: 'Économe',
-    description: 'Gagne un défi avec moins de 500 points.',
+    title: { fr: 'Économe', en: 'Thrifty' },
+    description: { fr: 'Gagne un défi avec moins de 500 points.', en: 'Win a challenge with fewer than 500 points.' },
     emblem: 52,
     isUnlocked: (_, win) => win !== null && win.points < 500,
   },
   {
     id: 'single-species',
-    title: 'Clones',
-    description: 'Gagne avec une équipe d’une seule espèce.',
+    title: { fr: 'Clones', en: 'Clones' },
+    description: { fr: 'Gagne avec une équipe d’une seule espèce.', en: 'Win with a team of a single species.' },
     emblem: 132,
     isUnlocked: (_, win) => win !== null && new Set(win.speciesIds).size === 1,
   },
   {
     id: 'swarm',
-    title: 'La nuée',
-    description: 'Gagne avec au moins 60 Pokémon.',
+    title: { fr: 'La nuée', en: 'The swarm' },
+    description: { fr: 'Gagne avec au moins 60 Pokémon.', en: 'Win with at least 60 Pokémon.' },
     emblem: 15,
     isUnlocked: (_, win) => win !== null && win.speciesIds.length >= 60,
   },
   {
     id: 'few',
-    title: 'Peu mais costauds',
-    description: 'Gagne avec 10 Pokémon ou moins.',
+    title: { fr: 'Peu mais costauds', en: 'Few but mighty' },
+    description: { fr: 'Gagne avec 10 Pokémon ou moins.', en: 'Win with 10 Pokémon or fewer.' },
     emblem: 149,
     isUnlocked: (_, win) => win !== null && win.speciesIds.length <= 10,
   },
   {
     id: 'magikarp',
-    title: 'La revanche de Magicarpe',
-    description: 'Gagne avec au moins 10 Magicarpe dans ton équipe.',
+    title: { fr: 'La revanche de Magicarpe', en: 'Magikarp’s revenge' },
+    description: {
+      fr: 'Gagne avec au moins 10 Magicarpe dans ton équipe.',
+      en: 'Win with at least 10 Magikarp on your team.',
+    },
     emblem: MAGIKARP,
     isUnlocked: (_, win) => win !== null && win.speciesIds.filter((id) => id === MAGIKARP).length >= 10,
   },
   {
     id: 'pokedate',
-    title: 'Dresseur de PokéDate',
-    description: 'Gagne avec une équipe faite uniquement de Pokémon attrapés sur PokéDate.',
+    title: { fr: 'Dresseur de PokéDate', en: 'PokéDate Trainer' },
+    description: {
+      fr: 'Gagne avec une équipe faite uniquement de Pokémon attrapés sur PokéDate.',
+      en: 'Win with a team made only of Pokémon caught on PokéDate.',
+    },
     emblem: 137,
     isUnlocked: (_, win) =>
       win !== null && win.collection.length > 0 && win.speciesIds.every((id) => win.collection.includes(id)),

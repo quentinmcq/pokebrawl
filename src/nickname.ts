@@ -1,3 +1,5 @@
+import type { NicknameError } from './messages'
+
 // The same rules as PokéDate's nicknames: names show publicly in the daily ranking.
 export const NICKNAME_LENGTH = { min: 2, max: 20 } as const
 
@@ -63,19 +65,18 @@ const normalized = (text: string) =>
 
 export const cleanNickname = (value: unknown) => (typeof value === 'string' ? value.trim().replaceAll(/\s+/g, ' ') : '')
 
-export type NicknameCheck = { ok: true; nickname: string } | { ok: false; error: string }
+export type NicknameCheck = { ok: true; nickname: string } | { ok: false; error: NicknameError }
 
 export function checkNickname(value: unknown): NicknameCheck {
   const nickname = cleanNickname(value)
-  if (nickname.length < NICKNAME_LENGTH.min) return { ok: false, error: 'Ton pseudo est trop court.' }
-  if (nickname.length > NICKNAME_LENGTH.max) return { ok: false, error: 'Ton pseudo est trop long (20 caractères).' }
-  if (!ALLOWED_CHARACTERS.test(nickname))
-    return { ok: false, error: 'Lettres, chiffres, espaces, tirets et apostrophes seulement.' }
+  if (nickname.length < NICKNAME_LENGTH.min) return { ok: false, error: 'tooShort' }
+  if (nickname.length > NICKNAME_LENGTH.max) return { ok: false, error: 'tooLong' }
+  if (!ALLOWED_CHARACTERS.test(nickname)) return { ok: false, error: 'characters' }
   const words = normalized(nickname).split(/[\s'_-]+/)
   const spelledOutWord = words.filter((word) => word.length === 1).join('')
   const isBlocked =
     words.some((word) => BLOCKED_WORDS.includes(word)) ||
     [...words, spelledOutWord].some((word) => BLOCKED_FRAGMENTS.some((fragment) => word.includes(fragment)))
-  if (isBlocked) return { ok: false, error: 'Ce pseudo n’est pas accepté.' }
+  if (isBlocked) return { ok: false, error: 'refused' }
   return { ok: true, nickname }
 }

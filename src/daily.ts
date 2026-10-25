@@ -55,6 +55,3 @@ export function recordDailyWin(record: DailyRecord, day: string, points: number)
 /** The streak still alive today: won today, or yesterday and today is yet to be played. */
 export const currentStreak = (record: DailyRecord, today: string) =>
   record.lastWonDay === today || record.lastWonDay === previousDay(today) ? record.streak : 0
-
-const DAY_FORMAT = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', timeZone: 'UTC' })
-export const formatDay = (day: string) => DAY_FORMAT.format(new Date(`${day}T12:00:00Z`))
