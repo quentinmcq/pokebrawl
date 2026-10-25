@@ -1,5 +1,6 @@
 import { MATCHUPS_PATHS, type Locale } from './locale'
-import { TEAM_SELECTORS, teamTitle } from './simulation/teams'
+import { TEAM_SELECTORS, TYPE_NAMES, teamTitle } from './simulation/teams'
+import type { TypeKey } from './simulation/types'
 import { withoutDiacritics } from './text'
 
 /**
@@ -9,36 +10,31 @@ import { withoutDiacritics } from './text'
 export interface Matchup {
   teams: [string, string]
   slug: string
-  title: string
 }
 
 const generations = TEAM_SELECTORS.filter((selector) => selector.startsWith('gen'))
 const types = TEAM_SELECTORS.filter((selector) => selector.startsWith('type:'))
 
 // « Type Feu » or « Fire Type » reads better as just « Feu » or « Fire » in a page title.
-export const shortTitle = (selector: string, locale: Locale = 'fr') =>
-  teamTitle(selector, locale)
-    .replace(/^Type /, '')
-    .replace(/ Type$/, '')
+export const shortTitle = (selector: string, locale: Locale) => {
+  const type = /^type:([a-z]+)$/.exec(selector)?.[1]
+  return type ? TYPE_NAMES[locale][type as TypeKey] : teamTitle(selector, locale)
+}
 
 const slugOf = (selector: string, locale: Locale) =>
   withoutDiacritics(shortTitle(selector, locale)).replaceAll(/[^a-z0-9]+/g, '-')
 
 const VERSUS: Record<Locale, string> = { fr: 'contre', en: 'vs' }
 
-export const matchupTitle = ({ teams }: Matchup, locale: Locale) =>
+export const matchupTitle = ({ teams }: Pick<Matchup, 'teams'>, locale: Locale) =>
   `${shortTitle(teams[0], locale)} ${VERSUS[locale]} ${shortTitle(teams[1], locale)}`
 
-const matchupSlug = ({ teams }: Matchup, locale: Locale) =>
+const matchupSlug = ({ teams }: Pick<Matchup, 'teams'>, locale: Locale) =>
   `${slugOf(teams[0], locale)}-${VERSUS[locale]}-${slugOf(teams[1], locale)}`
 
 const matchupOf = (first: string, second: string): Matchup => {
   const teams: [string, string] = [first, second]
-  return {
-    teams,
-    slug: matchupSlug({ teams, slug: '', title: '' }, 'fr'),
-    title: matchupTitle({ teams, slug: '', title: '' }, 'fr'),
-  }
+  return { teams, slug: matchupSlug({ teams }, 'fr') }
 }
 
 const pairsOf = (selectors: string[]) =>
@@ -51,5 +47,5 @@ export const MATCHUPS: Matchup[] = [
   ...generations.map((generation) => matchupOf('legendaries', generation)),
 ]
 
-export const matchupPath = (matchup: Matchup, locale: Locale = 'fr') =>
+export const matchupPath = (matchup: Matchup, locale: Locale) =>
   `${MATCHUPS_PATHS[locale]}${matchupSlug(matchup, locale)}/`

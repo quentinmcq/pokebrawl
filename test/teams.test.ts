@@ -29,10 +29,10 @@ describe('selectTeam', () => {
 
 describe('teamTitle', () => {
   it('names a team for the screen', () => {
-    expect(teamTitle('gen1')).toBe('Gen 1')
-    expect(teamTitle('type:fire')).toBe('Type Feu')
-    expect(teamTitle('legendaries')).toBe('Légendaires')
-    expect(teamTitle('ids:25,6')).toBe('Ton équipe')
+    expect(teamTitle('gen1', 'fr')).toBe('Gen 1')
+    expect(teamTitle('type:fire', 'fr')).toBe('Type Feu')
+    expect(teamTitle('legendaries', 'fr')).toBe('Légendaires')
+    expect(teamTitle('ids:25,6', 'fr')).toBe('Ton équipe')
   })
 })
 

@@ -197,12 +197,14 @@ export type NicknameError = 'tooShort' | 'tooLong' | 'characters' | 'refused'
 
 const french = {
   page: frenchPage,
-  number,
-  day: dayIn('fr'),
-  budget,
   days: (count: number) => frenchPlural(count, 'jour'),
-  ordinal: (rank: number) => (rank === 1 ? '1er' : `${rank}e`),
-  percent: (share: number) => `${Math.round(share * 100)} %`,
+  ordinal: frenchOrdinal,
+  teamTitles: {
+    type: (name: string) => `Type ${name}`,
+    legendaries: 'Légendaires',
+    yours: 'Ton équipe',
+    horde: (pool: string) => `Horde ${pool}`,
+  },
   // Composer
   allTypes: 'Tous les types',
   allGenerations: 'Toutes les générations',
@@ -324,12 +326,14 @@ const englishPercent = (share: number) => `${Math.round(share * 100)}%`
 
 const english: Messages = {
   page: englishPage,
-  number: englishNumber,
-  day: dayIn('en'),
-  budget: englishBudget,
   days: (count) => englishPlural(count, 'day'),
   ordinal: englishOrdinal,
-  percent: englishPercent,
+  teamTitles: {
+    type: (name) => `${name} Type`,
+    legendaries: 'Legendaries',
+    yours: 'Your team',
+    horde: (pool) => `${pool} Horde`,
+  },
   allTypes: 'All types',
   allGenerations: 'All generations',
   friendTitle: (name) => `${name}’s challenge`,

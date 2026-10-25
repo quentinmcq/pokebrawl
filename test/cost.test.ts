@@ -45,7 +45,7 @@ describe('hordes', () => {
 
   it('selects hordes and repeated Pokémon from a selector', () => {
     expect(selectTeam(pokedex, 'horde:gen3:800').fighters.length).toBeGreaterThan(0)
-    expect(teamTitle('horde:type:fire:1000')).toBe('Horde Type Feu')
+    expect(teamTitle('horde:type:fire:1000', 'fr')).toBe('Horde Type Feu')
     const team = selectTeam(pokedex, 'ids:66*10,6*2')
     expect(team.fighters.map(({ species }) => species.names.en)).toEqual([
       ...Array.from({ length: 10 }, () => 'Machop'),

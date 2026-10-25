@@ -1,3 +1,4 @@
+import { MESSAGES } from '../messages'
 import type { FighterSetup, TeamSetup } from './battle'
 import { costOf, MAX_TEAM_SIZE, MIN_COST } from './cost'
 import { createRandom } from './random'
@@ -131,19 +132,16 @@ export function selectorOfFighters(fighters: FighterSetup[]) {
 }
 
 /** The name shown on screen for a team selector: `gen1` becomes « Gen 1 », `type:fire` becomes « Type Feu ». */
-export function teamTitle(selector: string, locale: Locale = 'fr'): string {
-  const english = locale === 'en'
+export function teamTitle(selector: string, locale: Locale): string {
+  const titles = MESSAGES[locale].teamTitles
   const generation = /^gen([1-9])$/.exec(selector)?.[1]
   if (generation) return `Gen ${generation}`
   const type = /^type:([a-z]+)$/.exec(selector)?.[1]
-  if (type && type in TYPE_NAMES_FR) {
-    const name = TYPE_NAMES[locale][type as TypeKey]
-    return english ? `${name} Type` : `Type ${name}`
-  }
-  if (selector === 'legendaries') return english ? 'Legendaries' : 'Légendaires'
-  if (selector.startsWith('ids:')) return english ? 'Your team' : 'Ton équipe'
+  if (type && type in TYPE_NAMES_FR) return titles.type(TYPE_NAMES[locale][type as TypeKey])
+  if (selector === 'legendaries') return titles.legendaries
+  if (selector.startsWith('ids:')) return titles.yours
   const horde = parseHorde(selector)
-  if (horde) return english ? `${teamTitle(horde.pool, locale)} Horde` : `Horde ${teamTitle(horde.pool, locale)}`
+  if (horde) return titles.horde(teamTitle(horde.pool, locale))
   return selector
 }
 
