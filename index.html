@@ -297,13 +297,30 @@
               aria-label="Rechercher un Pokémon"
               data-i18n-aria-label="searchPokemon"
             />
-            <select name="type" aria-label="Type" data-i18n-aria-label="type"></select>
-            <select name="generation" aria-label="Génération" data-i18n-aria-label="generation"></select>
-            <select name="sort" aria-label="Trier" data-i18n-aria-label="sort">
-              <option value="cost" data-i18n="cheapest">Prix ↑</option>
-              <option value="-cost" data-i18n="dearest">Prix ↓</option>
-              <option value="id" data-i18n="pokedexOrder">N° Pokédex</option>
-            </select>
+            <details class="filter-menu">
+              <summary class="icon-link" aria-label="Filtres" data-i18n-aria-label="filters">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18M6 12h12M10 19h4" /></svg>
+                <span class="filter-count" data-role="filter-count" hidden></span>
+              </summary>
+              <div class="filter-panel">
+                <label>
+                  <span data-i18n="type">Type</span>
+                  <select name="type"></select>
+                </label>
+                <label>
+                  <span data-i18n="generation">Génération</span>
+                  <select name="generation"></select>
+                </label>
+                <label>
+                  <span data-i18n="sort">Trier</span>
+                  <select name="sort">
+                    <option value="cost" data-i18n="cheapest">Prix ↑</option>
+                    <option value="-cost" data-i18n="dearest">Prix ↓</option>
+                    <option value="id" data-i18n="pokedexOrder">N° Pokédex</option>
+                  </select>
+                </label>
+              </div>
+            </details>
           </div>
           <div class="suggested" data-role="suggested" hidden>
             <span data-i18n="effectiveTypes">Efficaces contre la horde</span>

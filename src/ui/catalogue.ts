@@ -126,6 +126,11 @@ export function createCatalogue(
       )
     query('[data-role="cards"]').replaceChildren(...shown.map(cardOf))
     applyLimits()
+    // The filters hide behind one button: a badge says how many are on.
+    const activeFilters = [type !== ALL, generation > 0, sort !== 'cost'].filter(Boolean).length
+    const filterCount = query('[data-role="filter-count"]')
+    filterCount.textContent = String(activeFilters)
+    filterCount.hidden = activeFilters === 0
     renderSuggested()
   }
 
@@ -140,6 +145,11 @@ export function createCatalogue(
   })
   for (const control of [searchInput, typeSelect, generationSelect, sortSelect, collectionCheckbox])
     control.addEventListener('input', render)
+  // The filter panel closes on a tap anywhere else, as a menu does.
+  const filterMenu = query<HTMLDetailsElement>('.filter-menu')
+  document.addEventListener('click', (event) => {
+    if (filterMenu.open && !filterMenu.contains(event.target as Node)) filterMenu.open = false
+  })
   renderCollection()
 
   return {
