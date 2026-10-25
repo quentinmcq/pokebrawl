@@ -1,7 +1,7 @@
 import type { FighterSetup, TeamSetup } from './battle'
 import { costOf, MAX_TEAM_SIZE, MIN_COST } from './cost'
 import { createRandom } from './random'
-import type { Pokedex, Species, TypeKey } from './types'
+import type { Locale, Pokedex, Species, TypeKey } from './types'
 
 export const TEAM_SELECTOR_EXAMPLES = ['gen1', 'type:fire', 'legendaries', 'ids:25,6*3,150', 'horde:gen1:1000']
 
@@ -50,6 +50,30 @@ export const TYPE_NAMES_FR: Record<TypeKey, string> = {
   dark: 'Ténèbres',
   steel: 'Acier',
   fairy: 'Fée',
+}
+
+export const TYPE_NAMES: Record<Locale, Record<TypeKey, string>> = {
+  fr: TYPE_NAMES_FR,
+  en: {
+    normal: 'Normal',
+    fire: 'Fire',
+    water: 'Water',
+    electric: 'Electric',
+    grass: 'Grass',
+    ice: 'Ice',
+    fighting: 'Fighting',
+    poison: 'Poison',
+    ground: 'Ground',
+    flying: 'Flying',
+    psychic: 'Psychic',
+    bug: 'Bug',
+    rock: 'Rock',
+    ghost: 'Ghost',
+    dragon: 'Dragon',
+    dark: 'Dark',
+    steel: 'Steel',
+    fairy: 'Fairy',
+  },
 }
 
 /** Every ready-made team, in the order a menu lists them. */
@@ -103,15 +127,19 @@ export function selectorOfFighters(fighters: FighterSetup[]) {
 }
 
 /** The name shown on screen for a team selector: `gen1` becomes « Gen 1 », `type:fire` becomes « Type Feu ». */
-export function teamTitle(selector: string): string {
+export function teamTitle(selector: string, locale: Locale = 'fr'): string {
+  const english = locale === 'en'
   const generation = /^gen([1-9])$/.exec(selector)?.[1]
   if (generation) return `Gen ${generation}`
   const type = /^type:([a-z]+)$/.exec(selector)?.[1]
-  if (type && type in TYPE_NAMES_FR) return `Type ${TYPE_NAMES_FR[type as TypeKey]}`
-  if (selector === 'legendaries') return 'Légendaires'
-  if (selector.startsWith('ids:')) return 'Ton équipe'
+  if (type && type in TYPE_NAMES_FR) {
+    const name = TYPE_NAMES[locale][type as TypeKey]
+    return english ? `${name} Type` : `Type ${name}`
+  }
+  if (selector === 'legendaries') return english ? 'Legendaries' : 'Légendaires'
+  if (selector.startsWith('ids:')) return english ? 'Your team' : 'Ton équipe'
   const horde = parseHorde(selector)
-  if (horde) return `Horde ${teamTitle(horde.pool)}`
+  if (horde) return english ? `${teamTitle(horde.pool, locale)} Horde` : `Horde ${teamTitle(horde.pool, locale)}`
   return selector
 }
 
