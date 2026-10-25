@@ -57,7 +57,11 @@ interface ScoreRow {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' },
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store',
+      'x-content-type-options': 'nosniff',
+    },
   })
 // Errors carry a code the app words in its language, and the French text older versions of the app show as it is.
 const SERVER_ERROR_TEXTS = MESSAGES.fr.serverErrors

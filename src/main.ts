@@ -1,4 +1,6 @@
 import './ui/style.css'
+// PixiJS otherwise compiles some of its code with `new Function`, which the Content-Security-Policy forbids.
+import 'pixi.js/unsafe-eval'
 import { Application, Assets, type Spritesheet } from 'pixi.js'
 import { COLORS, createLayout, orientationOf, type Layout } from './render/layout'
 import { battleSearch, describesBattle, randomSeed, readBattleParams, type BattleParams } from './render/params'
