@@ -1,10 +1,9 @@
-import { createRandom } from './simulation/random'
+import { createRandom, SEED_LIMIT } from './simulation/random'
 import { parseHorde, TEAM_SELECTORS } from './simulation/teams'
 
 // Everyone gets a new challenge at midnight in France, where the players are.
 const TIME_ZONE = 'Europe/Paris'
 export const DAILY_LEVEL = 1000
-const MAX_SEED = 1_000_000
 
 /** `2026-10-25` for the given moment, in French time. */
 export const dayOf = (moment: Date) =>
@@ -21,15 +20,18 @@ const seedOfDay = (day: string) => Number(day.replaceAll('-', ''))
 export function dailyChallenge(day: string) {
   const random = createRandom(seedOfDay(day))
   const pool = TEAM_SELECTORS[random.integer(TEAM_SELECTORS.length)]!
-  return { day, pool, horde: `horde:${pool}:${DAILY_LEVEL}:${day}`, seed: random.integer(MAX_SEED) }
+  return { day, pool, horde: `horde:${pool}:${DAILY_LEVEL}:${day}`, seed: random.integer(SEED_LIMIT) }
 }
+
+/** `2026-10-25`: a day as the ranking and the daily hordes write it. */
+export const isDay = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value)
 
 export const dailyDayOf = (hordeSelector: string) => {
   const variant = parseHorde(hordeSelector)?.variant
-  return variant && /^\d{4}-\d{2}-\d{2}$/.test(variant) ? variant : null
+  return variant && isDay(variant) ? variant : null
 }
 
-const previousDay = (day: string) => {
+export const previousDay = (day: string) => {
   const date = new Date(`${day}T12:00:00Z`)
   date.setUTCDate(date.getUTCDate() - 1)
   return date.toISOString().slice(0, 10)

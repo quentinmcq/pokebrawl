@@ -2,28 +2,18 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import sharp, { type OverlayOptions } from 'sharp'
 import { pokedex } from '../src/pokedex'
+import { download } from './download'
 
 const CACHE_DIR = join(import.meta.dirname, '..', '.cache', 'sprites')
 const PUBLIC_DIR = join(import.meta.dirname, '..', 'public')
 const SPRITES_BASE_URL = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon'
 const PARALLEL_DOWNLOADS = 12
-const DOWNLOAD_ATTEMPTS = 4
 const SPRITE_SIZE = 96
 const SHEET_WIDTH = 2048
 // Neighbours in the sheet stay apart so that linear filtering never bleeds one sprite into another.
 const SHEET_PADDING = 2
 const MAX_TEXTURE_SIZE = 4096
 const TRANSPARENT = { r: 0, g: 0, b: 0, alpha: 0 }
-
-async function download(url: string): Promise<Buffer | null> {
-  for (let attempt = 1; attempt <= DOWNLOAD_ATTEMPTS; attempt++) {
-    const response = await fetch(url).catch(() => null)
-    if (response?.ok) return Buffer.from(await response.arrayBuffer())
-    if (response?.status === 404) return null
-    await new Promise((resolve) => setTimeout(resolve, 800 * attempt))
-  }
-  throw new Error(`Échec du téléchargement : ${url}`)
-}
 
 const builtFromArtwork: number[] = []
 

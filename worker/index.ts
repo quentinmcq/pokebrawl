@@ -1,7 +1,6 @@
-import { dailyChallenge, dayOf } from '../src/daily'
+import { dailyChallenge, dayOf, isDay } from '../src/daily'
 import { readFriendChallenge } from '../src/friend'
 import {
-  isDay,
   isPlayerId,
   RANKING_SIZE,
   scoreOfTeam,

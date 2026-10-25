@@ -1,5 +1,6 @@
 import { Container, Graphics, Sprite, Text, Texture, type Spritesheet, type TextStyleOptions } from 'pixi.js'
 import { summarizeBattle, type Battle, type Fighter } from '../simulation/battle'
+import { clock } from './hud'
 import { COLORS, FONT_FAMILY, type Layout } from './layout'
 import { nameOf, TEXT } from '../ui/i18n'
 
@@ -28,7 +29,6 @@ const style = (fontSize: number, fill: number, fontWeight: TextStyleOptions['fon
   fill,
 })
 
-const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`
 const statsOf = (fighter: Fighter) => TEXT.fighterStats(fighter.knockOuts, Math.round(fighter.damageDealt))
 
 /**

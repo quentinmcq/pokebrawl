@@ -1,7 +1,7 @@
-import { execFileSync } from 'node:child_process'
 import { parseArgs } from 'node:util'
 import { dayOf } from '../src/daily'
 import { TRACKED_EVENTS } from '../src/tracking'
+import { queryD1 } from './d1'
 
 /*
  * Reads the daily counters of the live site: visits and where they come from, battles by mode, wins, shares. Usage :
@@ -35,27 +35,16 @@ const LABELS: Record<(typeof TRACKED_EVENTS)[number], string> = {
   video: 'Vidéos enregistrées',
 }
 
-function query<Row>(sql: string): Row[] {
-  const output = execFileSync(
-    'bunx',
-    ['wrangler', 'd1', 'execute', 'pokebrawl', '--remote', '--json', '--command', sql],
-    {
-      encoding: 'utf8',
-    },
-  )
-  return (JSON.parse(output) as { results: Row[] }[])[0]?.results ?? []
-}
-
 const shownDays = Array.from({ length: days }, (_, index) => {
   const date = new Date()
   date.setUTCDate(date.getUTCDate() - (days - 1 - index))
   return dayOf(date)
 })
 // The days come from dayOf, a strict date format, so they are safe inside the query.
-const counts = query<{ day: string; name: string; count: number }>(
+const counts = queryD1<{ day: string; name: string; count: number }>(
   `SELECT day, name, count FROM event_counts WHERE day >= '${shownDays[0]}'`,
 )
-const players = query<{ day: string; count: number }>(
+const players = queryD1<{ day: string; count: number }>(
   `SELECT day, COUNT(*) AS count FROM daily_scores WHERE day >= '${shownDays[0]}' GROUP BY day`,
 )
 const countOf = (name: string, day: string) => counts.find((row) => row.name === name && row.day === day)?.count ?? 0

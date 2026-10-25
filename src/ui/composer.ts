@@ -5,6 +5,7 @@ import {
   dailyDayOf,
   dayOf,
   EMPTY_DAILY_RECORD,
+  previousDay,
   recordDailyWin,
   type DailyRecord,
 } from '../daily'
@@ -15,13 +16,22 @@ import { typeColor } from '../render/effects'
 import { randomSeed, type BattleParams } from '../render/params'
 import { terrainForSeed } from '../render/terrain'
 import { costOf, MAX_TEAM_SIZE, TEAM_BUDGET, teamCost } from '../simulation/cost'
-import { parseHorde, selectTeam, TEAM_SELECTORS, TYPE_NAMES, teamTitle, toFighterSetup } from '../simulation/teams'
+import {
+  parseHorde,
+  selectorOfCounts,
+  selectTeam,
+  TEAM_SELECTORS,
+  TYPE_NAMES,
+  teamTitle,
+  toFighterSetup,
+} from '../simulation/teams'
 import type { Species, TypeKey } from '../simulation/types'
 import { LOCALE, nameOf, TEXT } from './i18n'
 import { fetchRanking, renderRanking, savedNickname, saveNickname } from './ranking'
 import { shareLink, siteUrl } from './share'
 import { track } from './track'
 import { readStored, STORAGE_KEYS, writeStored } from './storage'
+import { withoutDiacritics } from '../text'
 
 const LEVELS = [800, 1000, 1250]
 type Mode = 'daily' | 'training' | 'friend'
@@ -40,12 +50,8 @@ interface ComposerHandlers {
   onSpectate: () => void
 }
 
-const normalized = (text: string) =>
-  text
-    .normalize('NFD')
-    .replaceAll(/\p{Diacritic}/gu, '')
-    .toLowerCase()
 const hordeSelector = (horde: string, level: number) => `horde:${horde}:${level}`
+const collectionStar = () => Object.assign(document.createElement('span'), { className: 'card-star', textContent: '★' })
 const today = () => dayOf(new Date())
 const typeHex = (type: TypeKey) => `#${typeColor(type).toString(16).padStart(6, '0')}`
 const TYPE_NAME = TYPE_NAMES[LOCALE]
@@ -58,12 +64,6 @@ export interface ChallengeResult {
   daily: boolean
   /** Today's daily horde beaten: the score can go to the ranking. */
   publishable: { day: string; team: string } | null
-}
-
-const previousDayOf = (day: string) => {
-  const date = new Date(`${day}T12:00:00Z`)
-  date.setUTCDate(date.getUTCDate() - 1)
-  return date.toISOString().slice(0, 10)
 }
 
 const typeChip = (type: TypeKey, tag: 'span' | 'button') => {
@@ -85,12 +85,6 @@ function parseTeam(selector: string | undefined) {
   return team
 }
 
-const teamSelector = (team: Map<number, number>) =>
-  `ids:${[...team]
-    .toSorted(([a], [b]) => a - b)
-    .map(([id, count]) => (count > 1 ? `${id}*${count}` : String(id)))
-    .join(',')}`
-
 /** The home screen of the game: pick a horde to beat, then spend the budget on any Pokémon, as many times as wished. */
 export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpectate }: ComposerHandlers) {
   const query = <Element extends HTMLElement>(selector: string) => section.querySelector<Element>(selector)!
@@ -108,7 +102,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   const entries: Entry[] = pokedex.pokemon.map((species) => ({
     species,
     cost: costOf(toFighterSetup(species, pokedex)),
-    searchName: normalized(`${species.names.fr} ${species.names.en}`),
+    searchName: withoutDiacritics(`${species.names.fr} ${species.names.en}`),
   }))
   const entryOf = (id: number) => entries[id - 1]!
 
@@ -162,7 +156,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     query('[data-role="daily-title"]').textContent = TEXT.dailyTitle(day, teamTitle(horde, LOCALE))
     const goal = best === undefined ? TEXT.dailyGoal : TEXT.dailyBest(best)
     query('[data-role="daily-status"]').textContent = `${goal}${streak > 0 ? ` · 🔥 ${TEXT.days(streak)}` : ''}`
-    void renderRankingOf(rankingDay === 'today' ? day : previousDayOf(day))
+    void renderRankingOf(rankingDay === 'today' ? day : previousDay(day))
   }
 
   // Answers may arrive out of order when the tabs are switched quickly: only the last request is drawn.
@@ -287,8 +281,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       dot.title = TYPE_NAME[type]
       types.append(dot)
     }
-    if (collection.has(species.id))
-      card.append(Object.assign(document.createElement('span'), { className: 'card-star', textContent: '★' }))
+    if (collection.has(species.id)) card.append(collectionStar())
     card.append(
       spriteOf(species.id),
       Object.assign(document.createElement('span'), { className: 'card-name', textContent: nameOf(species) }),
@@ -300,7 +293,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   }
 
   function renderCards() {
-    const search = normalized(searchInput.value.trim())
+    const search = withoutDiacritics(searchInput.value.trim())
     const type = typeSelect.value as TypeKey | typeof ALL
     const generation = Number(generationSelect.value)
     const sort = sortSelect.value
@@ -323,7 +316,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   }
 
   function saveTeam() {
-    writeStored(STORAGE_KEYS.team, team.size > 0 ? teamSelector(team) : undefined)
+    writeStored(STORAGE_KEYS.team, team.size > 0 ? selectorOfCounts(team) : undefined)
   }
 
   query('[data-role="cards"]').addEventListener('click', (event) => {
@@ -384,12 +377,18 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   fightButton.addEventListener('click', () => {
     if (team.size === 0) return
     const { horde, seed, opponentName } = opponent()
-    onFight({ teams: [teamSelector(team), horde], seed, terrain: terrainForSeed(seed), sameSize: false, opponentName })
+    onFight({
+      teams: [selectorOfCounts(team), horde],
+      seed,
+      terrain: terrainForSeed(seed),
+      sameSize: false,
+      opponentName,
+    })
   })
 
   /** A link to send: the team as it stands, under the player's nickname, with a fresh seed for both players. */
   function challengeOf(name: string) {
-    const url = siteUrl(friendChallengeSearch({ team: teamSelector(team), name, seed: randomSeed() }))
+    const url = siteUrl(friendChallengeSearch({ team: selectorOfCounts(team), name, seed: randomSeed() }))
     return { text: TEXT.challengeText(name, teamSize(), spent()), url }
   }
 
@@ -458,8 +457,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       writeStored(STORAGE_KEYS.collection, ids)
       for (const [id, card] of cards) {
         card.querySelector('.card-star')?.remove()
-        if (collection.has(id))
-          card.prepend(Object.assign(document.createElement('span'), { className: 'card-star', textContent: '★' }))
+        if (collection.has(id)) card.prepend(collectionStar())
       }
       renderCollection()
       const notice = query('[data-role="team-notice"]')

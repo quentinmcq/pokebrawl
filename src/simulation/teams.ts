@@ -116,14 +116,18 @@ export function parseHorde(selector: string) {
   return match ? { pool: match[1]!, value: Number(match[2]), variant: match[3] ?? '' } : null
 }
 
-/** The selector of exactly these Pokémon, repeats included: `ids:25*3,150`. */
-export function selectorOfFighters(fighters: FighterSetup[]) {
-  const counts = new Map<number, number>()
-  for (const { species } of fighters) counts.set(species.id, (counts.get(species.id) ?? 0) + 1)
-  return `ids:${[...counts]
+/** The selector of so many of each Pokémon, by id: `ids:25*3,150`. */
+export const selectorOfCounts = (counts: Map<number, number>) =>
+  `ids:${[...counts]
     .toSorted(([a], [b]) => a - b)
     .map(([id, count]) => (count > 1 ? `${id}*${count}` : String(id)))
     .join(',')}`
+
+/** The selector of exactly these Pokémon, repeats included. */
+export function selectorOfFighters(fighters: FighterSetup[]) {
+  const counts = new Map<number, number>()
+  for (const { species } of fighters) counts.set(species.id, (counts.get(species.id) ?? 0) + 1)
+  return selectorOfCounts(counts)
 }
 
 /** The name shown on screen for a team selector: `gen1` becomes « Gen 1 », `type:fire` becomes « Type Feu ». */

@@ -1,5 +1,5 @@
 import type { Ranking, ScoreSubmission } from '../leaderboard'
-import type { ServerError } from '../messages'
+import type { NicknameError, ServerError } from '../messages'
 import { TEXT } from './i18n'
 import { readStored, writeStored } from './storage'
 
@@ -48,7 +48,7 @@ export async function submitScore(day: string, name: string, team: string) {
 /** What the server says when it refuses a score: a code, and the French text older versions of the app show. */
 interface ServerFailure {
   error: string
-  code?: { server: ServerError } | { nickname: keyof typeof TEXT.nicknameErrors }
+  code?: { server: ServerError } | { nickname: NicknameError }
 }
 
 const errorText = ({ error, code }: ServerFailure) =>

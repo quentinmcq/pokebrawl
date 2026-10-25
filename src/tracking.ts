@@ -1,3 +1,4 @@
+import { COLLECTION_HASH_KEY } from './collection'
 import { MATCHUPS_PATHS } from './locale'
 
 /**
@@ -52,7 +53,7 @@ export function arrivalOf({
   host: string
 }): TrackedEvent {
   const query = new URLSearchParams(search)
-  if (query.has('equipe') || hash.includes('pokedex=')) return 'arrival-pokedate'
+  if (query.has('equipe') || hash.includes(`${COLLECTION_HASH_KEY}=`)) return 'arrival-pokedate'
   if (query.has('defi')) return 'arrival-friend'
   if (!referrer) return 'arrival-direct'
   let from: URL

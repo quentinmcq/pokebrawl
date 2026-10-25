@@ -1,3 +1,6 @@
+/** Seeds run from 0 to just under this: six digits, short enough for an address. */
+export const SEED_LIMIT = 1_000_000
+
 export interface Random {
   /** Uniform float in [0, 1). */
   next(): number

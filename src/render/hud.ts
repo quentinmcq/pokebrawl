@@ -19,7 +19,9 @@ const aliveCount = (battle: Battle, team: TeamIndex) =>
 const remainingHealth = (battle: Battle, team: TeamIndex) =>
   battle.fighters.reduce((total, fighter) => (fighter.team === team ? total + fighter.hp : total), 0)
 
-const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`
+/** `1:05`: a battle's time. */
+export const clock = (seconds: number) =>
+  `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`
 
 // Changing a Text re-renders its texture, so each one is only touched when its value changes.
 const setText = (text: Text, value: string) => {

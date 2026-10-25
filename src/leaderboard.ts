@@ -28,7 +28,6 @@ export interface ScoreSubmission {
 export const RANKING_SIZE = 20
 export const isPlayerId = (value: unknown): value is string =>
   typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value)
-export const isDay = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value)
 
 /** The points and size of a submitted team, or `null` when it breaks the rules (budget, size, unknown Pokémon). */
 export function scoreOfTeam(team: unknown) {

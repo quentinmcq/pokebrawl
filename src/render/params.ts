@@ -1,4 +1,5 @@
 import { isTerrain, terrainForSeed, type Terrain } from './terrain'
+import { SEED_LIMIT } from '../simulation/random'
 
 export interface BattleParams {
   teams: [string, string]
@@ -11,9 +12,8 @@ export interface BattleParams {
 }
 
 export const DEFAULT_TEAMS: [string, string] = ['gen1', 'gen3']
-const MAX_RANDOM_SEED = 1_000_000
 
-export const randomSeed = () => Math.floor(Math.random() * MAX_RANDOM_SEED)
+export const randomSeed = () => Math.floor(Math.random() * SEED_LIMIT)
 
 /** True when the URL describes a battle, as a shared link does, rather than the bare home page. */
 export const describesBattle = (search: string) => new URLSearchParams(search).has('a')

@@ -1,5 +1,6 @@
 import { MATCHUPS_PATHS, type Locale } from './locale'
 import { TEAM_SELECTORS, teamTitle } from './simulation/teams'
+import { withoutDiacritics } from './text'
 
 /**
  * A battle worth a page of its own: two ready-made teams, such as Gen 1 against Gen 3, or Fire against Water. Its
@@ -21,11 +22,7 @@ export const shortTitle = (selector: string, locale: Locale = 'fr') =>
     .replace(/ Type$/, '')
 
 const slugOf = (selector: string, locale: Locale) =>
-  shortTitle(selector, locale)
-    .normalize('NFD')
-    .replaceAll(/\p{Diacritic}/gu, '')
-    .toLowerCase()
-    .replaceAll(/[^a-z0-9]+/g, '-')
+  withoutDiacritics(shortTitle(selector, locale)).replaceAll(/[^a-z0-9]+/g, '-')
 
 const VERSUS: Record<Locale, string> = { fr: 'contre', en: 'vs' }
 

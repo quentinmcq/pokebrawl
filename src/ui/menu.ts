@@ -1,5 +1,5 @@
 import { pokedex } from '../pokedex'
-import { randomSeed, type BattleParams } from '../render/params'
+import { DEFAULT_TEAMS, randomSeed, type BattleParams } from '../render/params'
 import { TERRAINS, terrainForSeed, isTerrain } from '../render/terrain'
 import { selectTeam, TEAM_SELECTORS, teamTitle } from '../simulation/teams'
 import { LOCALE, TEXT } from './i18n'
@@ -66,8 +66,8 @@ export function createMenu(form: HTMLFormElement, { onPreview, onStart }: MenuHa
       if (known(secondTeam, current.teams[1])) secondTeam.value = current.teams[1]
       sameSize.checked = current.sameSize
     } else {
-      firstTeam.value = 'gen1'
-      secondTeam.value = 'gen3'
+      firstTeam.value = DEFAULT_TEAMS[0]
+      secondTeam.value = DEFAULT_TEAMS[1]
     }
     form.hidden = false
     onPreview(readParams())
