@@ -300,7 +300,41 @@ input {
   }
 }
 
-.controls .record {
+.controls button.labelled {
+  display: flex;
+  gap: calc(1.5 * var(--u));
+  padding: 0 calc(3.5 * var(--u)) 0 calc(2.5 * var(--u));
+}
+
+.controls .more {
+  position: relative;
+}
+
+/* Each action of the menu says its name: an icon alone left players guessing. */
+.more-menu {
+  position: absolute;
+  right: calc(-2 * var(--u));
+  bottom: calc(100% + 4 * var(--u));
+  display: grid;
+  gap: calc(0.5 * var(--u));
+  min-width: max-content;
+  padding: calc(2 * var(--u));
+  border-radius: calc(4 * var(--u));
+  background: #1f2236;
+  box-shadow: 0 calc(2 * var(--u)) calc(8 * var(--u)) rgb(0 0 0 / 0.5);
+}
+
+.controls .more-menu button {
+  display: flex;
+  justify-content: start;
+  gap: calc(3 * var(--u));
+  padding: 0 calc(4 * var(--u)) 0 calc(3 * var(--u));
+  border-radius: calc(2.5 * var(--u));
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.controls .record svg {
   color: var(--red);
 }
 

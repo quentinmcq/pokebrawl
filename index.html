@@ -282,18 +282,38 @@
           <button type="button" data-speed="2">×2</button>
           <button type="button" data-speed="4">×4</button>
         </div>
-        <button type="button" data-action="skip" aria-label="Voir le résultat" data-i18n-aria-label="skip"></button>
-        <button type="button" data-action="new" aria-label="Nouveau combat" data-i18n-aria-label="newBattle"></button>
         <button
           type="button"
-          data-action="record"
-          class="record"
-          aria-label="Enregistrer la vidéo"
-          data-i18n-aria-label="record"
-        ></button>
-        <button type="button" data-action="menu" aria-label="Paramètres" data-i18n-aria-label="settings"></button>
-        <button type="button" data-action="sound" aria-label="Couper le son"></button>
-        <button type="button" data-action="fullscreen" aria-label="Plein écran"></button>
+          data-action="skip"
+          class="labelled"
+          aria-label="Voir le résultat"
+          data-i18n-aria-label="skip"
+        >
+          <span data-i18n="result">Résultat</span>
+        </button>
+        <div class="more">
+          <button
+            type="button"
+            data-action="more"
+            aria-label="Plus d'options"
+            data-i18n-aria-label="moreOptions"
+            aria-haspopup="menu"
+            aria-expanded="false"
+          ></button>
+          <div class="more-menu" role="menu" hidden>
+            <button type="button" role="menuitem" data-action="new">
+              <span data-i18n="newBattle">Nouveau combat</span>
+            </button>
+            <button type="button" role="menuitem" data-action="record" class="record">
+              <span data-i18n="record">Enregistrer la vidéo</span>
+            </button>
+            <button type="button" role="menuitem" data-action="menu"><span data-role="menu-label"></span></button>
+            <button type="button" role="menuitem" data-action="sound"><span data-role="sound-label"></span></button>
+            <button type="button" role="menuitem" data-action="fullscreen">
+              <span data-role="fullscreen-label"></span>
+            </button>
+          </div>
+        </div>
       </nav>
 
       <div id="recording" class="recording" role="status" hidden>

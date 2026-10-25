@@ -424,7 +424,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
         }
         return { ...nothing, mode: 'training' }
       }
-      if (day !== today()) return { ...nothing, mode: 'replay' }
+      // A past day's battle, or today's horde fought with another seed than the challenge's, counts for nothing.
+      if (day !== today() || params.seed !== dailyChallenge(day).seed) return { ...nothing, mode: 'replay' }
       if (!won) return { ...nothing, mode: 'daily', message: TEXT.dailyLost }
       const points = teamCost(selectTeam(pokedex, params.teams[0]).fighters)
       dailyRecord = recordDailyWin(dailyRecord, day, points)

@@ -16,6 +16,7 @@ const ICONS = {
   record: '<circle cx="12" cy="12" r="7" fill="currentColor" stroke="none"/>',
   exitFullscreen:
     '<path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3"/>',
+  more: '<circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/>',
 }
 // The bar fades away during the battle so that it never hides the action, and comes back on the next touch.
 const IDLE_DELAY_MS = 2500
@@ -35,41 +36,67 @@ interface ControlHandlers {
 }
 
 const icon = (name: keyof typeof ICONS) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`
+const setIcon = (target: HTMLButtonElement, name: keyof typeof ICONS) => {
+  target.querySelector('svg')?.remove()
+  target.insertAdjacentHTML('afterbegin', icon(name))
+}
 
-/** The touch-friendly bar over the arena; it lives outside the canvas, so a recorded video never shows it. */
+/**
+ * The touch-friendly bar over the arena; it lives outside the canvas, so a recorded video never shows it. Only what a
+ * battle needs at a glance sits in the bar (pause, speed, result); the rest goes in a menu where each action says
+ * its name.
+ */
 export function createControls(nav: HTMLElement, stage: HTMLElement, handlers: ControlHandlers) {
   const button = (action: string) => nav.querySelector<HTMLButtonElement>(`[data-action="${action}"]`)!
+  const label = (role: string) => nav.querySelector<HTMLElement>(`[data-role="${role}"]`)!
   const toggleButton = button('toggle')
-  const fullscreenButton = button('fullscreen')
+  const moreButton = button('more')
+  const moreMenu = nav.querySelector<HTMLElement>('.more-menu')!
   const speedButtons = [...nav.querySelectorAll<HTMLButtonElement>('[data-speed]')]
-  button('new').innerHTML = icon('shuffle')
-  button('menu').innerHTML = icon('settings')
-  button('record').innerHTML = icon('record')
-  button('skip').innerHTML = icon('skip')
+  setIcon(button('skip'), 'skip')
+  setIcon(moreButton, 'more')
+  setIcon(button('new'), 'shuffle')
+  setIcon(button('record'), 'record')
+  setIcon(button('menu'), 'settings')
   let state: PlayState = 'playing'
   let idleTimer: ReturnType<typeof setTimeout> | undefined
+
+  function setMenuOpen(open: boolean) {
+    moreMenu.hidden = !open
+    moreButton.ariaExpanded = String(open)
+  }
 
   nav.addEventListener('click', (event) => {
     const target = (event.target as Element).closest('button')
     if (!target) return
+    const action = target.dataset.action
+    if (action === 'more') setMenuOpen(moreButton.ariaExpanded !== 'true')
+    else setMenuOpen(false)
     if (target.dataset.speed) handlers.onSpeed(Number(target.dataset.speed))
-    else if (target.dataset.action === 'toggle') handlers.onToggle()
-    else if (target.dataset.action === 'new') handlers.onNewBattle()
-    else if (target.dataset.action === 'menu') handlers.onMenu()
-    else if (target.dataset.action === 'fullscreen') handlers.onFullscreen()
-    else if (target.dataset.action === 'record') handlers.onRecord()
-    else if (target.dataset.action === 'skip') handlers.onSkip()
-    else if (target.dataset.action === 'sound') handlers.onSound()
+    else if (action === 'toggle') handlers.onToggle()
+    else if (action === 'new') handlers.onNewBattle()
+    else if (action === 'menu') handlers.onMenu()
+    else if (action === 'fullscreen') handlers.onFullscreen()
+    else if (action === 'record') handlers.onRecord()
+    else if (action === 'skip') handlers.onSkip()
+    else if (action === 'sound') handlers.onSound()
     wake()
   })
 
+  // The bar stays while its menu is open, and fades away again once the battle goes on.
   function wake() {
     nav.classList.remove('is-idle')
     clearTimeout(idleTimer)
-    if (state === 'playing') idleTimer = setTimeout(() => nav.classList.add('is-idle'), IDLE_DELAY_MS)
+    if (state === 'playing')
+      idleTimer = setTimeout(() => {
+        setMenuOpen(false)
+        nav.classList.add('is-idle')
+      }, IDLE_DELAY_MS)
   }
   stage.addEventListener('pointerdown', (event) => {
-    if (!nav.hidden && !nav.contains(event.target as Node)) wake()
+    if (nav.hidden || nav.contains(event.target as Node)) return
+    setMenuOpen(false)
+    wake()
   })
   // A mouse moves all the time over a computer screen: only nearing the bottom, where the bar sits, brings it back.
   stage.addEventListener('pointermove', (event) => {
@@ -80,7 +107,7 @@ export function createControls(nav: HTMLElement, stage: HTMLElement, handlers: C
 
   function setState(next: PlayState) {
     state = next
-    toggleButton.innerHTML = icon(state === 'playing' ? 'pause' : state === 'paused' ? 'play' : 'replay')
+    setIcon(toggleButton, state === 'playing' ? 'pause' : state === 'paused' ? 'play' : 'replay')
     toggleButton.ariaLabel = state === 'playing' ? TEXT.page.pause : state === 'paused' ? TEXT.resume : TEXT.replay
     button('skip').hidden = state === 'over'
     wake()
@@ -92,25 +119,35 @@ export function createControls(nav: HTMLElement, stage: HTMLElement, handlers: C
   }
 
   function setFullscreen(available: boolean, active: boolean) {
-    fullscreenButton.hidden = !available
-    fullscreenButton.innerHTML = icon(active ? 'exitFullscreen' : 'enterFullscreen')
-    fullscreenButton.ariaLabel = active ? TEXT.exitFullscreen : TEXT.page.fullscreen
+    button('fullscreen').hidden = !available
+    setIcon(button('fullscreen'), active ? 'exitFullscreen' : 'enterFullscreen')
+    label('fullscreen-label').textContent = active ? TEXT.exitFullscreen : TEXT.page.fullscreen
   }
 
   function setSound(enabled: boolean) {
-    const soundButton = button('sound')
-    soundButton.innerHTML = icon(enabled ? 'soundOn' : 'soundOff')
-    soundButton.ariaLabel = enabled ? TEXT.page.mute : TEXT.unmute
+    setIcon(button('sound'), enabled ? 'soundOn' : 'soundOff')
+    label('sound-label').textContent = enabled ? TEXT.page.mute : TEXT.unmute
   }
 
   return {
     setSound,
     setRecordingAvailable: (available: boolean) => (button('record').hidden = !available),
+    /**
+     * What the battle allows: a new seed only where the seed is free (a watched battle, a training horde), and the
+     * way back to the team after a challenge or to the line-up after a watched battle.
+     */
+    setBattleKind({ rerollable, challenge }: { rerollable: boolean; challenge: boolean }) {
+      button('new').hidden = !rerollable
+      label('menu-label').textContent = challenge ? TEXT.page.editTeam : TEXT.changeTeams
+    },
     show: () => {
       nav.hidden = false
       wake()
     },
-    hide: () => (nav.hidden = true),
+    hide: () => {
+      setMenuOpen(false)
+      nav.hidden = true
+    },
     setState,
     setSpeed,
     setFullscreen,

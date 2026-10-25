@@ -50,6 +50,9 @@ function withNewSeed(params: BattleParams): BattleParams {
   return { ...params, seed, terrain }
 }
 
+// The daily challenge and a friend's are played with their own seed: a new one would be another battle.
+const isRerollable = (battle: BattleParams) => !battle.opponentName && !dailyDayOf(battle.teams[1])
+
 function isPlayable(battle: BattleParams) {
   try {
     buildTeams(battle)
@@ -158,6 +161,7 @@ async function start() {
     menu.close()
     composer.close()
     showEndActions(false)
+    controls.setBattleKind({ rerollable: isRerollable(next), challenge: isChallenge(next) })
     controls.show()
     setPaused(false)
   }
@@ -273,7 +277,9 @@ async function start() {
   const controls = createControls(element('controls'), stage, {
     onToggle: togglePlay,
     onSpeed: setSpeed,
-    onNewBattle: () => params && startBattle(withNewSeed(params)),
+    onNewBattle: () => {
+      if (params && isRerollable(params)) startBattle(withNewSeed(params))
+    },
     onMenu: openMenu,
     onFullscreen: toggleFullscreen,
     onRecord: startRecording,
@@ -299,8 +305,9 @@ async function start() {
       return
     }
     if (event.code === 'Space') togglePlay()
-    else if (event.code === 'KeyR') startBattle(withNewSeed(params))
-    else if (event.code === 'KeyF') toggleFullscreen()
+    else if (event.code === 'KeyR') {
+      if (isRerollable(params)) startBattle(withNewSeed(params))
+    } else if (event.code === 'KeyF') toggleFullscreen()
     else if (event.code === 'KeyS') skipToEnd()
     else if (event.code in SPEED_KEYS) setSpeed(SPEED_KEYS[event.code]!)
     else return
