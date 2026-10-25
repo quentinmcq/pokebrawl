@@ -73,8 +73,9 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
     et les forts peu nombreux se comparent mal aux faibles nombreux : les nuées battaient alors tout le monde. Les
     stats seules ratent l'essentiel, comme la portée des attaques spéciales (5 unités contre le contact) : avec la
     formule de départ (racine de la force, loi de Lanchester), 351 Pokémon étaient nettement trop rentables, 13
-    après calibration. Équilibre des stratégies (`bun run balance`) : forts ou moyens contre faibles autour de 50 %,
-    l'élite un peu en dessous (27 à 33 %), les légendaires étant légèrement trop chers.
+    après calibration. Au-dessus du prix médian (25), les prix sont ensuite adoucis (exposant 0,94) : calibrés un par
+    un, les gros Pokémon laissaient l'élite à 25-38 %. Équilibre des stratégies (`bun run balance`) : chacune gagne 48
+    à 59 % contre une autre. Réglage très sensible (la foule compte au carré) : 0,85 fait gagner l'élite à 97 %.
 - `src/render/` : affichage PixiJS dans un canvas à la résolution d'une vidéo, mis à l'échelle par CSS : 1080 × 1920
   si la fenêtre est plus haute que large (téléphone, vidéo verticale), 1920 × 1080 sinon (PC). Tout ce qui doit
   apparaître dans la vidéo est dessiné dans le canvas, jamais en HTML.
@@ -172,7 +173,7 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
    Effets d'attaque par type, noms d'attaque, « super efficace », écran de fin complet (fait).
 4. Export vidéo vertical (fait, secondaire). Mise en ligne sur Cloudflare (fait).
 5. Composer son équipe contre une horde (fait). Défi du jour avec record, série et partage (fait).
-   Classement du défi du jour (fait). Coûts mesurés au combat (fait ; l'élite reste un peu chère).
+   Classement du défi du jour (fait). Coûts mesurés au combat, gros Pokémon un peu moins chers (fait).
    Défi entre amis par lien, avec aperçu dans les messageries (fait).
    Liens depuis pokedate.fr (bannière sur les résultats et les fiches, pied de page, Pokédex), aide à la
    composition, bilan, résultat immédiat, son (fait).
