@@ -414,6 +414,10 @@ input {
   cursor: pointer;
 }
 
+.composer > * {
+  min-width: 0;
+}
+
 .composer {
   position: absolute;
   inset: 0;
@@ -701,20 +705,64 @@ input {
   border-radius: 50%;
 }
 
-/* The launch button stays within reach while the catalogue scrolls. */
+/* The team's actions float over the catalogue, in a frosted bar, the launch button first in size. */
 .composer-footer {
   position: sticky;
-  bottom: 0;
-  display: grid;
-  grid-template-columns: auto auto 1fr;
+  bottom: calc(3 * var(--u));
+  justify-self: center;
+  display: flex;
   gap: calc(2 * var(--u));
-  margin: 0 calc(-4 * var(--u));
-  padding: calc(3 * var(--u)) calc(4 * var(--u));
-  background: linear-gradient(transparent, var(--background) 30%);
+  width: min(100%, 560px);
+  margin-bottom: calc(3 * var(--u));
+  padding: calc(1.5 * var(--u));
+  border: 1px solid rgb(255 255 255 / 0.12);
+  border-radius: 999px;
+  background: rgb(26 28 44 / 0.78);
+  backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow: 0 calc(2 * var(--u)) calc(8 * var(--u)) rgb(0 0 0 / 0.45);
+}
+
+.composer-footer button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(1.5 * var(--u));
+  margin: 0;
+  padding: calc(2.6 * var(--u)) calc(4 * var(--u));
+  border-radius: 999px;
+  font-size: calc(3.6 * var(--u));
+  white-space: nowrap;
+}
+
+.composer-footer .icon-button {
+  padding: calc(2.6 * var(--u));
 }
 
 .composer-footer .primary {
-  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Upright, « Fill up » shows as its die only, so that the bar fits a phone. */
+@container (orientation: portrait) {
+  .composer-footer [data-action='fill'] {
+    padding: calc(2.6 * var(--u));
+  }
+
+  .composer-footer [data-action='fill'] span {
+    display: none;
+  }
+}
+
+.composer-footer svg {
+  width: calc(5 * var(--u));
+  height: calc(5 * var(--u));
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .composer-footer .primary:disabled {
@@ -811,9 +859,7 @@ input {
 
   .composer-footer {
     position: static;
-    margin: 0;
-    padding: 0 0 calc(3 * var(--u));
-    background: none;
+    margin: 0 0 calc(3 * var(--u));
   }
 }
 

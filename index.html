@@ -310,18 +310,45 @@
         </section>
 
         <footer class="composer-footer builder-only">
-          <button class="secondary" type="button" data-action="clear" data-i18n="clear">Vider</button>
+          <button
+            class="secondary icon-button"
+            type="button"
+            data-action="clear"
+            aria-label="Vider"
+            data-i18n-aria-label="clear"
+            title="Vider"
+            data-i18n-title="clear"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" />
+            </svg>
+          </button>
           <button
             class="secondary"
             type="button"
             data-action="fill"
             title="Compléter l'équipe au hasard"
             data-i18n-title="fillTitle"
-            data-i18n="fill"
+            aria-label="Compléter l'équipe au hasard"
+            data-i18n-aria-label="fillTitle"
           >
-            Compléter
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="3" />
+              <circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" />
+              <circle cx="15.5" cy="15.5" r="1.2" fill="currentColor" />
+              <circle cx="15.5" cy="8.5" r="1.2" fill="currentColor" />
+              <circle cx="8.5" cy="15.5" r="1.2" fill="currentColor" />
+            </svg>
+            <span data-i18n="fill">Compléter</span>
           </button>
-          <button class="primary" type="button" data-action="fight" data-i18n="startBattle">Lancer le combat</button>
+          <button class="primary" type="button" data-action="fight">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2M9.5 6.5 21 18v3h-3L6.5 9.5M11 5l-6 6M8 8 4 4M5 3 3 5"
+              />
+            </svg>
+            <span data-i18n="startBattle">Lancer le combat</span>
+          </button>
         </footer>
       </section>
 
