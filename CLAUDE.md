@@ -22,8 +22,13 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 - `bun run deploy` : vérifications, sprites, build, mise en ligne sur Cloudflare (Worker `pokebrawl`, même compte
   que PokéDate, plan gratuit), puis migrations de la base D1 `pokebrawl`. Cache long sur `/assets/*`, jamais sur
   `sw.js` (`public/_headers`).
-- `bun run verify-daily [--day 2026-10-25] [--apply] [--local]` : rejoue tous les scores d'un jour du classement et
-  liste ceux dont l'équipe ne bat pas vraiment la horde ; `--apply` les supprime.
+- `bun run verify-daily [--day 2026-10-25|yesterday] [--apply] [--local]` : rejoue tous les scores d'un jour du
+  classement contre la horde enregistrée avec chacun et liste ceux qui ne gagnent pas vraiment ; `--apply` les
+  supprime. Les scores envoyés avant l'enregistrement des hordes (colonne `horde` vide) ne sont pas jugés : les hordes
+  suivent les prix, qui ont pu changer depuis. Lancé chaque nuit à 00 h 30 UTC par
+  `.github/workflows/verify-daily.yml` (secret `CLOUDFLARE_API_TOKEN` avec droit d'écriture sur D1).
+- `bun run audience [--days 7]` : compteurs du site en ligne, jour par jour (visites et provenance, combats par
+  mode, victoires, partages, défis envoyés, scores publiés, installations, vidéos, pages « qui gagne ? » lues).
 - `bun run sprites` : télécharge les 1025 sprites et les rassemble dans `public/sprites.webp` + `.json`, puis les
   cris dans `public/cries/` (non versionnés, à lancer une fois avant `bun dev` ; les téléchargements restent en
   cache dans `.cache/`)
@@ -118,6 +123,10 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   `migrations/`). Un score par joueur et par jour, le meilleur ; l'identifiant du joueur, aléatoire et gardé dans le
   navigateur, n'est stocké que haché. Équipes révélées une fois le jour fini. Plan gratuit (10 ms de calcul) : pas
   de rejeu du combat au serveur, d'où `bun run verify-daily` ; envois limités à 10 par minute et par IP.
+- `src/tracking.ts`, `src/ui/track.ts` : mesure d'audience. Compteurs anonymes par jour (table D1 `event_counts`,
+  `POST /api/events`, liste fermée d'événements, 60 par minute et par IP), comptés seulement sur le vrai site et
+  hors robots ; une visite et sa provenance une fois par session. Les pages « qui gagne ? » comptent leurs lectures
+  avec un petit script.
 - `src/daily.ts` : défi du jour. À minuit heure de Paris, une horde de 1 000 points (`horde:gen8:1000:2026-10-24`,
   différente de la horde d'entraînement) et une graine sont tirées de la date, les mêmes pour tous : le résultat ne
   dépend que de l'équipe, c'est une énigme. Score : le moins de points pour gagner ; série de jours réussis.
