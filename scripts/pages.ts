@@ -173,6 +173,7 @@ function page(
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
     <title>${escape(title)}</title>
     <meta name="description" content="${escape(description)}" />
     <link rel="canonical" href="${url}" />
@@ -298,7 +299,8 @@ ${MATCHUPS.filter(belongs)
   return page(locale, { title: text.indexTitle, description: text.indexDescription, paths: MATCHUPS_PATHS, body })
 }
 
-const STYLE = `:root{--background:#12131f;--surface:#1a1c2c;--text:#f4f3ff;--muted:#a9acd6;--blue:#3d9bff;--red:#ff4d5e;--accent:#ffd23f}
+const STYLE = `:root{color-scheme:dark;--background:#12131f;--surface:#1a1c2c;--text:#f4f3ff;--muted:#a9acd6;--blue:#3d9bff;--red:#ff4d5e;--accent:#ffd23f}
+@view-transition{navigation:auto}
 *{box-sizing:border-box}
 body{margin:0;background:var(--background);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.55}
 a{color:var(--accent)}
@@ -371,6 +373,7 @@ writeFileSync(
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex" />
+    <meta name="color-scheme" content="dark" />
     <title>Page introuvable · PokéBrawl</title>
     <link rel="icon" href="/icons/favicon.png" type="image/png" />
     <link rel="stylesheet" href="/combats/style.css" />

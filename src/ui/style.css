@@ -69,6 +69,22 @@ body {
   font-size: calc(4 * var(--u));
 }
 
+/* Switching language reloads the page: it fades into the other rather than cutting. */
+@view-transition {
+  navigation: auto;
+}
+
+/* The app usually starts in a blink: the loading text only shows when it takes longer. */
+.loading {
+  animation: appear 0.3s 0.8s both;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
 [hidden] {
   display: none !important;
 }
