@@ -12,7 +12,6 @@ import {
 import { friendChallengeSearch, type FriendChallenge } from '../friend'
 import { checkNickname } from '../nickname'
 import { pokedex } from '../pokedex'
-import { typeColor } from '../render/effects'
 import { randomSeed, type BattleParams } from '../render/params'
 import { terrainForSeed } from '../render/terrain'
 import { costOf, MAX_TEAM_SIZE, TEAM_BUDGET, teamCost } from '../simulation/cost'
@@ -25,24 +24,17 @@ import {
   teamTitle,
   toFighterSetup,
 } from '../simulation/teams'
-import type { Species, TypeKey } from '../simulation/types'
+import type { TypeKey } from '../simulation/types'
+import { createCatalogue, searchNameOf, typeHex, type CatalogueEntry } from './catalogue'
 import { LOCALE, nameOf, TEXT } from './i18n'
 import { fetchRanking, renderRanking, savedNickname, saveNickname } from './ranking'
 import { shareLink, siteUrl } from './share'
 import { track } from './track'
 import { readStored, STORAGE_KEYS, writeStored } from './storage'
-import { withoutDiacritics } from '../text'
 
 const LEVELS = [800, 1000, 1250]
 type Mode = 'daily' | 'training' | 'friend'
 const DEFAULT_CHALLENGE = { mode: 'daily' as Mode, horde: 'gen1', level: 1000 }
-const ALL = ''
-
-interface Entry {
-  species: Species
-  cost: number
-  searchName: string
-}
 
 interface ComposerHandlers {
   spriteOf: (speciesId: number) => HTMLElement
@@ -51,9 +43,7 @@ interface ComposerHandlers {
 }
 
 const hordeSelector = (horde: string, level: number) => `horde:${horde}:${level}`
-const collectionStar = () => Object.assign(document.createElement('span'), { className: 'card-star', textContent: '★' })
 const today = () => dayOf(new Date())
-const typeHex = (type: TypeKey) => `#${typeColor(type).toString(16).padStart(6, '0')}`
 const TYPE_NAME = TYPE_NAMES[LOCALE]
 
 /** What the end of a challenge says, and what to share after it. */
@@ -93,16 +83,12 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   const modeButtons = [...section.querySelectorAll<HTMLButtonElement>('[data-mode]')]
   const rankingButtons = [...section.querySelectorAll<HTMLButtonElement>('[data-ranking]')]
   let rankingDay: 'today' | 'yesterday' = 'today'
-  const searchInput = query<HTMLInputElement>('input[name="search"]')
-  const typeSelect = query<HTMLSelectElement>('select[name="type"]')
-  const generationSelect = query<HTMLSelectElement>('select[name="generation"]')
-  const sortSelect = query<HTMLSelectElement>('select[name="sort"]')
   const fightButton = query<HTMLButtonElement>('[data-action="fight"]')
 
-  const entries: Entry[] = pokedex.pokemon.map((species) => ({
+  const entries: CatalogueEntry[] = pokedex.pokemon.map((species) => ({
     species,
     cost: costOf(toFighterSetup(species, pokedex)),
-    searchName: withoutDiacritics(`${species.names.fr} ${species.names.en}`),
+    searchName: searchNameOf(species),
   }))
   const entryOf = (id: number) => entries[id - 1]!
 
@@ -114,19 +100,17 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   if (challenge.mode === 'friend' && !friendChallenge) challenge = { ...challenge, mode: 'daily' }
   const challengerInput = query<HTMLInputElement>('input[name="challenger"]')
   const challengeStatus = query('[data-role="challenge-status"]')
-  // The Pokémon caught on PokéDate: a star on their cards and a filter, but no edge in battle, which the daily
-  // ranking could not check.
-  let collection = new Set(readStored<number[]>(STORAGE_KEYS.collection, []))
-  const collectionCheckbox = query<HTMLInputElement>('input[name="collection"]')
-
-  typeSelect.replaceChildren(
-    new Option(TEXT.allTypes, ALL),
-    ...Object.entries(TYPE_NAME).map(([key, name]) => new Option(name, key)),
-  )
-  generationSelect.replaceChildren(
-    new Option(TEXT.allGenerations, ALL),
-    ...Array.from({ length: 9 }, (_, index) => new Option(`Gen ${index + 1}`, String(index + 1))),
-  )
+  const catalogue = createCatalogue(query('.catalog'), {
+    entries,
+    spriteOf,
+    // No edge in battle for the Pokémon caught on PokéDate, which the daily ranking could not check.
+    collection: new Set(readStored<number[]>(STORAGE_KEYS.collection, [])),
+    onPick(id) {
+      team.set(id, (team.get(id) ?? 0) + 1)
+      saveTeam()
+      renderTeam()
+    },
+  })
 
   const teamSize = () => [...team.values()].reduce((total, count) => total + count, 0)
   const spent = () => [...team].reduce((total, [id, count]) => total + entryOf(id).cost * count, 0)
@@ -227,11 +211,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       const chip = typeChip(type, 'button') as HTMLButtonElement
       chip.type = 'button'
       chip.title = TEXT.showType(TYPE_NAME[type])
-      chip.addEventListener('click', () => {
-        typeSelect.value = type
-        renderCards()
-        query('.catalog').scrollIntoView({ behavior: 'smooth', block: 'start' })
-      })
+      chip.addEventListener('click', () => catalogue.showType(type))
       advice.append(chip)
     }
   }
@@ -260,73 +240,13 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     )
     query('[data-role="team-hint"]').hidden = size > 0
     fightButton.disabled = size === 0
-    const left = TEAM_BUDGET - used
-    for (const card of cards.values()) card.disabled = Number(card.dataset.cost) > left || size >= MAX_TEAM_SIZE
-  }
-
-  const cards = new Map<number, HTMLButtonElement>()
-  function cardOf({ species, cost }: Entry) {
-    const existing = cards.get(species.id)
-    if (existing) return existing
-    const card = document.createElement('button')
-    card.type = 'button'
-    card.className = 'card'
-    card.dataset.id = String(species.id)
-    card.dataset.cost = String(cost)
-    const types = document.createElement('span')
-    types.className = 'card-types'
-    for (const type of species.types) {
-      const dot = document.createElement('i')
-      dot.style.background = typeHex(type)
-      dot.title = TYPE_NAME[type]
-      types.append(dot)
-    }
-    if (collection.has(species.id)) card.append(collectionStar())
-    card.append(
-      spriteOf(species.id),
-      Object.assign(document.createElement('span'), { className: 'card-name', textContent: nameOf(species) }),
-      Object.assign(document.createElement('span'), { className: 'card-cost', textContent: String(cost) }),
-      types,
-    )
-    cards.set(species.id, card)
-    return card
-  }
-
-  function renderCards() {
-    const search = withoutDiacritics(searchInput.value.trim())
-    const type = typeSelect.value as TypeKey | typeof ALL
-    const generation = Number(generationSelect.value)
-    const sort = sortSelect.value
-    const shown = entries
-      .filter(({ species, searchName }) => {
-        if (search && !searchName.includes(search)) return false
-        if (type && !species.types.includes(type)) return false
-        if (collectionCheckbox.checked && !collection.has(species.id)) return false
-        return !generation || species.generation === generation
-      })
-      .toSorted((a, b) =>
-        sort === 'id'
-          ? a.species.id - b.species.id
-          : sort === '-cost'
-            ? b.cost - a.cost || a.species.id - b.species.id
-            : a.cost - b.cost || a.species.id - b.species.id,
-      )
-    query('[data-role="cards"]').replaceChildren(...shown.map(cardOf))
-    renderTeam()
+    catalogue.setLimits(TEAM_BUDGET - used, size >= MAX_TEAM_SIZE)
   }
 
   function saveTeam() {
     writeStored(STORAGE_KEYS.team, team.size > 0 ? selectorOfCounts(team) : undefined)
   }
 
-  query('[data-role="cards"]').addEventListener('click', (event) => {
-    const card = (event.target as Element).closest<HTMLButtonElement>('.card')
-    if (!card || card.disabled) return
-    const id = Number(card.dataset.id)
-    team.set(id, (team.get(id) ?? 0) + 1)
-    saveTeam()
-    renderTeam()
-  })
   query('[data-role="team"]').addEventListener('click', (event) => {
     const chip = (event.target as Element).closest<HTMLButtonElement>('.chip')
     if (!chip) return
@@ -338,8 +258,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     renderTeam()
   })
   query('[data-action="fill"]').addEventListener('click', () => {
-    const catalogue = entries.map(({ species, cost }) => ({ id: species.id, cost }))
-    team = fillAtRandom(team, catalogue, TEAM_BUDGET - spent(), MAX_TEAM_SIZE - teamSize(), Math.random)
+    const prices = entries.map(({ species, cost }) => ({ id: species.id, cost }))
+    team = fillAtRandom(team, prices, TEAM_BUDGET - spent(), MAX_TEAM_SIZE - teamSize(), Math.random)
     saveTeam()
     renderTeam()
   })
@@ -348,15 +268,6 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     saveTeam()
     renderTeam()
   })
-  function renderCollection() {
-    query('[data-role="collection-filter"]').hidden = collection.size === 0
-    query('[data-role="collection-import"]').hidden = collection.size > 0
-    query('[data-role="collection-count"]').textContent = String(collection.size)
-  }
-  renderCollection()
-
-  for (const control of [searchInput, typeSelect, generationSelect, sortSelect, collectionCheckbox])
-    control.addEventListener('input', renderCards)
 
   function setChallenge(next: typeof challenge) {
     challenge = next
@@ -426,7 +337,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       challengeStatus.hidden = true
       query('[data-role="team-notice"]').hidden = true
       renderChallenge()
-      renderCards()
+      catalogue.render()
+      renderTeam()
       section.hidden = false
       section.scrollTop = 0
     },
@@ -453,13 +365,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     },
     /** Keeps the Pokémon caught on PokéDate, received by link, and says how to find them. */
     importCollection(ids: number[]) {
-      collection = new Set(ids)
       writeStored(STORAGE_KEYS.collection, ids)
-      for (const [id, card] of cards) {
-        card.querySelector('.card-star')?.remove()
-        if (collection.has(id)) card.prepend(collectionStar())
-      }
-      renderCollection()
+      catalogue.setCollection(new Set(ids))
       const notice = query('[data-role="team-notice"]')
       notice.textContent = ids.length === 0 ? TEXT.noCollection : TEXT.collection(ids.length)
       notice.hidden = false
