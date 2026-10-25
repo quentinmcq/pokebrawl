@@ -295,6 +295,7 @@ const french = {
   // Ranking
   rankingUnreachable: 'Classement injoignable : ton score est gardé sur cet appareil.',
   rankingUnavailable: 'Classement indisponible pour le moment.',
+  rankingUnavailableShort: 'Indisponible',
   rankingSummary: (total: number, you: { rank: number; points: number } | null) =>
     `${frenchPlural(total, 'joueur')}${you ? ` · toi : ${frenchOrdinal(you.rank)} avec ${you.points} points` : ''}`,
   rankingEmptyToday: 'Personne n’a encore gagné le défi du jour\u00a0: sois le premier\u00a0!',
@@ -426,8 +427,11 @@ const english: Messages = {
   terrains: { grass: 'Meadow', sand: 'Desert', snow: 'Tundra', cave: 'Cave' },
   rankingUnreachable: 'The ranking cannot be reached: your score is kept on this device.',
   rankingUnavailable: 'The ranking is unavailable for now.',
+  rankingUnavailableShort: 'Unavailable',
   rankingSummary: (total, you) =>
-    `${englishPlural(total, 'player')}${you ? ` · you: ${englishOrdinal(you.rank)} with ${you.points} points` : ''}`,
+    total === 0
+      ? 'Be the first!'
+      : `${englishPlural(total, 'player')}${you ? ` · you ${englishOrdinal(you.rank)}` : ''}`,
   rankingEmptyToday: 'Nobody has won today’s challenge yet: be the first!',
   rankingEmptyYesterday: 'Nobody won yesterday’s challenge.',
   rankingEntry: (points, size) => `${points} pts · ${size} Pokémon`,

@@ -63,8 +63,10 @@ export function renderRanking(
   onReplay: (team: string) => void,
 ) {
   if (!ranking) {
-    summary.textContent = TEXT.rankingUnavailable
-    list.replaceChildren()
+    summary.textContent = TEXT.rankingUnavailableShort
+    list.replaceChildren(
+      Object.assign(document.createElement('li'), { className: 'ranking-empty', textContent: TEXT.rankingUnavailable }),
+    )
     return
   }
   summary.textContent = TEXT.rankingSummary(ranking.total, ranking.you)

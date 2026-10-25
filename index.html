@@ -161,9 +161,15 @@
             <p class="hint" data-role="daily-status"></p>
             <button class="primary play" type="button" data-open="daily" data-i18n="play">Jouer</button>
             <details class="ranking">
-              <summary class="ranking-head">
+              <summary class="fold-head">
+                <svg class="fold-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.7V17c0 .6-.5 1-1 1.2C7.8 18.8 7 20.2 7 22M14 14.7V17c0 .6.5 1 1 1.2 1.2.6 2 2 2 3.8M18 2H6v7a6 6 0 0 0 12 0V2z"
+                  />
+                </svg>
                 <h3 data-i18n="ranking">Classement</h3>
-                <span class="hint" data-role="ranking-summary" data-i18n="loadingShort">Chargement…</span>
+                <span class="fold-summary" data-role="ranking-summary" data-i18n="loadingShort">Chargement…</span>
+                <svg class="fold-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
               </summary>
               <div
                 class="segmented segmented--small"
@@ -203,9 +209,15 @@
               <span class="lobby-chevron" aria-hidden="true">›</span>
             </button>
           </nav>
-          <details class="panel achievements" data-role="achievements">
-            <summary>
-              <h2><span data-i18n="achievements">Succès</span> <span data-role="achievements-count"></span></h2>
+          <details class="achievements" data-role="achievements">
+            <summary class="fold-head">
+              <svg class="fold-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="9" r="6" />
+                <path d="M8.2 13.6 7 22l5-3 5 3-1.2-8.4" />
+              </svg>
+              <h2 data-i18n="achievements">Succès</h2>
+              <span class="fold-summary" data-role="achievements-count"></span>
+              <svg class="fold-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
             </summary>
             <ul class="badges" data-role="badges"></ul>
           </details>
