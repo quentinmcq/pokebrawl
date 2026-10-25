@@ -1,7 +1,8 @@
 // Serves the app from a cache so that it opens offline once installed, and refreshes that cache in the background.
-// A new name empties the older caches on activation: v1 could keep a « qui gagne ? » page as the app's home.
-const CACHE_NAME = 'pokebrawl-v2'
-const APP_SHELL = ['/', '/manifest.webmanifest', '/sprites.json', '/sprites.webp']
+// A new name empties the older caches on activation: v1 could keep a « qui gagne ? » page as the app's home, v2 a
+// friend's challenge.
+const CACHE_NAME = 'pokebrawl-v3'
+const APP_SHELL = ['/', '/en/', '/manifest.webmanifest', '/manifest-en.webmanifest', '/sprites.json', '/sprites.webp']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)))
@@ -22,15 +23,18 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url)
   // The ranking and the counters must always reach the server, never come from a cache.
   if (request.method !== 'GET' || url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return
-  // Every link into the app (?a=…, ?defi=…) opens the same page, cached once under « / »; the « qui gagne ? »
-  // pages are pages of their own, each under its address.
-  const cacheKey = request.mode !== 'navigate' ? request : url.pathname === '/' ? '/' : url.pathname
+  // Every link into the app (?a=…, ?defi=…) opens the same page, cached under its path (« / » or « /en/ »); the
+  // « qui gagne ? » pages are pages of their own, each under its address.
+  const navigation = request.mode === 'navigate'
+  const cacheKey = navigation ? url.pathname : request
+  // The server writes a friend's challenge into the page it sends for « ?defi=… »: only a plain address is kept.
+  const keeps = (response) => response.ok && (!navigation || url.search === '')
   event.respondWith(
     caches.open(CACHE_NAME).then(async (cache) => {
       const cached = await cache.match(cacheKey)
       const fresh = fetch(request)
         .then((response) => {
-          if (response.ok) cache.put(cacheKey, response.clone())
+          if (keeps(response)) cache.put(cacheKey, response.clone())
           return response
         })
         .catch(() => cached)
