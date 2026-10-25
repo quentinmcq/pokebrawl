@@ -187,6 +187,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
           : [TEXT.page.daily, teamTitle(dailyChallenge(today()).horde, LOCALE)]
     query('[data-role="opponent-mode"]').textContent = mode
     query('[data-role="opponent-name"]').textContent = name
+    // In training the opponent's menu already names it: no title repeats it.
+    query('[data-role="opponent-name"]').hidden = challenge.mode === 'training'
     hordeSelect.replaceChildren(
       ...TEAM_SELECTORS.map((selector) => {
         const beaten = wins.has(hordeSelector(selector, challenge.level))
