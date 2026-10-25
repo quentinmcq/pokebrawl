@@ -24,8 +24,9 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   `sw.js` (`public/_headers`).
 - `bun run verify-daily [--day 2026-10-25] [--apply] [--local]` : rejoue tous les scores d'un jour du classement et
   liste ceux dont l'équipe ne bat pas vraiment la horde ; `--apply` les supprime.
-- `bun run sprites` : télécharge les 1025 sprites et les rassemble dans `public/sprites.webp` + `.json`
-  (non versionnés, à lancer une fois avant `bun dev` ; les téléchargements restent en cache dans `.cache/`)
+- `bun run sprites` : télécharge les 1025 sprites et les rassemble dans `public/sprites.webp` + `.json`, puis les
+  cris dans `public/cries/` (non versionnés, à lancer une fois avant `bun dev` ; les téléchargements restent en
+  cache dans `.cache/`)
 - `bun run icons` : régénère les icônes de l'application (`public/icons/`) et l'image d'aperçu des liens
   (`public/og.png`), versionnées, depuis ce cache
 - `bun run battle --a gen1 --b gen3 --seed 42` : un combat raconté en texte (`--log` pour chaque attaque,
@@ -138,8 +139,11 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   rapport dégâts/points), en rejouant le combat en mémoire puisqu'il est déterministe.
 - `src/ui/sound.ts` : sons synthétisés (Web Audio, aucun fichier) : impact sourd ou « piou » selon la catégorie,
   hauteur selon le type, plus fort si super efficace, note descendante au K.O., air de victoire ou de défaite ;
-  6 sons par 0,1 s au plus hors coups notables ; bouton pour couper, mémorisé. Pas de cris : PokeAPI les sert en
-  OGG, illisible par Safari sur iPhone. Menu spectateur (`menu.ts`,
+  6 sons par 0,1 s au plus hors coups notables ; bouton pour couper, mémorisé. Cris des Pokémon (ceux de PokeAPI,
+  comme PokéDate, téléchargés par `bun run sprites` dans `public/cries/`, hors dépôt) : préchargés au lancement d'un
+  combat pour les espèces présentes, joués au K.O. (un à la fois, 0,6 s d'écart, sinon le « bip ») et pour le
+  meilleur Pokémon sur l'écran de fin. Presque tous en OGG Vorbis (Safari depuis iOS 18.4), trois en MP3 sous la
+  même extension : le décodage Web Audio lit le contenu, pas le nom. Menu spectateur (`menu.ts`,
   aperçu des équipes derrière), barre de contrôle qui s'efface pendant le combat (`controls.ts`), installation
   de la PWA (`install.ts`), enregistrement vidéo (`recorder.ts`, `videoPanel.ts`) : le bouton ● rejoue le combat
   depuis le début en 1080 × 1920 quel que soit l'écran, s'arrête 4,5 s après la fin, puis propose de télécharger la
@@ -173,6 +177,7 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
    Liens depuis pokedate.fr (bannière sur les résultats et les fiches, pied de page, Pokédex), aide à la
    composition, bilan, résultat immédiat, son (fait).
    Pages « Gen 1 contre Gen 3 : qui gagne ? » pour le référencement (fait).
-6. Ensuite : domaine pokebrawl.fr (puis `src/site.ts` et `pokebrawlUrl` dans PokéDate), cris des Pokémon ; plus tard pronostic, Méga-Évolutions, statuts et talents.
+   Cris des Pokémon (fait).
+6. Ensuite : domaine pokebrawl.fr (puis `src/site.ts` et `pokebrawlUrl` dans PokéDate) ; plus tard pronostic, Méga-Évolutions, statuts et talents.
 
 Les sprites et le Pokédex de PokéDate (`../pokedate/scripts/fetch-sprites.ts`) peuvent servir de modèle.
