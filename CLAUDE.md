@@ -53,7 +53,8 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 - Commits atomiques en Conventional Commits, en anglais, sans aucune mention de Claude (pas de `Co-Authored-By`,
   pas de lien de session).
 - Commits directement sur `main`, historique linéaire.
-- Textes visibles en français (tutoiement, espaces insécables avant `? ! : ;`) ; l'anglais viendra avec l'interface.
+- Textes visibles en français (tutoiement, espaces insécables avant `? ! : ;`) et en anglais (britannique, tutoiement
+  sans équivalent : « you »), tous dans `src/messages.ts`.
 - `bunfig.toml` : Bun ignore les versions publiées depuis moins d'un jour.
 - Ne lancer les tests que sur demande ; Lefthook (format + lint au commit, types + tests au push) sert de filet.
 
@@ -107,21 +108,30 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   - `endScreen.ts` : vainqueur, durée, meilleur Pokémon en grand (sprite agrandi sans lissage), les trois suivants,
     survivants ; mis en page à taille fixe puis réduit pour tenir dans l'arène, dans les deux formats.
   - `params.ts` : équipes, graine, terrain et option « même nombre » lus dans l'URL et réécrits dedans.
+- `src/locale.ts`, `src/messages.ts`, `src/ui/i18n.ts` : deux langues, choisies par l'adresse (`/` en français,
+  `/en/` en anglais ; ni cookie ni redirection, un lien « English » / « Français » en haut de l'accueil, comme sur
+  PokéDate). `messages.ts` réunit tous les textes, typés pour que l'anglais ait les mêmes clés ; `index.html` est écrit
+  en français et ses éléments portent `data-i18n` (contenu) ou `data-i18n-<attribut>`, traduits au démarrage et, pour
+  les moteurs et les messageries, par le Worker sur `/en/`. Noms des Pokémon et des attaques, types et équipes
+  (`teamTitle(sélecteur, langue)`) dans la langue de la page. Manifeste anglais à part (`manifest-en.webmanifest`).
 - `src/matchups.ts`, `scripts/pages.ts` : pages statiques pour le référencement, écrites dans `dist/` après le
-  build de Vite : une par affiche (`/combats/gen-1-contre-gen-3/` : les 36 duels de générations, les 153 de types,
+  build de Vite, en français et en anglais (`/en/battles/gen-1-vs-gen-3/`, liées par `hreflang`) : une par affiche
+  (`/combats/gen-1-contre-gen-3/` : les 36 duels de générations, les 153 de types,
   les légendaires contre chaque génération), avec victoires, durée, survivants, Pokémon décisifs, bouton « Regarder
-  un combat » (une graine où gagne le favori) et liens entre pages ; plus l'index `/combats/`, `sitemap.xml` et
-  `robots.txt`. Adresse publique dans `src/site.ts`, à changer avec le domaine.
+  un combat » (une graine où gagne le favori) et liens entre pages ; plus les index `/combats/` et `/en/battles/`,
+  `sitemap.xml` (chaque adresse avec sa traduction) et `robots.txt`. Adresse publique dans `src/site.ts`, à changer avec le domaine.
 - `src/leaderboard.ts`, `src/nickname.ts` : types du classement, validation des équipes envoyées (points recalculés,
   budget, taille) et des pseudos (règles de PokéDate : 2 à 20 caractères, insultes refusées même déguisées).
 - `src/friend.ts` : défi entre amis. Lien `?defi=ids:66*12&de=Sacha&seed=42` : l'équipe à battre, qui l'envoie et la
   graine, la même pour les deux joueurs. Vérifié comme un score envoyé (équipe dans les règles, pseudo accepté,
   sinon « Un ami »). Le combat porte `nb=Sacha` dans son URL, d'où « Équipe de Sacha » à l'écran.
-- `worker/index.ts` : le Worker. Sert le site, réécrit l'aperçu de la page d'accueil pour les messageries (image
-  `og.png` en adresse absolue ; pour un lien de défi, « Sacha te défie sur PokéBrawl » et l'équipe à battre), et
+- `worker/index.ts` : le Worker. Sert le site, réécrit les pages d'accueil `/` et `/en/` (langue, textes, `canonical`
+  et `hreflang`, image `og.png` en adresse absolue ; pour un lien de défi, « Sacha te défie sur PokéBrawl » et l'équipe
+  à battre), et
   répond à `GET`/`POST /api/daily/:jour` (base D1 `daily_scores`,
   `migrations/`). Un score par joueur et par jour, le meilleur ; l'identifiant du joueur, aléatoire et gardé dans le
-  navigateur, n'est stocké que haché. Équipes révélées une fois le jour fini. Plan gratuit (10 ms de calcul) : pas
+  navigateur, n'est stocké que haché. Équipes révélées une fois le jour fini. Erreurs renvoyées avec un code que l'application traduit (et le texte français pour les anciennes versions).
+  Plan gratuit (10 ms de calcul) : pas
   de rejeu du combat au serveur, d'où `bun run verify-daily` ; envois limités à 10 par minute et par IP.
 - `src/tracking.ts`, `src/ui/track.ts` : mesure d'audience. Compteurs anonymes par jour (table D1 `event_counts`,
   `POST /api/events`, liste fermée d'événements, 60 par minute et par IP), comptés seulement sur le vrai site et
@@ -194,6 +204,7 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
    composition, bilan, résultat immédiat, son (fait).
    Pages « Gen 1 contre Gen 3 : qui gagne ? » pour le référencement (fait).
    Cris des Pokémon (fait). Mesure d'audience, contrôle de nuit du classement, succès (fait).
+   Version anglaise sur `/en/`, application et pages « who wins? » (fait).
 6. Ensuite : domaine pokebrawl.fr (puis `src/site.ts` et `pokebrawlUrl` dans PokéDate) ; plus tard pronostic, Méga-Évolutions, statuts et talents.
 
 Les sprites et le Pokédex de PokéDate (`../pokedate/scripts/fetch-sprites.ts`) peuvent servir de modèle.
