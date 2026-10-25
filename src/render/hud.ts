@@ -27,10 +27,16 @@ const setText = (text: Text, value: string) => {
 }
 
 /** The band above the arena: each team's name and survivors, the clock, and the share of health left on each side. */
-export function createHud(battle: Battle, teamTitles: [string, string], { width, arena }: Layout) {
+export function createHud(
+  battle: Battle,
+  teamTitles: [string, string],
+  { width: screenWidth, arena, hudScale }: Layout,
+) {
+  // Laid out at the upright size, in a container then scaled down to the layout's band.
+  const width = screenWidth / hudScale
   // Lined up with the arena edges, which sit further in on a wide screen.
-  const sideMargin = Math.max(SIDE_MARGIN, arena.left)
-  const view = new Container()
+  const sideMargin = Math.max(SIDE_MARGIN, arena.left / hudScale)
+  const view = new Container({ scale: hudScale })
   view.addChild(new Graphics().rect(0, 0, width, HUD_HEIGHT).fill(COLORS.background))
 
   const titles = teamTitles.map((title, team) => {

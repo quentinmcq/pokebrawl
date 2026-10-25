@@ -17,6 +17,7 @@ const ICONS = {
 }
 // The bar fades away during the battle so that it never hides the action, and comes back on the next touch.
 const IDLE_DELAY_MS = 2500
+const MOUSE_ZONE_SHARE = 0.25
 
 export type PlayState = 'playing' | 'paused' | 'over'
 
@@ -68,8 +69,11 @@ export function createControls(nav: HTMLElement, stage: HTMLElement, handlers: C
   stage.addEventListener('pointerdown', (event) => {
     if (!nav.hidden && !nav.contains(event.target as Node)) wake()
   })
+  // A mouse moves all the time over a computer screen: only nearing the bottom, where the bar sits, brings it back.
   stage.addEventListener('pointermove', (event) => {
-    if (event.pointerType === 'mouse' && !nav.hidden) wake()
+    if (event.pointerType !== 'mouse' || nav.hidden) return
+    const { top, height } = stage.getBoundingClientRect()
+    if (event.clientY - top > height * (1 - MOUSE_ZONE_SHARE) || nav.contains(event.target as Node)) wake()
   })
 
   function setState(next: PlayState) {

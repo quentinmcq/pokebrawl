@@ -4,6 +4,7 @@ export type Orientation = 'portrait' | 'landscape'
 
 export const HUD_HEIGHT = 210
 const ARENA_MARGIN = 30
+const LANDSCAPE_HUD_SCALE = 0.7
 
 /**
  * Where the arena sits on the canvas. The canvas keeps a video resolution whatever the window size (CSS scales it):
@@ -16,6 +17,8 @@ export interface Layout {
   height: number
   /** Pixels per arena unit. */
   unit: number
+  /** The score band is laid out at the upright size, then shrunk on wide screens, where it would take a fifth of the height. */
+  hudScale: number
   arena: { left: number; top: number; width: number; height: number }
   toScreen: (x: number, y: number) => { x: number; y: number }
 }
@@ -28,13 +31,16 @@ export function createLayout(orientation: Orientation): Layout {
   const height = landscape ? 1080 : 1920
   const columns = landscape ? ARENA_HEIGHT : ARENA_WIDTH
   const rows = landscape ? ARENA_WIDTH : ARENA_HEIGHT
-  const unit = Math.min((width - 2 * ARENA_MARGIN) / columns, (height - HUD_HEIGHT - ARENA_MARGIN) / rows)
-  const arena = { left: (width - columns * unit) / 2, top: HUD_HEIGHT, width: columns * unit, height: rows * unit }
+  const hudScale = landscape ? LANDSCAPE_HUD_SCALE : 1
+  const hudHeight = HUD_HEIGHT * hudScale
+  const unit = Math.min((width - 2 * ARENA_MARGIN) / columns, (height - hudHeight - ARENA_MARGIN) / rows)
+  const arena = { left: (width - columns * unit) / 2, top: hudHeight, width: columns * unit, height: rows * unit }
   return {
     orientation,
     width,
     height,
     unit,
+    hudScale,
     arena,
     toScreen: landscape
       ? (x, y) => ({ x: arena.left + y * unit, y: arena.top + x * unit })

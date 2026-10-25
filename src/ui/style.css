@@ -43,6 +43,14 @@ body {
   aspect-ratio: 16 / 9;
 }
 
+/*
+ * The unit every overlay is sized in: a hundredth of the stage's short side, as on a phone, but no more than 5px, so
+ * that a large computer screen shows a page at its usual size rather than a giant phone.
+ */
+.stage > * {
+  --u: min(1cqmin, 5px);
+}
+
 .stage canvas {
   display: block;
   width: 100%;
@@ -56,9 +64,9 @@ body {
   display: grid;
   place-items: center;
   margin: 0;
-  padding: 8cqmin;
+  padding: calc(8 * var(--u));
   text-align: center;
-  font-size: 4cqmin;
+  font-size: calc(4 * var(--u));
 }
 
 [hidden] {
@@ -76,21 +84,21 @@ input {
   /* Anchored low, so that the line-up it previews stays visible above it. */
   position: absolute;
   left: 50%;
-  bottom: 5cqmin;
+  bottom: calc(5 * var(--u));
   translate: -50% 0;
   box-sizing: border-box;
-  width: 90cqmin;
-  max-height: calc(100% - 30cqmin);
+  width: calc(90 * var(--u));
+  max-height: calc(100% - 30 * var(--u));
   overflow-y: auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3cqmin;
-  padding: 5cqmin;
-  border-radius: 5cqmin;
+  gap: calc(3 * var(--u));
+  padding: calc(5 * var(--u));
+  border-radius: calc(5 * var(--u));
   background: var(--surface);
   backdrop-filter: blur(6px);
-  box-shadow: 0 2cqmin 8cqmin rgb(0 0 0 / 0.5);
-  font-size: 3.8cqmin;
+  box-shadow: 0 calc(2 * var(--u)) calc(8 * var(--u)) rgb(0 0 0 / 0.5);
+  font-size: calc(3.8 * var(--u));
 }
 
 .menu > .logo,
@@ -104,7 +112,7 @@ input {
 
 .logo {
   margin: 0;
-  font-size: 9cqmin;
+  font-size: calc(9 * var(--u));
   font-weight: 900;
   letter-spacing: -0.03em;
   text-align: center;
@@ -115,14 +123,14 @@ input {
 }
 
 .tagline {
-  margin: 0 0 2cqmin;
+  margin: 0 0 calc(2 * var(--u));
   color: var(--muted);
   text-align: center;
 }
 
 .field {
   display: grid;
-  gap: 1.2cqmin;
+  gap: calc(1.2 * var(--u));
 }
 
 .field span {
@@ -142,9 +150,9 @@ input {
 .field input {
   width: 100%;
   box-sizing: border-box;
-  padding: 2.2cqmin 2.5cqmin;
-  border: 0.4cqmin solid #343858;
-  border-radius: 2.5cqmin;
+  padding: calc(2.2 * var(--u)) calc(2.5 * var(--u));
+  border: calc(0.4 * var(--u)) solid #343858;
+  border-radius: calc(2.5 * var(--u));
   background: #1f2236;
 }
 
@@ -159,29 +167,29 @@ input {
 .toggle {
   display: flex;
   align-items: center;
-  gap: 2.5cqmin;
+  gap: calc(2.5 * var(--u));
 }
 
 .toggle input {
-  width: 5cqmin;
-  height: 5cqmin;
+  width: calc(5 * var(--u));
+  height: calc(5 * var(--u));
   accent-color: var(--accent);
 }
 
 .primary,
 .secondary {
-  padding: 3.5cqmin;
+  padding: calc(3.5 * var(--u));
   border: 0;
-  border-radius: 3cqmin;
+  border-radius: calc(3 * var(--u));
   font-weight: 800;
   cursor: pointer;
 }
 
 .primary {
-  margin-top: 2cqmin;
+  margin-top: calc(2 * var(--u));
   background: var(--accent);
   color: #14162b;
-  font-size: 4.6cqmin;
+  font-size: calc(4.6 * var(--u));
 }
 
 .secondary {
@@ -192,18 +200,18 @@ input {
   margin: 0;
   color: var(--muted);
   text-align: center;
-  font-size: 3.2cqmin;
+  font-size: calc(3.2 * var(--u));
 }
 
 .controls {
   position: absolute;
   left: 50%;
-  bottom: 4cqmin;
+  bottom: calc(4 * var(--u));
   translate: -50% 0;
   display: flex;
   align-items: center;
-  gap: 2cqmin;
-  padding: 2cqmin;
+  gap: calc(2 * var(--u));
+  padding: calc(2 * var(--u));
   border-radius: 999px;
   background: var(--surface);
   backdrop-filter: blur(6px);
@@ -218,13 +226,13 @@ input {
 .controls button {
   display: grid;
   place-items: center;
-  min-width: 11cqmin;
-  height: 11cqmin;
-  padding: 0 2cqmin;
+  min-width: calc(11 * var(--u));
+  height: calc(11 * var(--u));
+  padding: 0 calc(2 * var(--u));
   border: 0;
   border-radius: 999px;
   background: transparent;
-  font-size: 3.8cqmin;
+  font-size: calc(3.8 * var(--u));
   font-weight: 800;
   cursor: pointer;
 }
@@ -234,8 +242,8 @@ input {
 }
 
 .controls svg {
-  width: 6cqmin;
-  height: 6cqmin;
+  width: calc(6 * var(--u));
+  height: calc(6 * var(--u));
   fill: none;
   stroke: currentColor;
   stroke-width: 2.2;
@@ -260,19 +268,19 @@ input {
     bottom: auto;
     top: 50%;
     translate: -50% -50%;
-    max-height: calc(100% - 6cqmin);
-    width: 72cqmin;
-    gap: 2cqmin;
-    padding: 4cqmin;
-    font-size: 3cqmin;
+    max-height: calc(100% - 6 * var(--u));
+    width: calc(72 * var(--u));
+    gap: calc(2 * var(--u));
+    padding: calc(4 * var(--u));
+    font-size: calc(3 * var(--u));
   }
 
   .logo {
-    font-size: 7cqmin;
+    font-size: calc(7 * var(--u));
   }
 
   .primary {
-    font-size: 3.6cqmin;
+    font-size: calc(3.6 * var(--u));
   }
 }
 
@@ -282,22 +290,22 @@ input {
 
 .recording {
   position: absolute;
-  bottom: 4cqmin;
+  bottom: calc(4 * var(--u));
   left: 50%;
   translate: -50% 0;
   display: flex;
   align-items: center;
-  gap: 2cqmin;
-  padding: 1.5cqmin 1.5cqmin 1.5cqmin 3cqmin;
+  gap: calc(2 * var(--u));
+  padding: calc(1.5 * var(--u)) calc(1.5 * var(--u)) calc(1.5 * var(--u)) calc(3 * var(--u));
   border-radius: 999px;
   background: var(--surface);
-  font-size: 3.2cqmin;
+  font-size: calc(3.2 * var(--u));
   font-weight: 700;
 }
 
 .recording-dot {
-  width: 2.6cqmin;
-  height: 2.6cqmin;
+  width: calc(2.6 * var(--u));
+  height: calc(2.6 * var(--u));
   border-radius: 50%;
   background: var(--red);
   animation: blink 1s steps(2, start) infinite;
@@ -310,7 +318,7 @@ input {
 }
 
 .recording button {
-  padding: 1.5cqmin 3cqmin;
+  padding: calc(1.5 * var(--u)) calc(3 * var(--u));
   border: 0;
   border-radius: 999px;
   background: #2a2d47;
@@ -324,20 +332,20 @@ input {
   top: 50%;
   translate: -50% -50%;
   display: grid;
-  gap: 3cqmin;
-  width: 70cqmin;
-  padding: 5cqmin;
-  border-radius: 5cqmin;
+  gap: calc(3 * var(--u));
+  width: calc(70 * var(--u));
+  padding: calc(5 * var(--u));
+  border-radius: calc(5 * var(--u));
   background: var(--surface);
   backdrop-filter: blur(6px);
-  box-shadow: 0 2cqmin 8cqmin rgb(0 0 0 / 0.5);
-  font-size: 3.8cqmin;
+  box-shadow: 0 calc(2 * var(--u)) calc(8 * var(--u)) rgb(0 0 0 / 0.5);
+  font-size: calc(3.8 * var(--u));
   text-align: center;
 }
 
 .video-ready p {
-  margin: 0 0 1cqmin;
-  font-size: 5cqmin;
+  margin: 0 0 calc(1 * var(--u));
+  font-size: calc(5 * var(--u));
   font-weight: 900;
 }
 
@@ -351,7 +359,7 @@ input {
   border: 0;
   background: none;
   color: var(--muted);
-  font-size: 3.2cqmin;
+  font-size: calc(3.2 * var(--u));
   text-decoration: underline;
   cursor: pointer;
 }
@@ -362,21 +370,21 @@ input {
   overflow-y: auto;
   display: grid;
   align-content: start;
-  gap: 3cqmin;
-  padding: 4cqmin 4cqmin 0;
+  gap: calc(3 * var(--u));
+  padding: calc(4 * var(--u)) calc(4 * var(--u)) 0;
   background: var(--background);
-  font-size: 3.4cqmin;
+  font-size: calc(3.4 * var(--u));
 }
 
 .composer-header {
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
-  gap: 1.5cqmin 3cqmin;
+  gap: calc(1.5 * var(--u)) calc(3 * var(--u));
 }
 
 .composer-header .logo {
-  font-size: 8cqmin;
+  font-size: calc(8 * var(--u));
   text-align: left;
 }
 
@@ -390,15 +398,15 @@ input {
 
 .composer-side {
   display: grid;
-  gap: 3cqmin;
+  gap: calc(3 * var(--u));
 }
 
 .panel {
   display: grid;
-  gap: 2cqmin;
-  padding: 3cqmin;
-  border-left: 1cqmin solid #343858;
-  border-radius: 3cqmin;
+  gap: calc(2 * var(--u));
+  padding: calc(3 * var(--u));
+  border-left: calc(1 * var(--u)) solid #343858;
+  border-radius: calc(3 * var(--u));
   background: #1a1c2c;
 }
 
@@ -412,14 +420,14 @@ input {
 
 .panel h2 {
   margin: 0;
-  font-size: 4cqmin;
+  font-size: calc(4 * var(--u));
   font-weight: 900;
 }
 
 .panel .row {
   display: flex;
   flex-wrap: wrap;
-  gap: 2cqmin;
+  gap: calc(2 * var(--u));
 }
 
 .panel select,
@@ -427,22 +435,22 @@ input {
 .filters select {
   flex: 1;
   min-width: 0;
-  padding: 2cqmin 2.5cqmin;
-  border: 0.4cqmin solid #343858;
-  border-radius: 2.5cqmin;
+  padding: calc(2 * var(--u)) calc(2.5 * var(--u));
+  border: calc(0.4 * var(--u)) solid #343858;
+  border-radius: calc(2.5 * var(--u));
   background: #1f2236;
 }
 
 .segmented {
   display: flex;
-  border-radius: 2.5cqmin;
+  border-radius: calc(2.5 * var(--u));
   background: #1f2236;
 }
 
 .segmented button {
-  padding: 2cqmin 2.5cqmin;
+  padding: calc(2 * var(--u)) calc(2.5 * var(--u));
   border: 0;
-  border-radius: 2.5cqmin;
+  border-radius: calc(2.5 * var(--u));
   background: none;
   font-weight: 700;
   cursor: pointer;
@@ -458,7 +466,7 @@ input {
 }
 
 .sprite {
-  --size: 9cqmin;
+  --size: calc(9 * var(--u));
   --k: calc(var(--size) / var(--extent));
   display: inline-block;
   width: calc(var(--w) * var(--k));
@@ -473,22 +481,22 @@ input {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: 1cqmin;
-  max-height: 22cqmin;
+  gap: calc(1 * var(--u));
+  max-height: calc(22 * var(--u));
   overflow-y: auto;
 }
 
 .sprite-strip .sprite {
-  --size: 6.5cqmin;
+  --size: calc(6.5 * var(--u));
 }
 
 .budget {
   display: grid;
-  gap: 1.5cqmin;
+  gap: calc(1.5 * var(--u));
 }
 
 .budget-bar {
-  height: 2cqmin;
+  height: calc(2 * var(--u));
   overflow: hidden;
   border-radius: 999px;
   background: #1f2236;
@@ -503,7 +511,7 @@ input {
 .team {
   display: flex;
   flex-wrap: wrap;
-  gap: 1.5cqmin;
+  gap: calc(1.5 * var(--u));
 }
 
 .team:empty {
@@ -514,20 +522,20 @@ input {
   position: relative;
   display: grid;
   place-items: center;
-  width: 12cqmin;
-  height: 12cqmin;
+  width: calc(12 * var(--u));
+  height: calc(12 * var(--u));
   padding: 0;
-  border: 0.4cqmin solid #343858;
-  border-radius: 2.5cqmin;
+  border: calc(0.4 * var(--u)) solid #343858;
+  border-radius: calc(2.5 * var(--u));
   background: #1f2236;
   cursor: pointer;
 }
 
 .chip-count {
   position: absolute;
-  right: 0.5cqmin;
-  bottom: 0.3cqmin;
-  font-size: 2.8cqmin;
+  right: calc(0.5 * var(--u));
+  bottom: calc(0.3 * var(--u));
+  font-size: calc(2.8 * var(--u));
   font-weight: 900;
 }
 
@@ -538,13 +546,13 @@ input {
 .filters {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2cqmin;
+  gap: calc(2 * var(--u));
 }
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(19cqmin, 1fr));
-  gap: 2cqmin;
+  grid-template-columns: repeat(auto-fill, minmax(calc(19 * var(--u)), 1fr));
+  gap: calc(2 * var(--u));
 }
 
 .card {
@@ -552,11 +560,11 @@ input {
   display: grid;
   justify-items: center;
   align-content: end;
-  gap: 0.5cqmin;
-  min-height: 21cqmin;
-  padding: 1.5cqmin 1cqmin;
-  border: 0.4cqmin solid #343858;
-  border-radius: 2.5cqmin;
+  gap: calc(0.5 * var(--u));
+  min-height: calc(21 * var(--u));
+  padding: calc(1.5 * var(--u)) calc(1 * var(--u));
+  border: calc(0.4 * var(--u)) solid #343858;
+  border-radius: calc(2.5 * var(--u));
   background: #1f2236;
   cursor: pointer;
 }
@@ -567,13 +575,13 @@ input {
 }
 
 .card .sprite {
-  --size: 11cqmin;
+  --size: calc(11 * var(--u));
 }
 
 .card-name {
   max-width: 100%;
   overflow: hidden;
-  font-size: 2.7cqmin;
+  font-size: calc(2.7 * var(--u));
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -581,27 +589,27 @@ input {
 
 .card-cost {
   position: absolute;
-  top: 1cqmin;
-  right: 1cqmin;
-  padding: 0.3cqmin 1.2cqmin;
+  top: calc(1 * var(--u));
+  right: calc(1 * var(--u));
+  padding: calc(0.3 * var(--u)) calc(1.2 * var(--u));
   border-radius: 999px;
   background: var(--accent);
   color: #14162b;
-  font-size: 2.6cqmin;
+  font-size: calc(2.6 * var(--u));
   font-weight: 900;
 }
 
 .card-types {
   position: absolute;
-  top: 1.3cqmin;
-  left: 1.3cqmin;
+  top: calc(1.3 * var(--u));
+  left: calc(1.3 * var(--u));
   display: grid;
-  gap: 0.6cqmin;
+  gap: calc(0.6 * var(--u));
 }
 
 .card-types i {
-  width: 2cqmin;
-  height: 2cqmin;
+  width: calc(2 * var(--u));
+  height: calc(2 * var(--u));
   border-radius: 50%;
 }
 
@@ -611,9 +619,9 @@ input {
   bottom: 0;
   display: grid;
   grid-template-columns: auto auto 1fr;
-  gap: 2cqmin;
-  margin: 0 -4cqmin;
-  padding: 3cqmin 4cqmin;
+  gap: calc(2 * var(--u));
+  margin: 0 calc(-4 * var(--u));
+  padding: calc(3 * var(--u)) calc(4 * var(--u));
   background: linear-gradient(transparent, var(--background) 30%);
 }
 
@@ -629,24 +637,24 @@ input {
 .end-actions {
   position: absolute;
   left: 50%;
-  bottom: 5cqmin;
+  bottom: calc(5 * var(--u));
   translate: -50% 0;
   display: grid;
   justify-items: center;
-  gap: 2cqmin;
+  gap: calc(2 * var(--u));
 }
 
 .end-buttons {
   display: flex;
-  gap: 3cqmin;
+  gap: calc(3 * var(--u));
 }
 
 .end-result {
   margin: 0;
-  padding: 2cqmin 4cqmin;
+  padding: calc(2 * var(--u)) calc(4 * var(--u));
   border-radius: 999px;
   background: var(--surface);
-  font-size: 3.6cqmin;
+  font-size: calc(3.6 * var(--u));
   font-weight: 800;
   text-align: center;
   white-space: nowrap;
@@ -654,8 +662,8 @@ input {
 
 .end-actions button {
   margin: 0;
-  font-size: 4cqmin;
-  padding: 3cqmin 5cqmin;
+  font-size: calc(4 * var(--u));
+  padding: calc(3 * var(--u)) calc(5 * var(--u));
   white-space: nowrap;
 }
 
@@ -665,7 +673,7 @@ input {
     grid-template-columns: 1fr 1.5fr;
     grid-template-rows: auto minmax(0, 1fr) auto;
     overflow: hidden;
-    font-size: 2.8cqmin;
+    font-size: calc(2.8 * var(--u));
   }
 
   .composer-header,
@@ -693,7 +701,7 @@ input {
   .composer-footer {
     position: static;
     margin: 0;
-    padding: 0 0 3cqmin;
+    padding: 0 0 calc(3 * var(--u));
     background: none;
   }
 }
@@ -709,12 +717,12 @@ input {
 
 .daily {
   display: grid;
-  gap: 1cqmin;
+  gap: calc(1 * var(--u));
 }
 
 .daily-title {
   margin: 0;
-  font-size: 4.2cqmin;
+  font-size: calc(4.2 * var(--u));
   font-weight: 900;
 }
 
@@ -724,25 +732,25 @@ input {
 
 .ranking {
   display: grid;
-  gap: 1.5cqmin;
-  margin-top: 1cqmin;
+  gap: calc(1.5 * var(--u));
+  margin-top: calc(1 * var(--u));
 }
 
 .ranking-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2cqmin;
+  gap: calc(2 * var(--u));
 }
 
 .ranking-head h3 {
   margin: 0;
-  font-size: 3.6cqmin;
+  font-size: calc(3.6 * var(--u));
 }
 
 .segmented--small button {
-  padding: 1.2cqmin 2.2cqmin;
-  font-size: 3cqmin;
+  padding: calc(1.2 * var(--u)) calc(2.2 * var(--u));
+  font-size: calc(3 * var(--u));
 }
 
 .segmented--small button[aria-pressed='true'] {
@@ -752,7 +760,7 @@ input {
 
 .ranking-list {
   display: grid;
-  gap: 1cqmin;
+  gap: calc(1 * var(--u));
   margin: 0;
   padding: 0;
   list-style: none;
@@ -764,13 +772,13 @@ input {
 
 .ranking-entry {
   display: grid;
-  grid-template-columns: 7cqmin 1fr auto auto;
+  grid-template-columns: calc(7 * var(--u)) 1fr auto auto;
   align-items: center;
-  gap: 2cqmin;
-  padding: 1.2cqmin 2cqmin;
-  border-radius: 2cqmin;
+  gap: calc(2 * var(--u));
+  padding: calc(1.2 * var(--u)) calc(2 * var(--u));
+  border-radius: calc(2 * var(--u));
   background: #1f2236;
-  font-size: 3.1cqmin;
+  font-size: calc(3.1 * var(--u));
 }
 
 .ranking-rank {
@@ -790,7 +798,7 @@ input {
 }
 
 .ranking-replay {
-  padding: 0.8cqmin 2cqmin;
+  padding: calc(0.8 * var(--u)) calc(2 * var(--u));
   border: 0;
   border-radius: 999px;
   background: #2a2d47;
@@ -802,53 +810,53 @@ input {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 2cqmin;
-  padding: 2cqmin;
-  border-radius: 3cqmin;
+  gap: calc(2 * var(--u));
+  padding: calc(2 * var(--u));
+  border-radius: calc(3 * var(--u));
   background: var(--surface);
 }
 
 .publish input {
-  width: 40cqmin;
-  padding: 2.4cqmin 3cqmin;
-  border: 0.4cqmin solid #343858;
-  border-radius: 2.5cqmin;
+  width: calc(40 * var(--u));
+  padding: calc(2.4 * var(--u)) calc(3 * var(--u));
+  border: calc(0.4 * var(--u)) solid #343858;
+  border-radius: calc(2.5 * var(--u));
   background: #1f2236;
-  font-size: 3.6cqmin;
+  font-size: calc(3.6 * var(--u));
 }
 
 .publish .primary {
   margin: 0;
-  padding: 2.4cqmin 4cqmin;
-  font-size: 3.6cqmin;
+  padding: calc(2.4 * var(--u)) calc(4 * var(--u));
+  font-size: calc(3.6 * var(--u));
 }
 
 .publish-error {
   flex-basis: 100%;
   margin: 0;
   color: var(--red);
-  font-size: 3.2cqmin;
+  font-size: calc(3.2 * var(--u));
   text-align: center;
 }
 
 .challenge-friend {
   display: flex;
   flex-wrap: wrap;
-  gap: 2cqmin;
+  gap: calc(2 * var(--u));
 }
 
 .challenge-friend input {
   flex: 1;
   min-width: 0;
-  padding: 2cqmin 2.5cqmin;
-  border: 0.4cqmin solid #343858;
-  border-radius: 2.5cqmin;
+  padding: calc(2 * var(--u)) calc(2.5 * var(--u));
+  border: calc(0.4 * var(--u)) solid #343858;
+  border-radius: calc(2.5 * var(--u));
   background: #1f2236;
 }
 
 .challenge-friend .secondary {
-  padding: 2cqmin 3cqmin;
-  font-size: 3.4cqmin;
+  padding: calc(2 * var(--u)) calc(3 * var(--u));
+  font-size: calc(3.4 * var(--u));
 }
 
 .challenge-friend .hint {
@@ -859,8 +867,8 @@ input {
 
 .notice {
   margin: 0;
-  padding: 2cqmin 3cqmin;
-  border-radius: 2.5cqmin;
+  padding: calc(2 * var(--u)) calc(3 * var(--u));
+  border-radius: calc(2.5 * var(--u));
   background: rgb(255 210 63 / 0.15);
   color: var(--accent);
   font-weight: 700;
@@ -870,34 +878,34 @@ input {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 1.2cqmin;
+  gap: calc(1.2 * var(--u));
   margin: 0;
   color: var(--muted);
 }
 
 .type-chip {
-  padding: 0.6cqmin 2cqmin;
+  padding: calc(0.6 * var(--u)) calc(2 * var(--u));
   border: 0;
   border-radius: 999px;
   color: #fff;
-  font-size: 3cqmin;
+  font-size: calc(3 * var(--u));
   font-weight: 800;
 }
 
 button.type-chip {
   cursor: pointer;
-  box-shadow: 0 0 0 0.4cqmin rgb(255 255 255 / 0.25) inset;
+  box-shadow: 0 0 0 calc(0.4 * var(--u)) rgb(255 255 255 / 0.25) inset;
 }
 
 .report {
   display: grid;
-  gap: 1cqmin;
-  max-width: 86cqmin;
+  gap: calc(1 * var(--u));
+  max-width: calc(86 * var(--u));
   margin: 0;
-  padding: 2.5cqmin 3cqmin 2.5cqmin 6cqmin;
-  border-radius: 3cqmin;
+  padding: calc(2.5 * var(--u)) calc(3 * var(--u)) calc(2.5 * var(--u)) calc(6 * var(--u));
+  border-radius: calc(3 * var(--u));
   background: var(--surface);
-  font-size: 3.2cqmin;
+  font-size: calc(3.2 * var(--u));
   line-height: 1.35;
 }
 
@@ -908,8 +916,8 @@ button.type-chip {
 
 .card-star {
   position: absolute;
-  bottom: 1cqmin;
-  right: 1.3cqmin;
+  bottom: calc(1 * var(--u));
+  right: calc(1.3 * var(--u));
   color: var(--accent);
-  font-size: 3.4cqmin;
+  font-size: calc(3.4 * var(--u));
 }
