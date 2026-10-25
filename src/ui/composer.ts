@@ -235,17 +235,33 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     advice.append(adviceLine(TEXT.effectiveTypes, ...targetChips, hint))
   }
 
-  // A big team folds into one row, to keep the catalogue within reach; a tap shows it whole.
+  // A big team folds into one row, to keep the catalogue within reach: its last place says how many more there are,
+  // and a tap shows them all.
   const teamElement = query('[data-role="team"]')
-  const teamToggle = query<HTMLButtonElement>('[data-action="toggle-team"]')
+  const teamToggle = Object.assign(document.createElement('button'), { type: 'button', className: 'chip team-more' })
   let isTeamExpanded = false
   function renderTeamToggle() {
-    teamElement.classList.toggle('is-collapsed', !isTeamExpanded)
-    const overflows = teamElement.scrollHeight > teamElement.clientHeight + 1
-    teamToggle.hidden = !isTeamExpanded && !overflows
-    teamToggle.textContent = isTeamExpanded ? TEXT.showLessTeam : TEXT.showWholeTeam(teamSize())
+    teamToggle.remove()
+    const chips = [...teamElement.querySelectorAll<HTMLElement>('.chip')]
+    for (const chip of chips) chip.hidden = false
+    const firstRowTop = chips[0]?.offsetTop
+    const wrapsAt = chips.findIndex((chip) => chip.offsetTop > firstRowTop!)
+    if (wrapsAt === -1) return
+    if (isTeamExpanded) {
+      teamToggle.textContent = '−'
+      teamToggle.ariaLabel = TEXT.showLessTeam
+    } else {
+      // The toggle takes the last place of the first row.
+      const hidden = chips.slice(wrapsAt - 1)
+      for (const chip of hidden) chip.hidden = true
+      const hiddenCount = hidden.reduce((total, chip) => total + (team.get(Number(chip.dataset.id)) ?? 0), 0)
+      teamToggle.textContent = `+${hiddenCount}`
+      teamToggle.ariaLabel = TEXT.showWholeTeam(teamSize())
+    }
+    teamElement.append(teamToggle)
   }
-  teamToggle.addEventListener('click', () => {
+  teamToggle.addEventListener('click', (event) => {
+    event.stopPropagation()
     isTeamExpanded = !isTeamExpanded
     renderTeamToggle()
   })

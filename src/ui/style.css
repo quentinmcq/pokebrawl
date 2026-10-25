@@ -1255,14 +1255,10 @@ button.type-chip {
   vertical-align: 0.1em;
 }
 
-.team.is-collapsed {
-  max-height: calc(9 * var(--u) + 2px);
-  overflow: hidden;
-}
-
-.team-toggle {
-  justify-self: start;
-  font-size: calc(3 * var(--u));
+.team-more {
+  color: var(--accent);
+  font-size: calc(3.4 * var(--u));
+  font-weight: 900;
 }
 
 /* Two screens: the lobby picks the challenge, the builder makes the team. */
