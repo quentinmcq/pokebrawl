@@ -1357,3 +1357,14 @@ button.type-chip {
     scrollbar-gutter: stable both-edges;
   }
 }
+
+.summary.over-budget {
+  color: var(--red);
+  font-weight: 700;
+}
+
+.ranking-empty {
+  padding: calc(2 * var(--u)) 0;
+  color: var(--muted);
+  list-style: none;
+}

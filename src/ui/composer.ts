@@ -171,6 +171,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       query('[data-role="ranking-list"]'),
       query('[data-role="ranking-summary"]'),
       ranking,
+      day === today(),
       (replayedTeam) =>
         onFight({
           teams: [replayedTeam, horde],
@@ -252,8 +253,13 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   function renderTeam() {
     const used = spent()
     const size = teamSize()
-    query<HTMLElement>('.budget-fill').style.width = `${(100 * used) / TEAM_BUDGET}%`
-    query('[data-role="budget-summary"]').textContent = TEXT.budgetSummary(used, size, size >= MAX_TEAM_SIZE)
+    query<HTMLElement>('.budget-fill').style.width = `${Math.min(100, (100 * used) / TEAM_BUDGET)}%`
+    // A team saved before the prices changed can cost more than the budget: it cannot fight until trimmed.
+    const overBudget = used > TEAM_BUDGET
+    query('[data-role="budget-summary"]').textContent = overBudget
+      ? TEXT.overBudget(used)
+      : TEXT.budgetSummary(used, size, size >= MAX_TEAM_SIZE)
+    query('[data-role="budget-summary"]').classList.toggle('over-budget', overBudget)
     // A friend can only be challenged with a team to beat.
     query('[data-role="challenge-friend"]').hidden = size === 0
     query('[data-role="team"]').replaceChildren(
@@ -275,7 +281,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     )
     query('[data-role="team-hint"]').hidden = size > 0
     renderTeamToggle()
-    fightButton.disabled = size === 0
+    fightButton.disabled = size === 0 || overBudget
     catalogue.setLimits(TEAM_BUDGET - used, size >= MAX_TEAM_SIZE)
   }
 
@@ -510,6 +516,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       if (isReplay(params)) return { ...nothing, mode: 'replay' }
       if (!won) return { ...nothing, mode: 'daily', message: TEXT.dailyLost }
       const points = teamCost(selectTeam(pokedex, params.teams[0]).fighters)
+      // A team over budget (saved before the prices changed) wins nothing.
+      if (points > TEAM_BUDGET) return { ...nothing, mode: 'replay' }
       dailyRecord = recordDailyWin(dailyRecord, day, points)
       writeStored(STORAGE_KEYS.daily, dailyRecord)
       const best = dailyRecord.bestByDay[day]!

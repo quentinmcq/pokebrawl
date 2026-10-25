@@ -59,6 +59,7 @@ export function renderRanking(
   list: HTMLElement,
   summary: HTMLElement,
   ranking: Ranking | null,
+  isToday: boolean,
   onReplay: (team: string) => void,
 ) {
   if (!ranking) {
@@ -66,7 +67,15 @@ export function renderRanking(
     list.replaceChildren()
     return
   }
-  summary.textContent = ranking.total === 0 ? TEXT.rankingEmpty : TEXT.rankingSummary(ranking.total, ranking.you)
+  summary.textContent = TEXT.rankingSummary(ranking.total, ranking.you)
+  if (ranking.total === 0) {
+    const empty = Object.assign(document.createElement('li'), {
+      className: 'ranking-empty',
+      textContent: isToday ? TEXT.rankingEmptyToday : TEXT.rankingEmptyYesterday,
+    })
+    list.replaceChildren(empty)
+    return
+  }
   list.replaceChildren(
     ...ranking.entries.map((entry) => {
       const item = document.createElement('li')
