@@ -97,33 +97,63 @@ input {
 }
 
 .menu {
-  /* Anchored low, so that the line-up it previews stays visible above it. */
+  /* A sheet at the bottom, so that the line-up it previews stays visible above it. */
   position: absolute;
   left: 50%;
-  bottom: calc(5 * var(--u));
+  bottom: calc(4 * var(--u));
   translate: -50% 0;
   box-sizing: border-box;
-  width: calc(90 * var(--u));
+  width: min(calc(92 * var(--u)), 560px);
   max-height: calc(100% - 30 * var(--u));
   overflow-y: auto;
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: calc(3 * var(--u));
-  padding: calc(5 * var(--u));
+  padding: calc(3.5 * var(--u));
+  border: 1px solid rgb(255 255 255 / 0.12);
   border-radius: calc(5 * var(--u));
-  background: var(--surface);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 calc(2 * var(--u)) calc(8 * var(--u)) rgb(0 0 0 / 0.5);
-  font-size: calc(3.8 * var(--u));
+  background: rgb(26 28 44 / 0.85);
+  backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow: 0 calc(2 * var(--u)) calc(10 * var(--u)) rgb(0 0 0 / 0.5);
+  font-size: calc(3.6 * var(--u));
 }
 
-.menu > .logo,
-.menu > .tagline,
-.menu > .toggle,
-.menu > .primary,
-.menu > .secondary,
-.menu > .link {
+.menu-head {
+  display: flex;
+  align-items: center;
+  gap: calc(3 * var(--u));
+}
+
+.menu-head h2 {
+  margin: 0;
+  font-size: calc(4.6 * var(--u));
+}
+
+.menu-sides {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: calc(2 * var(--u));
+}
+
+.menu-versus {
+  padding-bottom: calc(2.4 * var(--u));
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.menu-options-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: calc(3 * var(--u));
+  padding-top: calc(3 * var(--u));
+}
+
+.menu-options-body .toggle {
   grid-column: 1 / -1;
+}
+
+.menu > .primary {
+  margin: 0;
 }
 
 .logo {

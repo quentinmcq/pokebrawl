@@ -36,39 +36,51 @@
       <p class="loading" data-i18n="loading">Chargement de l’arène…</p>
 
       <form id="menu" class="menu" hidden>
-        <h1 class="logo">Poké<span>Brawl</span></h1>
-        <p class="tagline" data-i18n="menuTagline">Choisis deux camps et regarde-les s’affronter.</p>
-        <label class="field field--blue">
-          <span data-i18n="blueSide">Camp bleu</span>
-          <select name="a"></select>
-        </label>
-        <label class="field field--red">
-          <span data-i18n="redSide">Camp rouge</span>
-          <select name="b"></select>
-        </label>
-        <label class="field">
-          <span data-i18n="terrain">Terrain</span>
-          <select name="terrain"></select>
-        </label>
-        <label class="field">
-          <span data-i18n="seed">Graine</span>
-          <input
-            name="seed"
-            inputmode="numeric"
-            pattern="[0-9]*"
-            placeholder="Au hasard"
-            data-i18n-placeholder="random"
-            autocomplete="off"
-          />
-        </label>
-        <label class="toggle">
-          <input type="checkbox" name="same" checked />
-          <span data-i18n="sameSize">Même nombre de Pokémon par camp</span>
-        </label>
+        <div class="menu-head">
+          <button class="icon-link" type="button" data-action="compose" aria-label="Retour" data-i18n-aria-label="back">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+          </button>
+          <h2 data-i18n="watchShort">Regarder un combat</h2>
+        </div>
+        <div class="menu-sides">
+          <label class="field field--blue">
+            <span data-i18n="blueSide">Camp bleu</span>
+            <select name="a"></select>
+          </label>
+          <span class="menu-versus" aria-hidden="true">VS</span>
+          <label class="field field--red">
+            <span data-i18n="redSide">Camp rouge</span>
+            <select name="b"></select>
+          </label>
+        </div>
+        <details class="menu-options">
+          <summary class="fold-head">
+            <h3 data-i18n="options">Options</h3>
+            <svg class="fold-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" /></svg>
+          </summary>
+          <div class="menu-options-body">
+            <label class="field">
+              <span data-i18n="terrain">Terrain</span>
+              <select name="terrain"></select>
+            </label>
+            <label class="field">
+              <span data-i18n="seed">Graine</span>
+              <input
+                name="seed"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                placeholder="Au hasard"
+                data-i18n-placeholder="random"
+                autocomplete="off"
+              />
+            </label>
+            <label class="toggle">
+              <input type="checkbox" name="same" checked />
+              <span data-i18n="sameSize">Même nombre de Pokémon par camp</span>
+            </label>
+          </div>
+        </details>
         <button class="primary" type="submit" data-i18n="startBattle">Lancer le combat</button>
-        <button class="link" type="button" data-action="compose" data-i18n="backToComposer">
-          ← Composer ton équipe
-        </button>
       </form>
 
       <section
