@@ -7,8 +7,16 @@ const numberIn = (locale: Locale) => (value: number) =>
   value.toLocaleString(NUMBER_LOCALES[locale]).replaceAll('\u202f', '\u00a0')
 const dayIn = (locale: Locale) => {
   const format = new Intl.DateTimeFormat(NUMBER_LOCALES[locale], { day: 'numeric', month: 'long', timeZone: 'UTC' })
-  return (day: string) => format.format(new Date(`${day}T12:00:00Z`))
+  const formatted = (day: string) => format.format(new Date(`${day}T12:00:00Z`))
+  // French writes the first of the month « 1er ».
+  return locale === 'fr' ? (day: string) => formatted(day).replace(/^1(?=\s)/u, '1er') : formatted
 }
+/** A rank in the daily ranking, among how many players. */
+export interface Ranked {
+  rank: number
+  total: number
+}
+
 const copiesOf = (copies: number) => (copies > 1 ? ` (×${copies})` : '')
 
 const number = numberIn('fr')
@@ -274,12 +282,14 @@ const french = {
   dailyLost: 'Raté ! Change ton équipe et retente ta chance.',
   dailyWon: (points: number, record: number | null, streak: number) =>
     `Défi réussi avec ${points} points !${record === null ? '' : ` · record : ${record}`} · 🔥 ${frenchPlural(streak, 'jour')} d’affilée`,
-  dailyShare: (day: string, horde: string, points: number, streak: number) => [
-    `PokéBrawl · défi du ${dayIn('fr')(day)}`,
-    `Battu\u00a0: ${horde}, avec ${points} points 💪`,
-    `🔥 Série : ${frenchPlural(streak, 'jour')}`,
-    'Fais mieux que moi :',
+  dailyShare: (day: string, points: number, grid: string, streak: number, ranked: Ranked | null) => [
+    `PokéBrawl · Défi du ${dayIn('fr')(day)} ⚔️`,
+    `Gagné avec ${points} points${ranked ? ` · ${frenchOrdinal(ranked.rank)} sur ${ranked.total}` : ''}`,
+    grid,
+    ...(streak > 1 ? [`🔥 ${frenchPlural(streak, 'jour')} d’affilée`] : []),
   ],
+  shareResult: 'Partager mon résultat',
+  resultCopied: 'Résultat copié\u00a0: colle-le dans un message\u00a0!',
   // After a battle
   battleTitle: (first: string, second: string) => `${first} contre ${second} · PokéBrawl`,
   rankLine: (result: string, rank: number, total: number) => `${result} · ${frenchOrdinal(rank)} sur ${total}`,
@@ -417,12 +427,14 @@ const english: Messages = {
   dailyLost: 'Missed! Change your team and try again.',
   dailyWon: (points, record, streak) =>
     `Challenge beaten with ${points} points!${record === null ? '' : ` · best: ${record}`} · 🔥 ${englishPlural(streak, 'day')} in a row`,
-  dailyShare: (day, horde, points, streak) => [
-    `PokéBrawl · ${dayIn('en')(day)} challenge`,
-    `Beat ${horde} with ${points} points 💪`,
-    `🔥 Streak: ${englishPlural(streak, 'day')}`,
-    'Do better than me:',
+  dailyShare: (day, points, grid, streak, ranked) => [
+    `PokéBrawl · ${dayIn('en')(day)} challenge ⚔️`,
+    `Won with ${points} points${ranked ? ` · ${englishOrdinal(ranked.rank)} of ${ranked.total}` : ''}`,
+    grid,
+    ...(streak > 1 ? [`🔥 ${englishPlural(streak, 'day')} in a row`] : []),
   ],
+  shareResult: 'Share my result',
+  resultCopied: 'Result copied: paste it in a message!',
   battleTitle: (first, second) => `${first} vs ${second} · PokéBrawl`,
   rankLine: (result, rank, total) => `${result} · ${englishOrdinal(rank)} of ${total}`,
   sendBack: 'Send the challenge back',

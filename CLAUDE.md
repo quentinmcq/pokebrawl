@@ -160,8 +160,10 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   avec sprites découpés en CSS dans la planche (`sprites.ts`), dernière équipe et hordes battues retenues dans le
   navigateur (`storage.ts`) ; un défi fini rend son `mode` (`daily`, `training`, `friend`, ou `replay` pour un combat
   rejoué qui ne compte pas). Après un défi (`endActions.ts`) : bilan, résultat, succès, publication au classement,
-  « Modifier mon équipe », « Revanche » (entraînement) ou « Partager »
-  (défi du jour réussi : score, série et lien, par le partage du téléphone ou le presse-papier). Classement du jour
+  « Modifier mon équipe », « Revanche » (entraînement) ou, en premier, « Partager mon résultat »
+  (défi du jour réussi, à la Wordle : points, rang une fois publié, une grille 🟩/⬛ des survivants de l'équipe
+  (`survivorGrid`, 50 cases au plus) qui ne dévoile pas l'équipe, série et lien ; partage du téléphone ou
+  presse-papier). Classement du jour
   et de la veille (`ranking.ts`) : pseudo demandé à la première victoire puis publication automatique, rang affiché
   en fin de combat, « Voir » rejoue l'équipe d'un joueur de la veille. « Défier un ami » (panneau de l'équipe) partage
   un lien de défi (`share.ts` : feuille de partage du téléphone ou presse-papier) ; un lien reçu ouvre l'onglet

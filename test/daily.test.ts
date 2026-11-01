@@ -7,6 +7,7 @@ import {
   EMPTY_DAILY_RECORD,
   recordDailyWin,
   secondsUntilNextDay,
+  survivorGrid,
 } from '../src/daily'
 import { pokedex } from '../src/pokedex'
 import { selectTeam } from '../src/simulation/teams'
@@ -58,5 +59,18 @@ describe('secondsUntilNextDay', () => {
     expect(secondsUntilNextDay(new Date('2026-12-01T21:30:00Z'))).toBe(90 * 60)
     // Just after midnight in Paris, a whole day is ahead.
     expect(secondsUntilNextDay(new Date('2026-12-01T23:00:01Z'))).toBe(24 * 3600 - 1)
+  })
+})
+
+describe('survivorGrid', () => {
+  it('shows one square per Pokémon, survivors first, ten to a row', () => {
+    expect(survivorGrid([false, true, false, true])).toBe('🟩🟩⬛⬛')
+    expect(survivorGrid([...Array(11).fill(false), true]).split('\n')).toEqual(['🟩⬛⬛⬛⬛⬛⬛⬛⬛⬛', '⬛⬛'])
+  })
+
+  it('scales a large team down to fifty squares', () => {
+    const grid = survivorGrid([...Array(75).fill(false), ...Array(25).fill(true)])
+    expect(grid.split('\n')).toHaveLength(5)
+    expect([...grid.matchAll(/🟩/gu)]).toHaveLength(13)
   })
 })

@@ -909,6 +909,19 @@ input {
   padding-bottom: calc(4 * var(--u) + env(safe-area-inset-bottom));
 }
 
+/* Side by side in equal columns rather than stacked, which would hide the end screen: a long label wraps. */
+.stage[data-orientation='portrait'] .end-buttons {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  width: 100%;
+}
+
+.stage[data-orientation='portrait'] .end-buttons button {
+  padding-inline: calc(3 * var(--u));
+  white-space: normal;
+}
+
 /* On a wide screen, the next steps sit in the right half of the arena, beside the end screen. */
 .stage[data-orientation='landscape'] .end-actions {
   left: 71%;
@@ -924,6 +937,8 @@ input {
 
 .end-buttons {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: calc(3 * var(--u));
 }
 

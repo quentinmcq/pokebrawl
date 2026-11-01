@@ -8,8 +8,10 @@ import {
   previousDay,
   secondsUntilNextDay,
   recordDailyWin,
+  survivorGrid,
   type DailyRecord,
 } from '../daily'
+import type { Ranked } from '../messages'
 import { friendChallengeSearch, type FriendChallenge } from '../friend'
 import { checkNickname } from '../nickname'
 import { pokedex } from '../pokedex'
@@ -51,7 +53,8 @@ export interface ChallengeResult {
   /** `replay`: a past day's battle, replayed from the ranking, which counts for nothing. */
   mode: Mode | 'replay'
   message: string | null
-  share: { text: string; url: string } | null
+  /** What a share sends; a daily win adds its rank once the ranking has it. */
+  share: { text: (ranked: Ranked | null) => string; url: string } | null
   /** Today's daily horde beaten: the score can go to the ranking. */
   publishable: { day: string; team: string } | null
 }
@@ -505,7 +508,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       this.open(null, 'builder')
     },
     /** Records the end of a challenge: a tick on a beaten training horde, the score and streak of the daily one. */
-    finish(params: BattleParams, won: boolean): ChallengeResult {
+    /** `survivors`: whether each of the player's Pokémon is still standing, for the daily share. */
+    finish(params: BattleParams, won: boolean, survivors: boolean[]): ChallengeResult {
       const nothing = { message: null, share: null, publishable: null }
       if (params.opponentName) {
         if (!won) return { ...nothing, mode: 'friend', message: TEXT.friendLost(params.opponentName) }
@@ -516,7 +520,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
           mode: 'friend',
           message: TEXT.friendWon(params.opponentName),
           share: {
-            text: TEXT.challengeBackText(name),
+            text: () => TEXT.challengeBackText(name),
             url: siteUrl(friendChallengeSearch({ team: params.teams[0], name, seed: randomSeed() })),
           },
         }
@@ -543,7 +547,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
         mode: 'daily',
         message: TEXT.dailyWon(points, best < points ? best : null, streak),
         share: {
-          text: TEXT.dailyShare(day, teamTitle(params.teams[1], LOCALE), points, streak).join('\n'),
+          text: (ranked) => TEXT.dailyShare(day, points, survivorGrid(survivors), streak, ranked).join('\n'),
           url: siteUrl(),
         },
         publishable: { day, team: params.teams[0] },

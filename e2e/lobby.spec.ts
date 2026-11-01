@@ -4,7 +4,7 @@ import { openApp } from './helpers'
 test.describe('Accueil', () => {
   test('présente le défi du jour et mène au constructeur d’équipe', async ({ page }) => {
     await openApp(page)
-    await expect(page.locator('[data-role="daily-title"]')).toHaveText(/^Défi du \d+ \p{L}+$/u)
+    await expect(page.locator('[data-role="daily-title"]')).toHaveText(/^Défi du \d+(er)? \p{L}+$/u)
     await expect(page.locator('[data-role="daily-versus"]')).toHaveText(/^contre .+ · \d+ Pokémon$/)
     await expect(page.locator('[data-role="countdown"]')).toHaveText(/^Nouveau défi dans /)
     await page.getByRole('button', { name: 'Jouer' }).click()

@@ -72,3 +72,21 @@ export function recordDailyWin(record: DailyRecord, day: string, points: number)
 /** The streak still alive today: won today, or yesterday and today is yet to be played. */
 export const currentStreak = (record: DailyRecord, today: string) =>
   record.lastWonDay === today || record.lastWonDay === previousDay(today) ? record.streak : 0
+
+const GRID_WIDTH = 10
+const GRID_CELLS = 50
+
+/**
+ * The team after a daily win, as Wordle shares its guesses: a green square per Pokémon still standing, a black one
+ * per Pokémon knocked out, survivors first. It tells how the battle went without giving away the team, which the
+ * ranking hides until the day is over. Past 50 Pokémon, each square stands for a share of the team.
+ */
+export function survivorGrid(alive: boolean[]) {
+  const standing = alive.filter(Boolean).length
+  const cells = Math.min(alive.length, GRID_CELLS)
+  const greens = alive.length > GRID_CELLS ? Math.round((standing / alive.length) * cells) : standing
+  const squares = Array.from({ length: cells }, (_, index) => (index < greens ? '🟩' : '⬛'))
+  return Array.from({ length: Math.ceil(cells / GRID_WIDTH) }, (_, row) =>
+    squares.slice(row * GRID_WIDTH, (row + 1) * GRID_WIDTH).join(''),
+  ).join('\n')
+}

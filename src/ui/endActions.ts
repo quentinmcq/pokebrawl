@@ -5,6 +5,7 @@ import { buildTeams } from '../render/scene'
 import { teamCost } from '../simulation/cost'
 import type { createAchievements } from './achievementsView'
 import type { ChallengeResult } from './composer'
+import type { Ranked } from '../messages'
 import { LOCALE, TEXT } from './i18n'
 import { savedNickname, saveNickname, submitScore } from './ranking'
 import { shareLink } from './share'
@@ -34,12 +35,14 @@ export function createEndActions(
 ) {
   const query = <Element extends HTMLElement>(selector: string) => panel.querySelector<Element>(selector)!
   const shareButton = query<HTMLButtonElement>('[data-action="share"]')
+  const editButton = query<HTMLButtonElement>('[data-action="edit"]')
   const resultLine = query('[data-role="result"]')
   const reportList = query('[data-role="report"]')
   const unlockedLine = query('[data-role="unlocked"]')
   const publishForm = query<HTMLFormElement>('[data-role="publish"]')
   const publishError = query('[data-role="publish-error"]')
   let result: ChallengeResult | null = null
+  let ranked: Ranked | null = null
   let shownUnlocked: Achievement[] = []
 
   function showUnlocked(earned: Achievement[]) {
@@ -65,6 +68,7 @@ export function createEndActions(
     publishForm.hidden = true
     const { you, total } = outcome.ranking
     if (you) {
+      ranked = { rank: you.rank, total }
       resultLine.textContent = TEXT.rankLine(result?.message ?? '', you.rank, total)
       showUnlocked([...shownUnlocked, ...achievements.recordRank(you.rank)])
     }
@@ -84,9 +88,10 @@ export function createEndActions(
 
   async function shareResult() {
     if (!result?.share) return
-    const outcome = await shareLink(result.share.text, result.share.url)
-    if (outcome === 'shared' || outcome === 'copied') track(result.mode === 'friend' ? 'share-back' : 'share-daily')
-    if (outcome === 'copied') showToast(TEXT.linkCopied)
+    const friend = result.mode === 'friend'
+    const outcome = await shareLink(result.share.text(ranked), result.share.url)
+    if (outcome === 'shared' || outcome === 'copied') track(friend ? 'share-back' : 'share-daily')
+    if (outcome === 'copied') showToast(friend ? TEXT.linkCopied : TEXT.resultCopied)
   }
 
   publishForm.addEventListener('submit', (event) => {
@@ -94,12 +99,13 @@ export function createEndActions(
     void publish(new FormData(publishForm).get('nickname')?.toString() ?? '')
   })
   shareButton.addEventListener('click', () => void shareResult())
-  query('[data-action="edit"]').addEventListener('click', onEdit)
+  editButton.addEventListener('click', onEdit)
   query('[data-action="rematch"]').addEventListener('click', onRematch)
 
   /** Fills the panel for a challenge just over; showing it is up to the caller. */
   function fill(params: BattleParams, finished: ChallengeResult, won: boolean) {
     result = finished
+    ranked = null
     const { mode, message, share, publishable } = finished
     showUnlocked(won ? recordAchievements(params, mode) : [])
     if (won && mode !== 'replay') track(WIN_EVENTS[mode])
@@ -115,12 +121,19 @@ export function createEndActions(
     )
     reportList.hidden = report.length === 0
     shareButton.hidden = share === null
-    shareButton.textContent = mode === 'friend' ? TEXT.sendBack : TEXT.page.share
+    shareButton.textContent = mode === 'friend' ? TEXT.sendBack : TEXT.shareResult
+    // A win to share comes first and stands out: it is what brings new players.
+    shareButton.classList.toggle('primary', share !== null)
+    shareButton.classList.toggle('secondary', share === null)
+    editButton.classList.toggle('primary', share === null)
+    editButton.classList.toggle('secondary', share !== null)
+    if (share) shareButton.parentElement!.prepend(shareButton)
+    else shareButton.parentElement!.append(shareButton)
     // Only a training horde gets a new seed: the daily seed and a friend's are fixed, the same team would replay the
     // same battle.
     query('[data-action="rematch"]').hidden = mode !== 'training'
     // After another player's battle, the way back leads home, not to « my team ».
-    query('[data-action="edit"]').textContent = mode === 'replay' ? TEXT.backHome : TEXT.page.editTeam
+    editButton.textContent = mode === 'replay' ? TEXT.backHome : TEXT.page.editTeam
   }
 
   return { fill }

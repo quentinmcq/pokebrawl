@@ -5,7 +5,7 @@ import { Application, Assets, type Spritesheet } from 'pixi.js'
 import { COLORS, createLayout, orientationOf, type Layout } from './render/layout'
 import { battleSearch, describesBattle, randomSeed, readBattleParams, type BattleParams } from './render/params'
 import { buildTeams, createScene, type Scene } from './render/scene'
-import { summarizeBattle } from './simulation/battle'
+import { isAlive, summarizeBattle } from './simulation/battle'
 import { terrainForSeed } from './render/terrain'
 import { readCollectionHash } from './collection'
 import { dailyDayOf } from './daily'
@@ -214,7 +214,8 @@ async function start() {
     sound.champion(summarizeBattle(scene.battle).mostValuable.species.id, END_SCREEN_DELAY_SECONDS / speed)
     if (!isChallenge(params)) return
     const won = scene.battle.outcome === 0
-    endActionsPanel.fill(params, composer.finish(params, won), won)
+    const survivors = scene.battle.fighters.filter(({ team }) => team === 0).map(isAlive)
+    endActionsPanel.fill(params, composer.finish(params, won, survivors), won)
     // The next step replaces the playback controls, which have nothing left to control.
     if (!recording) {
       controls.hide()
