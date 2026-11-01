@@ -77,3 +77,16 @@ export function checkNickname(value: unknown): NicknameCheck {
   if (isBlocked) return { ok: false, error: 'refused' }
   return { ok: true, nickname }
 }
+
+/**
+ * A nickname for a player who has not chosen one yet, such as « Pikachu 482 »: their first daily win goes to the
+ * ranking at once, and they can change it afterwards. Built from the given Pokémon names, kept only when it passes
+ * the same rules as a typed nickname.
+ */
+export function randomNickname(names: string[], random: () => number) {
+  for (;;) {
+    const name = names[Math.floor(random() * names.length)]!
+    const check = checkNickname(`${name} ${100 + Math.floor(random() * 900)}`)
+    if (check.ok) return check.nickname
+  }
+}

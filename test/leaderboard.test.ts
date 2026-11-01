@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { isPlayerId, scoreOfTeam } from '../src/leaderboard'
-import { checkNickname } from '../src/nickname'
+import { checkNickname, randomNickname } from '../src/nickname'
 import { pokedex } from '../src/pokedex'
 import { costOf, TEAM_BUDGET, teamCost } from '../src/simulation/cost'
+import { createRandom } from '../src/simulation/random'
 import { selectTeam } from '../src/simulation/teams'
 
 describe('nicknames', () => {
@@ -15,6 +16,18 @@ describe('nicknames', () => {
   it('refuses names too short, too long, with symbols or insults, even disguised', () => {
     for (const name of ['', 'a', 'x'.repeat(21), '<script>', 'fdp', 'P u t a i n', 'pu7ain']) {
       expect(checkNickname(name).ok).toBe(false)
+    }
+  })
+})
+
+describe('random nicknames', () => {
+  it('pairs a Pokémon name with three digits, and always passes the nickname rules', () => {
+    const names = pokedex.pokemon.flatMap((species) => [species.names.fr, species.names.en])
+    const random = createRandom(7).next
+    for (let draw = 0; draw < 2000; draw++) {
+      const nickname = randomNickname(names, random)
+      expect(nickname).toMatch(/ \d{3}$/)
+      expect(checkNickname(nickname)).toEqual({ ok: true, nickname })
     }
   })
 })

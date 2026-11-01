@@ -51,7 +51,7 @@ test.describe('Défi du jour', () => {
     await expect(page.getByRole('button', { name: 'Lancer le combat' })).toBeDisabled()
   })
 
-  test('une victoire se partage en grille, sans dévoiler l’équipe', async ({ page }) => {
+  test('une victoire va au classement sous un pseudo tiré au hasard et se partage en grille', async ({ page }) => {
     const team = winningTeamToday()
     await page.addInitScript((saved) => {
       localStorage.setItem('pokebrawl.team', JSON.stringify(saved))
@@ -64,15 +64,24 @@ test.describe('Défi du jour', () => {
     await page.getByRole('button', { name: 'Lancer le combat' }).click()
     await skipToResult(page)
     const end = page.locator('#end-actions')
-    await expect(end.locator('[data-role="result"]')).toHaveText(/Défi réussi/)
+    await expect(end.locator('[data-role="result"]')).toHaveText(/^Défi réussi .* · \d+(er|e) sur \d+$/)
+    await expect(end.locator('[data-role="ranked-as"]')).toHaveText(/Classé sous le pseudo «\s.+ \d{3}\s»/)
+    await expect(end.locator('[data-role="publish"]')).toBeHidden()
     const share = end.locator('.end-buttons button').first()
     await expect(share).toHaveText('Partager mon résultat')
     await share.click()
 
     const shared = await page.waitForFunction(() => (window as { shared?: ShareData }).shared)
     const { text, url } = (await shared.jsonValue()) as ShareData
-    expect(text).toMatch(/^PokéBrawl · Défi du \d+(er)? \p{L}+ ⚔️\nGagné avec \d+ points\n[🟩⬛]+/u)
+    expect(text).toMatch(/^PokéBrawl · Défi du \d+(er)? \p{L}+ ⚔️\nGagné avec \d+ points · \d+(er|e) sur \d+\n[🟩⬛]+/u)
     expect(text).not.toMatch(/ids:/)
     expect(url).toMatch(/^http:\/\/[^/]+\/$/)
+
+    await end.getByRole('button', { name: 'Changer de pseudo' }).click()
+    await end.getByLabel('Ton pseudo').fill('Testeur')
+    await end.getByRole('button', { name: 'Valider' }).click()
+    await expect(end.locator('[data-role="publish"]')).toBeHidden()
+    await expect(end.locator('[data-role="ranked-as"]')).toBeHidden()
+    expect(await page.evaluate(() => localStorage.getItem('pokebrawl.name'))).toBe('"Testeur"')
   })
 })

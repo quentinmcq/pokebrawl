@@ -1,4 +1,6 @@
 import type { Achievement } from '../achievements'
+import { randomNickname } from '../nickname'
+import { pokedex } from '../pokedex'
 import { battleReport } from '../report'
 import type { BattleParams } from '../render/params'
 import { buildTeams } from '../render/scene'
@@ -6,8 +8,8 @@ import { teamCost } from '../simulation/cost'
 import type { createAchievements } from './achievementsView'
 import type { ChallengeResult } from './composer'
 import type { Ranked } from '../messages'
-import { LOCALE, TEXT } from './i18n'
-import { savedNickname, saveNickname, submitScore } from './ranking'
+import { LOCALE, nameOf, TEXT } from './i18n'
+import { isNicknameGenerated, savedNickname, saveNickname, submitScore } from './ranking'
 import { shareLink } from './share'
 import { readStored, STORAGE_KEYS } from './storage'
 import { showToast } from './toast'
@@ -41,6 +43,10 @@ export function createEndActions(
   const unlockedLine = query('[data-role="unlocked"]')
   const publishForm = query<HTMLFormElement>('[data-role="publish"]')
   const publishError = query('[data-role="publish-error"]')
+  const publishSubmit = query<HTMLButtonElement>('.publish [type="submit"]')
+  const nicknameInput = query<HTMLInputElement>('input[name="nickname"]')
+  const rankedAs = query('[data-role="ranked-as"]')
+  const rankedName = query('[data-role="ranked-name"]')
   let result: ChallengeResult | null = null
   let ranked: Ranked | null = null
   let shownUnlocked: Achievement[] = []
@@ -51,8 +57,9 @@ export function createEndActions(
     unlockedLine.textContent = TEXT.unlocked(earned.map(({ title }) => title[LOCALE]))
   }
 
-  // Sends today's win to the ranking under the saved nickname, and adds the rank to the result line.
-  async function publish(name: string) {
+  // Sends today's win to the ranking, and adds the rank to the result line. A player with no nickname yet gets one
+  // drawn for them, so that every win shows in the ranking; they can change it right below.
+  async function publish(name: string, { generated = false } = {}) {
     const publishable = result?.publishable
     if (!publishable) return
     publishError.hidden = true
@@ -61,17 +68,35 @@ export function createEndActions(
       publishError.textContent = outcome.error ?? ''
       publishError.hidden = false
       publishForm.hidden = false
+      nicknameInput.value = name
       return
     }
-    saveNickname(name)
+    saveNickname(name, { generated: generated || (name === savedNickname() && isNicknameGenerated()) })
     track('publish')
     publishForm.hidden = true
+    rankedName.textContent = TEXT.rankedAs(name)
+    rankedAs.hidden = !isNicknameGenerated()
     const { you, total } = outcome.ranking
     if (you) {
       ranked = { rank: you.rank, total }
       resultLine.textContent = TEXT.rankLine(result?.message ?? '', you.rank, total)
       showUnlocked([...shownUnlocked, ...achievements.recordRank(you.rank)])
     }
+  }
+
+  function publishUnderSavedOrNewNickname() {
+    const saved = savedNickname()
+    if (saved) void publish(saved)
+    else void publish(randomNickname(pokedex.pokemon.map(nameOf), Math.random), { generated: true })
+  }
+
+  function openRename() {
+    rankedAs.hidden = true
+    publishForm.hidden = false
+    publishSubmit.textContent = TEXT.saveNickname
+    nicknameInput.value = savedNickname() ?? ''
+    nicknameInput.focus()
+    nicknameInput.select()
   }
 
   // Only the player's own team counts: today's daily horde, a training horde or a friend, never a replayed battle.
@@ -96,8 +121,9 @@ export function createEndActions(
 
   publishForm.addEventListener('submit', (event) => {
     event.preventDefault()
-    void publish(new FormData(publishForm).get('nickname')?.toString() ?? '')
+    void publish(nicknameInput.value)
   })
+  query('[data-action="rename"]').addEventListener('click', openRename)
   shareButton.addEventListener('click', () => void shareResult())
   editButton.addEventListener('click', onEdit)
   query('[data-action="rematch"]').addEventListener('click', onRematch)
@@ -112,9 +138,10 @@ export function createEndActions(
     resultLine.textContent = message
     resultLine.hidden = message === null
     publishError.hidden = true
-    const nickname = savedNickname()
-    publishForm.hidden = publishable === null || nickname !== null
-    if (publishable && nickname) void publish(nickname)
+    publishForm.hidden = true
+    publishSubmit.textContent = TEXT.page.publish
+    rankedAs.hidden = true
+    if (publishable) publishUnderSavedOrNewNickname()
     const report = battleReport({ teams: buildTeams(params), seed: params.seed }, LOCALE)
     reportList.replaceChildren(
       ...report.map((line) => Object.assign(document.createElement('li'), { textContent: line })),

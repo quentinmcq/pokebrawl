@@ -164,7 +164,7 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   (défi du jour réussi, à la Wordle : points, rang une fois publié, une grille 🟩/⬛ des survivants de l'équipe
   (`survivorGrid`, 50 cases au plus) qui ne dévoile pas l'équipe, série et lien ; partage du téléphone ou
   presse-papier). Classement du jour
-  et de la veille (`ranking.ts`) : pseudo demandé à la première victoire puis publication automatique, rang affiché
+  et de la veille (`ranking.ts`) : chaque victoire publiée d'office, sous un pseudo tiré au hasard (« Pikachu 482 », `randomNickname`) tant que le joueur n'en a pas choisi, avec « Changer de pseudo » en fin de combat, rang affiché
   en fin de combat, « Voir » rejoue l'équipe d'un joueur de la veille. « Défier un ami » (panneau de l'équipe) partage
   un lien de défi (`share.ts` : feuille de partage du téléphone ou presse-papier) ; un lien reçu ouvre l'onglet
   « Défi de Sacha », et une victoire propose de « Renvoyer le défi » avec l'équipe gagnante.

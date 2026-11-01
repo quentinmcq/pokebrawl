@@ -5,6 +5,7 @@ import { readStored, writeStored } from './storage'
 
 const PLAYER_KEY = 'pokebrawl.player'
 const NAME_KEY = 'pokebrawl.name'
+const NAME_GENERATED_KEY = 'pokebrawl.name-generated'
 
 /** A random id kept in this browser, so that each player holds one line per day without an account. */
 export function playerId() {
@@ -16,7 +17,12 @@ export function playerId() {
 }
 
 export const savedNickname = () => readStored<string | null>(NAME_KEY, null)
-export const saveNickname = (name: string) => writeStored(NAME_KEY, name)
+/** A nickname the player chose, or one drawn for them (`generated`), which the end of a battle offers to change. */
+export function saveNickname(name: string, { generated = false } = {}) {
+  writeStored(NAME_KEY, name)
+  writeStored(NAME_GENERATED_KEY, generated)
+}
+export const isNicknameGenerated = () => readStored(NAME_GENERATED_KEY, false)
 
 const endpoint = (day: string) => `${import.meta.env.BASE_URL}api/daily/${day}`
 
