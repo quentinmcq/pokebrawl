@@ -757,6 +757,9 @@ input {
 .card {
   position: relative;
   display: grid;
+  /* A thousand cards: the browser skips drawing the ones off screen. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto calc(21 * var(--u));
   justify-items: center;
   align-content: end;
   gap: calc(0.5 * var(--u));
@@ -824,8 +827,8 @@ input {
   padding: calc(1.5 * var(--u));
   border: 1px solid rgb(255 255 255 / 0.12);
   border-radius: 999px;
-  background: rgb(26 28 44 / 0.78);
-  backdrop-filter: blur(14px) saturate(1.4);
+  /* No backdrop blur: recomputed on every frame while the catalogue scrolls beneath, it slowed phones down. */
+  background: rgb(31 34 54 / 0.96);
   box-shadow: 0 calc(2 * var(--u)) calc(8 * var(--u)) rgb(0 0 0 / 0.45);
 }
 
@@ -1330,7 +1333,6 @@ button.type-chip {
   border: 1px solid rgb(255 255 255 / 0.14);
   border-radius: 999px;
   background: rgb(255 255 255 / 0.07);
-  backdrop-filter: blur(12px) saturate(1.4);
   color: var(--text);
   font: inherit;
   font-size: calc(3 * var(--u));

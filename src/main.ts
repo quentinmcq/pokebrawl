@@ -144,6 +144,7 @@ async function start() {
 
   function startBattle(next: BattleParams) {
     params = next
+    app.ticker.start()
     track(
       next.opponentName
         ? 'battle-friend'
@@ -190,6 +191,8 @@ async function start() {
     leaveBattle()
     menu.close()
     composer.open(params)
+    // The home screen covers the whole arena: drawing it 60 times a second underneath only slowed scrolling on phones.
+    app.ticker.stop()
     // A streak can lapse overnight: the progress shown follows today's state.
     achievements.render()
   }
@@ -197,6 +200,7 @@ async function start() {
   function openSpectatorMenu() {
     leaveBattle()
     composer.close()
+    app.ticker.start()
     menu.open(isChallenge(params) ? null : params)
   }
 
