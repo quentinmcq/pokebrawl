@@ -105,6 +105,24 @@ export function createCatalogue(
     for (const card of cards.values()) card.disabled = Number(card.dataset.cost) > limits.left || limits.full
   }
 
+  // A card already in the team says so, and how many times, without scrolling up to the team.
+  let picked = new Map<number, number>()
+  function applyPicked() {
+    for (const [id, card] of cards) {
+      const count = picked.get(id) ?? 0
+      card.classList.toggle('is-picked', count > 0)
+      let badge = card.querySelector<HTMLElement>('.card-count')
+      if (count > 0 && !badge) {
+        badge = Object.assign(document.createElement('span'), { className: 'card-count' })
+        card.append(badge)
+      }
+      if (badge) {
+        badge.hidden = count === 0
+        badge.textContent = `×${count}`
+      }
+    }
+  }
+
   function render() {
     const search = withoutDiacritics(searchInput.value.trim())
     const type = typeSelect.value as TypeKey | typeof ALL
@@ -126,6 +144,7 @@ export function createCatalogue(
       )
     query('[data-role="cards"]').replaceChildren(...shown.map(cardOf))
     applyLimits()
+    applyPicked()
     // The filters hide behind one button: a badge says how many are on.
     const activeFilters = [type !== ALL, generation > 0, sort !== 'cost', collectionCheckbox.checked].filter(
       Boolean,
@@ -144,7 +163,12 @@ export function createCatalogue(
 
   query('[data-role="cards"]').addEventListener('click', (event) => {
     const card = (event.target as Element).closest<HTMLButtonElement>('.card')
-    if (card && !card.disabled) onPick(Number(card.dataset.id))
+    if (!card || card.disabled) return
+    onPick(Number(card.dataset.id))
+    // A little bounce answers the tap, once per pick.
+    card.classList.remove('is-bumped')
+    void card.offsetWidth
+    card.classList.add('is-bumped')
   })
   for (const control of [searchInput, typeSelect, generationSelect, sortSelect, collectionCheckbox])
     control.addEventListener('input', render)
@@ -164,6 +188,11 @@ export function createCatalogue(
 
   return {
     render,
+    /** How many of each Pokémon the team holds, shown on their cards. */
+    setPicked(team: Map<number, number>) {
+      picked = new Map(team)
+      applyPicked()
+    },
     /** What the team can still take: points left, and whether it is full. */
     setLimits(left: number, full: boolean) {
       limits = { left, full }

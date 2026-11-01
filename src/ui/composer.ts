@@ -289,6 +289,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     renderTeamToggle()
     fightButton.disabled = size === 0 || overBudget
     catalogue.setLimits(TEAM_BUDGET - used, size >= MAX_TEAM_SIZE)
+    catalogue.setPicked(team)
   }
 
   function saveTeam() {

@@ -1687,3 +1687,38 @@ button.type-chip {
   font-size: calc(3.8 * var(--u));
   font-weight: 700;
 }
+
+/* A card in the team: a yellow outline and how many copies, plus a bounce on each tap. */
+.card.is-picked {
+  border-color: var(--accent);
+  background: #2a2a3a;
+}
+
+.card-count {
+  position: absolute;
+  top: calc(1 * var(--u));
+  left: 50%;
+  translate: -50% 0;
+  padding: calc(0.3 * var(--u)) calc(1.4 * var(--u));
+  border-radius: 999px;
+  background: var(--text);
+  color: #14162b;
+  font-size: calc(2.8 * var(--u));
+  font-weight: 900;
+}
+
+.card.is-bumped {
+  animation: bump 0.25s ease-out;
+}
+
+@keyframes bump {
+  40% {
+    transform: scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card.is-bumped {
+    animation: none;
+  }
+}
