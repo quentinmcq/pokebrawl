@@ -1,5 +1,5 @@
 import { pokedex } from './pokedex'
-import { MAX_TEAM_SIZE, TEAM_BUDGET, teamCost } from './simulation/cost'
+import { MAX_COPIES, MAX_TEAM_SIZE, mostCopiesOf, TEAM_BUDGET, teamCost } from './simulation/cost'
 import { selectTeam } from './simulation/teams'
 
 /** What both the browser and the server agree on about the daily ranking. */
@@ -29,13 +29,18 @@ export const RANKING_SIZE = 20
 export const isPlayerId = (value: unknown): value is string =>
   typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value)
 
-/** The points and size of a submitted team, or `null` when it breaks the rules (budget, size, unknown Pokémon). */
+/** The points and size of a submitted team, or `null` when it breaks the rules (budget, size, copies, unknown Pokémon). */
 export function scoreOfTeam(team: unknown) {
   if (typeof team !== 'string' || team.length > 1000 || !team.startsWith('ids:')) return null
   try {
     const { fighters } = selectTeam(pokedex, team)
     const points = teamCost(fighters)
-    if (fighters.length === 0 || fighters.length > MAX_TEAM_SIZE || points > TEAM_BUDGET) return null
+    const breaksRules =
+      fighters.length === 0 ||
+      fighters.length > MAX_TEAM_SIZE ||
+      points > TEAM_BUDGET ||
+      mostCopiesOf(fighters) > MAX_COPIES
+    if (breaksRules) return null
     return { points, size: fighters.length }
   } catch {
     return null

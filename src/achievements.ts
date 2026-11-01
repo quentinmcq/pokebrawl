@@ -123,11 +123,14 @@ export const ACHIEVEMENTS: Achievement[] = [
     isUnlocked: (_, win) => win !== null && win.points < 500,
   },
   {
-    id: 'single-species',
-    title: { fr: 'Clones', en: 'Clones' },
-    description: { fr: 'Gagne avec une équipe d’une seule espèce.', en: 'Win with a team of a single species.' },
-    emblem: 132,
-    isUnlocked: (_, win) => win !== null && new Set(win.speciesIds).size === 1,
+    id: 'triplets',
+    title: { fr: 'Triplés', en: 'Triplets' },
+    description: { fr: 'Gagne avec 5 Pokémon en 3 exemplaires.', en: 'Win with 5 Pokémon in 3 copies each.' },
+    emblem: 85,
+    isUnlocked: (_, win) =>
+      win !== null &&
+      [...new Set(win.speciesIds)].filter((id) => win.speciesIds.filter((other) => other === id).length >= 3).length >=
+        5,
   },
   {
     id: 'swarm',
@@ -147,11 +150,11 @@ export const ACHIEVEMENTS: Achievement[] = [
     id: 'magikarp',
     title: { fr: 'La revanche de Magicarpe', en: 'Magikarp’s revenge' },
     description: {
-      fr: 'Gagne avec au moins 10 Magicarpe dans ton équipe.',
-      en: 'Win with at least 10 Magikarp on your team.',
+      fr: 'Gagne avec 3 Magicarpe dans ton équipe.',
+      en: 'Win with 3 Magikarp on your team.',
     },
     emblem: MAGIKARP,
-    isUnlocked: (_, win) => win !== null && win.speciesIds.filter((id) => id === MAGIKARP).length >= 10,
+    isUnlocked: (_, win) => win !== null && win.speciesIds.filter((id) => id === MAGIKARP).length >= 3,
   },
   {
     id: 'pokedate',

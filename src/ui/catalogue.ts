@@ -1,4 +1,5 @@
 import { typeColor } from '../render/effects'
+import { MAX_COPIES } from '../simulation/cost'
 import { TYPE_NAMES } from '../simulation/teams'
 import type { Species, TypeKey } from '../simulation/types'
 import { withoutDiacritics } from '../text'
@@ -102,7 +103,8 @@ export function createCatalogue(
 
   // A card the budget or the team size no longer allows stays shown, but cannot be picked.
   function applyLimits() {
-    for (const card of cards.values()) card.disabled = Number(card.dataset.cost) > limits.left || limits.full
+    for (const [id, card] of cards)
+      card.disabled = Number(card.dataset.cost) > limits.left || limits.full || (picked.get(id) ?? 0) >= MAX_COPIES
   }
 
   // A card already in the team says so, and how many times, without scrolling up to the team.
@@ -192,6 +194,7 @@ export function createCatalogue(
     setPicked(team: Map<number, number>) {
       picked = new Map(team)
       applyPicked()
+      applyLimits()
     },
     /** What the team can still take: points left, and whether it is full. */
     setLimits(left: number, full: boolean) {

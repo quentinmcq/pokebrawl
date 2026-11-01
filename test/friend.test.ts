@@ -5,10 +5,10 @@ import { scoreOfTeam } from '../src/leaderboard'
 describe('friend challenge links', () => {
   it('reads back the challenge a link was made from', () => {
     const challenge = readFriendChallenge(
-      friendChallengeSearch({ team: 'ids:66*10,6*2', name: 'Sacha', seed: 42 }),
+      friendChallengeSearch({ team: 'ids:66*3,6*2', name: 'Sacha', seed: 42 }),
       'Un ami',
     )
-    expect(challenge).toEqual({ team: 'ids:66*10,6*2', name: 'Sacha', seed: 42, ...scoreOfTeam('ids:66*10,6*2') })
+    expect(challenge).toEqual({ team: 'ids:66*3,6*2', name: 'Sacha', seed: 42, ...scoreOfTeam('ids:66*3,6*2') })
   })
 
   it('ignores a link whose team breaks the rules or lacks a seed', () => {

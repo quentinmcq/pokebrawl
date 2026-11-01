@@ -1,4 +1,5 @@
 import type { FighterSetup } from './simulation/battle'
+import { MAX_COPIES } from './simulation/cost'
 import { typeEffectiveness } from './simulation/typeChart'
 import type { TypeKey } from './simulation/types'
 
@@ -70,7 +71,7 @@ export function fillAtRandom(
   let left = budgetLeft
   let room = sizeLeft
   for (;;) {
-    const affordable = catalogue.filter(({ cost }) => cost <= left)
+    const affordable = catalogue.filter(({ id, cost }) => cost <= left && (filled.get(id) ?? 0) < MAX_COPIES)
     if (affordable.length === 0 || room === 0) return filled
     const pick = affordable[Math.floor(random() * affordable.length)]!
     filled.set(pick.id, (filled.get(pick.id) ?? 0) + 1)

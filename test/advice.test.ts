@@ -18,11 +18,11 @@ describe('fillAtRandom', () => {
     { id: 2, cost: 30 },
   ]
 
-  it('spends what the budget allows and keeps the Pokémon already chosen', () => {
-    // Always drawing the last affordable Pokémon: three more at 30, then 5 points too few for anything.
+  it('spends what the budget allows, keeps the Pokémon already chosen, and never goes past three copies', () => {
+    // Always drawing the last affordable Pokémon: two more at 30 reach three copies, then the cheap one three times.
     const filled = fillAtRandom(new Map([[2, 1]]), catalogue, 95, 100, () => 0.99)
-    expect(filled.get(2)).toBe(4)
-    expect(filled.has(1)).toBe(false)
+    expect(filled.get(2)).toBe(3)
+    expect(filled.get(1)).toBe(3)
   })
 
   it('stops at the size limit', () => {

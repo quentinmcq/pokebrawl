@@ -4,6 +4,15 @@ import { battleStatsOf, LEVEL } from './damage'
 
 export const TEAM_BUDGET = 1000
 export const MAX_TEAM_SIZE = 100
+// A team of the one most profitable species turned the daily puzzle into a sum: three copies at most keep it a team.
+export const MAX_COPIES = 3
+
+/** The most copies of a single Pokémon among these fighters. */
+export const mostCopiesOf = (fighters: FighterSetup[]) => {
+  const counts = new Map<number, number>()
+  for (const { species } of fighters) counts.set(species.id, (counts.get(species.id) ?? 0) + 1)
+  return Math.max(0, ...counts.values())
+}
 // Even the weakest Pokémon costs a hundredth of the budget, so that a team never outgrows the arena.
 export const MIN_COST = TEAM_BUDGET / MAX_TEAM_SIZE
 /**

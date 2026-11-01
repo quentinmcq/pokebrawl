@@ -21,8 +21,13 @@ describe('nicknames', () => {
 
 describe('submitted teams', () => {
   it('computes the points on the server side', () => {
-    const team = 'ids:66*10,6*2'
-    expect(scoreOfTeam(team)).toEqual({ points: teamCost(selectTeam(pokedex, team).fighters), size: 12 })
+    const team = 'ids:66*3,6*2'
+    expect(scoreOfTeam(team)).toEqual({ points: teamCost(selectTeam(pokedex, team).fighters), size: 5 })
+  })
+
+  it('refuses more than three copies of the same Pokémon', () => {
+    expect(scoreOfTeam('ids:129*3,25')).not.toBeNull()
+    expect(scoreOfTeam('ids:129*4,25')).toBeNull()
   })
 
   it('refuses teams over budget, too large, or not made of Pokémon ids', () => {

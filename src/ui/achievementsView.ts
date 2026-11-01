@@ -37,7 +37,9 @@ export function createAchievements(panel: HTMLElement, spriteOf: (speciesId: num
   }
 
   function render() {
-    panel.querySelector('[data-role="achievements-count"]')!.textContent = `${unlocked.size}/${ACHIEVEMENTS.length}`
+    // Only the achievements that still exist count: « Clones » left with the three-copies rule.
+    const earned = ACHIEVEMENTS.filter(({ id }) => unlocked.has(id)).length
+    panel.querySelector('[data-role="achievements-count"]')!.textContent = `${earned}/${ACHIEVEMENTS.length}`
     panel.querySelector('[data-role="badges"]')!.replaceChildren(
       ...ACHIEVEMENTS.map((achievement) => {
         const badge = document.createElement('li')

@@ -29,4 +29,22 @@ test.describe('Défi du jour', () => {
     await expect(page.locator('[data-role="budget-summary"]')).toHaveText(/retire des Pokémon/)
     await expect(page.getByRole('button', { name: 'Lancer le combat' })).toBeDisabled()
   })
+
+  test('un même Pokémon se prend 3 fois au plus', async ({ page }) => {
+    await openApp(page)
+    await page.getByRole('button', { name: 'Jouer' }).click()
+    await page.getByLabel('Rechercher un Pokémon').fill('magicarpe')
+    const card = page.locator('[data-role="cards"] .card').first()
+    for (let copy = 0; copy < 3; copy++) await card.click()
+    await expect(card.locator('.card-count')).toHaveText('×3')
+    await expect(card).toBeDisabled()
+  })
+
+  test('une équipe enregistrée avec plus de 3 exemplaires doit être réduite', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('pokebrawl.team', JSON.stringify('ids:129*4')))
+    await openApp(page)
+    await page.getByRole('button', { name: 'Jouer' }).click()
+    await expect(page.locator('[data-role="budget-summary"]')).toHaveText(/3 exemplaires au plus/)
+    await expect(page.getByRole('button', { name: 'Lancer le combat' })).toBeDisabled()
+  })
 })

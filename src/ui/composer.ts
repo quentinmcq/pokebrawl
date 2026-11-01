@@ -15,7 +15,7 @@ import { checkNickname } from '../nickname'
 import { pokedex } from '../pokedex'
 import { randomSeed, type BattleParams } from '../render/params'
 import { terrainForSeed } from '../render/terrain'
-import { costOf, MAX_TEAM_SIZE, TEAM_BUDGET, teamCost } from '../simulation/cost'
+import { costOf, MAX_COPIES, MAX_TEAM_SIZE, TEAM_BUDGET, teamCost } from '../simulation/cost'
 import {
   parseHorde,
   selectorOfCounts,
@@ -97,6 +97,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     // No edge in battle for the Pokémon caught on PokéDate, which the daily ranking could not check.
     collection: new Set(readStored<number[]>(STORAGE_KEYS.collection, [])),
     onPick(id) {
+      if ((team.get(id) ?? 0) >= MAX_COPIES) return
       team.set(id, (team.get(id) ?? 0) + 1)
       saveTeam()
       renderTeam()
@@ -264,10 +265,14 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     query<HTMLElement>('.budget-fill').style.width = `${Math.min(100, (100 * used) / TEAM_BUDGET)}%`
     // A team saved before the prices changed can cost more than the budget: it cannot fight until trimmed.
     const overBudget = used > TEAM_BUDGET
+    // A team saved before the three-copies rule may hold more: it cannot fight until trimmed either.
+    const tooManyCopies = Math.max(0, ...team.values()) > MAX_COPIES
     query('[data-role="budget-summary"]').textContent = overBudget
       ? TEXT.overBudget(used)
-      : TEXT.budgetSummary(used, size, size >= MAX_TEAM_SIZE)
-    query('[data-role="budget-summary"]').classList.toggle('over-budget', overBudget)
+      : tooManyCopies
+        ? TEXT.tooManyCopies
+        : TEXT.budgetSummary(used, size, size >= MAX_TEAM_SIZE)
+    query('[data-role="budget-summary"]').classList.toggle('over-budget', overBudget || tooManyCopies)
     query('[data-role="team"]').replaceChildren(
       ...[...team]
         .toSorted(([a], [b]) => a - b)
@@ -287,7 +292,7 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     )
     query('[data-role="team-hint"]').hidden = size > 0
     renderTeamToggle()
-    fightButton.disabled = size === 0 || overBudget
+    fightButton.disabled = size === 0 || overBudget || tooManyCopies
     catalogue.setLimits(TEAM_BUDGET - used, size >= MAX_TEAM_SIZE)
     catalogue.setPicked(team)
   }
@@ -414,7 +419,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
   function addOneOfEach(ids: number[]) {
     let added = 0
     for (const id of [...ids].toSorted((a, b) => entryOf(a).cost - entryOf(b).cost || a - b)) {
-      if (spent() + entryOf(id).cost > TEAM_BUDGET || teamSize() >= MAX_TEAM_SIZE) continue
+      const full = teamSize() >= MAX_TEAM_SIZE || (team.get(id) ?? 0) >= MAX_COPIES
+      if (spent() + entryOf(id).cost > TEAM_BUDGET || full) continue
       team.set(id, (team.get(id) ?? 0) + 1)
       added++
     }
@@ -456,7 +462,8 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
       const added: string[] = []
       for (const [id, count] of parseTeam(selector)) {
         for (let copy = 0; copy < count; copy++) {
-          if (spent() + entryOf(id).cost > TEAM_BUDGET || teamSize() >= MAX_TEAM_SIZE) break
+          const full = teamSize() >= MAX_TEAM_SIZE || (team.get(id) ?? 0) >= MAX_COPIES
+          if (spent() + entryOf(id).cost > TEAM_BUDGET || full) break
           team.set(id, (team.get(id) ?? 0) + 1)
           if (!added.includes(nameOf(entryOf(id).species))) added.push(nameOf(entryOf(id).species))
         }

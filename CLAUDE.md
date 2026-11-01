@@ -156,7 +156,7 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   l'accueil (`lobby` : défi du jour en grand avec « Jouer » et le classement, défi d'un ami reçu, Entraînement, Défier
   un ami, Succès) puis le constructeur d'équipe (`builder` : adversaire, équipe, catalogue, « ← » pour revenir) ; défi du
   jour (par défaut, avec record et série) ou entraînement contre une horde au choix (Facile 800, Normal 1 000,
-  Difficile 1 250 points) et de l'équipe (doublons permis), catalogue filtrable (`catalogue.ts`)
+  Difficile 1 250 points) et de l'équipe (3 exemplaires au plus d'un même Pokémon, `MAX_COPIES`, vérifié aussi par le serveur et pour les liens de défi : une équipe d'une seule espèce faisait du défi un calcul), catalogue filtrable (`catalogue.ts`)
   avec sprites découpés en CSS dans la planche (`sprites.ts`), dernière équipe et hordes battues retenues dans le
   navigateur (`storage.ts`) ; un défi fini rend son `mode` (`daily`, `training`, `friend`, ou `replay` pour un combat
   rejoué qui ne compte pas). Après un défi (`endActions.ts`) : bilan, résultat, succès, publication au classement,
@@ -174,7 +174,7 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 - `src/achievements.ts`, `src/ui/achievementsView.ts` : 15 succès, chacun avec un Pokémon pour emblème. Objectifs
   longs (hordes de génération et de type battues, légendaires, Difficile, séries de 7 et 30 jours, podium, ami
   battu) tirés de ce que le navigateur garde déjà, plus deux compteurs ; exploits jugés sur la victoire (moins de
-  500 points, une seule espèce, 60 Pokémon ou plus, 10 ou moins, 10 Magicarpe, uniquement des Pokémon PokéDate).
+  500 points, 5 Pokémon en 3 exemplaires, 60 Pokémon ou plus, 10 ou moins, 3 Magicarpe, uniquement des Pokémon PokéDate).
   Seules comptent les victoires de l'équipe du joueur (défi du jour, entraînement, ami), jamais un combat regardé ni
   une équipe rejouée. Panneau repliable dans la composition, ligne « Succès débloqué » en fin de combat.
 - `src/report.ts` : bilan d'un défi en trois phrases au plus (attaques peu efficaces, types punis, meilleur et pire

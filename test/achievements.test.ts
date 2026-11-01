@@ -18,11 +18,15 @@ describe('achievements', () => {
 
   it('rewards the shape of a winning team', () => {
     const unlocked = ids(
-      newlyUnlocked(new Set(['first-win']), STARTING, win({ speciesIds: Array(60).fill(129), points: 600 })),
+      newlyUnlocked(
+        new Set(['first-win']),
+        STARTING,
+        win({ speciesIds: Array.from({ length: 60 }, (_, index) => [129, 10, 13, 16, 19][index % 5]!), points: 600 }),
+      ),
     )
-    expect(unlocked).toEqual(expect.arrayContaining(['single-species', 'swarm', 'magikarp']))
+    expect(unlocked).toEqual(expect.arrayContaining(['triplets', 'swarm', 'magikarp']))
     expect(ids(newlyUnlocked(new Set(), STARTING, win({ speciesIds: [150, 150], points: 136 })))).toEqual(
-      expect.arrayContaining(['thrifty', 'few', 'single-species']),
+      expect.arrayContaining(['thrifty', 'few']),
     )
   })
 
