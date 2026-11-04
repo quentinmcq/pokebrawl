@@ -1593,6 +1593,10 @@ button.type-chip {
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+.speeds .segmented-indicator {
+  border-radius: 999px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .segmented-indicator {
     transition: none;

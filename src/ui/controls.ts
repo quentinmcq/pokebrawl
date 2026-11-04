@@ -1,4 +1,5 @@
 import { TEXT } from './i18n'
+import { slideSegmented } from './segmented'
 
 // Stroke icons in a 24 × 24 grid, after the Lucide set.
 const ICONS = {
@@ -124,6 +125,7 @@ export function createControls(nav: HTMLElement, stage: HTMLElement, handlers: C
   function setSpeed(speed: number) {
     for (const speedButton of speedButtons)
       speedButton.ariaPressed = String(Number(speedButton.dataset.speed) === speed)
+    slideSegmented(speedButtons[0]!.parentElement!)
   }
 
   function setFullscreen(available: boolean, active: boolean) {
