@@ -17,6 +17,8 @@ const ICONS = {
   record: '<circle cx="12" cy="12" r="7" fill="currentColor" stroke="none"/>',
   exitFullscreen:
     '<path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3"/>',
+  zoomIn: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/>',
+  zoomOut: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3M8 11h6"/>',
   more: '<circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/>',
 }
 // The bar fades away during the battle so that it never hides the action, and comes back on the next touch.
@@ -35,6 +37,7 @@ interface ControlHandlers {
   onRecord: () => void
   onSkip: () => void
   onSound: () => void
+  onCamera: () => void
 }
 
 const icon = (name: keyof typeof ICONS) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`
@@ -84,6 +87,7 @@ export function createControls(nav: HTMLElement, stage: HTMLElement, handlers: C
     else if (action === 'record') handlers.onRecord()
     else if (action === 'skip') handlers.onSkip()
     else if (action === 'sound') handlers.onSound()
+    else if (action === 'camera') handlers.onCamera()
     wake()
   })
 
@@ -133,8 +137,14 @@ export function createControls(nav: HTMLElement, stage: HTMLElement, handlers: C
     label('sound-label').textContent = enabled ? TEXT.page.mute : TEXT.unmute
   }
 
+  function setCamera(following: boolean) {
+    setIcon(button('camera'), following ? 'zoomOut' : 'zoomIn')
+    label('camera-label').textContent = following ? TEXT.overview : TEXT.followMelee
+  }
+
   return {
     setSound,
+    setCamera,
     setRecordingAvailable: (available: boolean) => (button('record').hidden = !available),
     /**
      * What the battle allows: a new seed only where the seed is free (a watched battle, a training horde), and the

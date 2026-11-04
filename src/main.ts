@@ -102,6 +102,7 @@ async function start() {
     controls.setSpeed(value)
   }
   let paused = false
+  let followingMelee = readStored(STORAGE_KEYS.camera, true)
   let wakeLock: WakeLockSentinel | null = null
 
   // Keeps the phone screen on while a battle plays; the browser drops the lock whenever the page is hidden.
@@ -121,8 +122,12 @@ async function start() {
 
   function showScene(next: BattleParams) {
     scene?.destroy()
-    const shown = createScene(next, spritesheet, layout, (events) =>
-      sound.play(events, speed, (fighter) => shown.battle.fighters[fighter]!.species.id),
+    const shown = createScene(
+      next,
+      spritesheet,
+      layout,
+      (events) => sound.play(events, speed, (fighter) => shown.battle.fighters[fighter]!.species.id),
+      followingMelee,
     )
     scene = shown
     app.stage.addChild(scene.view)
@@ -278,6 +283,13 @@ async function start() {
     }
   }
 
+  function toggleCamera() {
+    followingMelee = !followingMelee
+    writeStored(STORAGE_KEYS.camera, followingMelee)
+    scene?.setFollowing(followingMelee)
+    controls.setCamera(followingMelee)
+  }
+
   const videoPanel = createVideoPanel(element('recording'), element('video-ready'), () => void stopRecording())
   const controls = createControls(element('controls'), stage, {
     // Back home after a watched battle, back to the team during a challenge.
@@ -291,6 +303,7 @@ async function start() {
     onFullscreen: toggleFullscreen,
     onRecord: startRecording,
     onSkip: skipToEnd,
+    onCamera: toggleCamera,
     onSound: () => {
       sound.setEnabled(!sound.isEnabled())
       controls.setSound(sound.isEnabled())
@@ -298,6 +311,7 @@ async function start() {
   })
   controls.setRecordingAvailable(canRecord())
   controls.setSound(sound.isEnabled())
+  controls.setCamera(followingMelee)
   controls.setSpeed(speed)
   controls.setFullscreen(fullscreenAvailable, false)
   document.addEventListener('fullscreenchange', () =>
@@ -315,6 +329,7 @@ async function start() {
     else if (event.code === 'KeyR') {
       if (isRerollable(params)) startBattle(withNewSeed(params))
     } else if (event.code === 'KeyF') toggleFullscreen()
+    else if (event.code === 'KeyC') toggleCamera()
     else if (event.code === 'KeyS') skipToEnd()
     else if (event.code in SPEED_KEYS) setSpeed(SPEED_KEYS[event.code]!)
     else return

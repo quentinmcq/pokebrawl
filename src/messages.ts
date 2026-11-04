@@ -314,6 +314,8 @@ const french = {
   exitFullscreen: 'Quitter le plein écran',
   changeTeams: 'Changer les équipes',
   unmute: 'Remettre le son',
+  overview: 'Vue d’ensemble',
+  followMelee: 'Suivre la mêlée',
   terrains: { grass: 'Prairie', sand: 'Désert', snow: 'Toundra', cave: 'Grotte' },
   // Ranking
   rankingUnreachable: 'Classement injoignable : ton score est gardé sur cet appareil.',
@@ -458,6 +460,8 @@ const english: Messages = {
   exitFullscreen: 'Exit full screen',
   changeTeams: 'Change the teams',
   unmute: 'Unmute',
+  overview: 'Whole arena',
+  followMelee: 'Follow the melee',
   terrains: { grass: 'Meadow', sand: 'Desert', snow: 'Tundra', cave: 'Cave' },
   rankingUnreachable: 'The ranking cannot be reached: your score is kept on this device.',
   rankingUnavailable: 'The ranking is unavailable for now.',
