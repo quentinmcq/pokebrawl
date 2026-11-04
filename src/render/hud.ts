@@ -1,6 +1,6 @@
 import { Container, Graphics, Text, type TextStyleOptions } from 'pixi.js'
 import { isAlive, secondsAt, type Battle, type TeamIndex } from '../simulation/battle'
-import { COLORS, FONT_FAMILY, HUD_HEIGHT, type Layout } from './layout'
+import { COLORS, FONT_FAMILY, HUD_HEIGHT, textPaddingFor, type Layout } from './layout'
 
 const SIDE_MARGIN = 56
 const HEALTH_BAR_Y = 168
@@ -11,6 +11,7 @@ const textStyle = (fontSize: number, fill: number, fontWeight: TextStyleOptions[
   fontSize,
   fontWeight,
   fill,
+  padding: textPaddingFor(fontSize),
 })
 
 const aliveCount = (battle: Battle, team: TeamIndex) =>

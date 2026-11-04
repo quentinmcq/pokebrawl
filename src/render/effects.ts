@@ -2,7 +2,7 @@ import { Container, Graphics, Text } from 'pixi.js'
 import type { BattleEvent } from '../simulation/battle'
 import { createRandom, type Random } from '../simulation/random'
 import type { TypeKey } from '../simulation/types'
-import { FONT_FAMILY, type Layout } from './layout'
+import { FONT_FAMILY, textPaddingFor, type Layout } from './layout'
 import { displayedPosition, secondsSince, type Playback, type ShownEvent } from './playback'
 import { nameOf } from '../ui/i18n'
 
@@ -163,6 +163,7 @@ export function createEffectsView(playback: Playback, seed: number, layout: Layo
         fontWeight: '900',
         fill: 0xffffff,
         stroke: { color: OUTLINE_COLOR, width: 6 },
+        padding: textPaddingFor(30),
       },
     })
     text.anchor.set(0.5, 1)

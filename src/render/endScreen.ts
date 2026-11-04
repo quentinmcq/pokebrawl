@@ -1,7 +1,7 @@
 import { Container, Graphics, Sprite, Text, Texture, type Spritesheet, type TextStyleOptions } from 'pixi.js'
 import { summarizeBattle, type Battle, type Fighter } from '../simulation/battle'
 import { clock } from './hud'
-import { COLORS, FONT_FAMILY, type Layout } from './layout'
+import { COLORS, FONT_FAMILY, textPaddingFor, type Layout } from './layout'
 import { nameOf, TEXT } from '../ui/i18n'
 
 // The last knock-out finishes its animation before the screen covers the arena.
@@ -27,6 +27,7 @@ const style = (fontSize: number, fill: number, fontWeight: TextStyleOptions['fon
   fontSize,
   fontWeight,
   fill,
+  padding: textPaddingFor(fontSize),
 })
 
 const statsOf = (fighter: Fighter) => TEXT.fighterStats(fighter.knockOuts, Math.round(fighter.damageDealt))

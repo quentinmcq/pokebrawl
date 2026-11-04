@@ -58,3 +58,6 @@ export const COLORS = {
 }
 
 export const FONT_FAMILY = 'system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif'
+// Safari on iPhone measures the system font a little narrower than it draws it at some sizes: without room around
+// each text, PixiJS cut off its last letter.
+export const textPaddingFor = (fontSize: number) => Math.ceil(fontSize * 0.3)
