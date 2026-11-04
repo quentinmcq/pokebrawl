@@ -28,8 +28,10 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   classement contre la horde enregistrée avec chacun et liste ceux qui ne gagnent pas vraiment ; `--apply` les
   supprime. Les scores envoyés avant l'enregistrement des hordes (colonne `horde` vide) ne sont pas jugés : les hordes
   suivent les prix, qui ont pu changer depuis. Lancé par `.github/workflows/verify-daily.yml` (secret
-  `CLOUDFLARE_API_TOKEN` avec droit d'écriture sur D1) toutes les deux heures de 6 h à 22 h UTC pour le jour même, et
-  à 00 h 30 UTC pour la veille entière ; pas plus souvent, le dépôt est privé (2 000 minutes gratuites par mois).
+  `CLOUDFLARE_API_TOKEN` avec droit d'écriture sur D1) toutes les 15 minutes pour le jour même (aux minutes 10, 25,
+  40 et 55 : GitHub retarde ou saute les tâches planifiées, surtout à l'heure pile), et à 00 h 30 UTC pour la veille
+  entière ; deux contrôles ne tournent jamais en même temps. Le dépôt est public : les minutes d'Actions sont
+  illimitées.
 - `bun run audience [--days 7]` : compteurs du site en ligne, jour par jour (visites et provenance, combats par
   mode, victoires, partages, défis envoyés, scores publiés, installations, vidéos, pages « qui gagne ? » lues).
 - `bun run sprites` : télécharge les 1025 sprites et les rassemble dans `public/sprites.webp` + `.json`, puis les

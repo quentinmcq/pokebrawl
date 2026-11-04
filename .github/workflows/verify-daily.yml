@@ -1,18 +1,24 @@
 name: Contrôle du classement
 
 # Replays the daily scores and removes the teams that do not actually win: the free Worker cannot replay battles when
-# scores arrive. Every two hours during the day for today, so that a false score does not hold the top for long, and
-# every night for the whole of yesterday. The repository is private: each run counts as a minute of the free 2,000 a
-# month, hence two hours rather than less. Needs the CLOUDFLARE_API_TOKEN secret (D1 edit permission).
+# scores arrive. Every 15 minutes for today, so that a false score does not hold the top for long, and every night for
+# the whole of yesterday. The repository is public, so Actions minutes are free. Needs the CLOUDFLARE_API_TOKEN secret
+# (D1 edit permission).
 on:
   schedule:
     # 00:30 UTC, after midnight in France in summer and winter alike: the day before is complete.
     - cron: '30 0 * * *'
-    - cron: '0 6-22/2 * * *'
+    # Off the hour, when GitHub delays or drops the most scheduled runs; never on minute 30 to stay apart from the above.
+    - cron: '10,25,40,55 * * * *'
   workflow_dispatch:
 
 permissions:
   contents: read
+
+# A late run must not overlap the next one: both would replay and delete the same scores.
+concurrency:
+  group: verify-daily
+  cancel-in-progress: false
 
 jobs:
   verify:
