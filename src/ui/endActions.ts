@@ -148,13 +148,15 @@ export function createEndActions(
     )
     reportList.hidden = report.length === 0
     shareButton.hidden = share === null
-    shareButton.textContent = mode === 'friend' ? TEXT.sendBack : TEXT.shareResult
-    // A win to share comes first and stands out: it is what brings new players.
-    shareButton.classList.toggle('primary', share !== null)
-    shareButton.classList.toggle('secondary', share === null)
-    editButton.classList.toggle('primary', share === null)
-    editButton.classList.toggle('secondary', share !== null)
-    if (share) shareButton.parentElement!.prepend(shareButton)
+    shareButton.textContent = mode === 'friend' ? TEXT.sendBack(params.opponentName ?? TEXT.aFriend) : TEXT.shareResult
+    // A win to share comes first and stands out: it is what brings new players. After a lost challenge, improving the
+    // team comes first.
+    const shareFirst = share !== null && won
+    shareButton.classList.toggle('primary', shareFirst)
+    shareButton.classList.toggle('secondary', !shareFirst)
+    editButton.classList.toggle('primary', !shareFirst)
+    editButton.classList.toggle('secondary', shareFirst)
+    if (shareFirst) shareButton.parentElement!.prepend(shareButton)
     else shareButton.parentElement!.append(shareButton)
     // Only a training horde gets a new seed: the daily seed and a friend's are fixed, the same team would replay the
     // same battle.

@@ -512,17 +512,22 @@ export function createComposer(section: HTMLElement, { spriteOf, onFight, onSpec
     finish(params: BattleParams, won: boolean, survivors: boolean[]): ChallengeResult {
       const nothing = { message: null, share: null, publishable: null }
       if (params.opponentName) {
-        if (!won) return { ...nothing, mode: 'friend', message: TEXT.friendLost(params.opponentName) }
-        // The winner sends the challenge back, with the team that just won.
+        // Won or lost, the challenge goes back to the friend with the team just fought.
         const name = savedNickname() ?? TEXT.aFriend
+        const url = siteUrl(friendChallengeSearch({ team: params.teams[0], name, seed: randomSeed() }))
+        if (won)
+          return {
+            ...nothing,
+            mode: 'friend',
+            message: TEXT.friendWon(params.opponentName),
+            share: { text: () => TEXT.challengeBackText(name), url },
+          }
+        const fighters = selectTeam(pokedex, params.teams[0]).fighters
         return {
           ...nothing,
           mode: 'friend',
-          message: TEXT.friendWon(params.opponentName),
-          share: {
-            text: () => TEXT.challengeBackText(name),
-            url: siteUrl(friendChallengeSearch({ team: params.teams[0], name, seed: randomSeed() })),
-          },
+          message: TEXT.friendLost(params.opponentName),
+          share: { text: () => TEXT.challengeText(name, fighters.length, teamCost(fighters)), url },
         }
       }
       const day = dailyDayOf(params.teams[1])

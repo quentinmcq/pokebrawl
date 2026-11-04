@@ -167,7 +167,8 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   et de la veille (`ranking.ts`) : chaque victoire publiée d'office, sous un pseudo tiré au hasard (« Pikachu 482 », `randomNickname`) tant que le joueur n'en a pas choisi, avec « Changer de pseudo » en fin de combat, rang affiché
   en fin de combat, « Voir » rejoue l'équipe d'un joueur de la veille. « Défier un ami » (panneau de l'équipe) partage
   un lien de défi (`share.ts` : feuille de partage du téléphone ou presse-papier) ; un lien reçu ouvre l'onglet
-  « Défi de Sacha », et une victoire propose de « Renvoyer le défi » avec l'équipe gagnante.
+  « Défi de Sacha », et la fin du combat propose de « Défier Sacha à ton tour » avec l'équipe jouée (en premier après une
+  victoire, après « Modifier mon équipe » sinon).
   Un lien `?equipe=ids:25` (depuis PokéDate) ajoute ce Pokémon à l'équipe et le dit au joueur. Aide à la
   composition (`src/advice.ts`) : types dominants de la horde et types à viser (super efficaces sur le plus de ses
   membres), chacun filtre le catalogue ; « Compléter » remplit le budget au hasard. Pokémon attrapés sur PokéDate
@@ -188,7 +189,7 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   combat pour les espèces présentes, joués au K.O. (un toutes les 2 s au plus, bas et coupé en fondu à 0,8 s, aucun en ×4, sinon le « bip ») et pour le
   meilleur Pokémon sur l'écran de fin. Presque tous en OGG Vorbis (Safari depuis iOS 18.4), trois en MP3 sous la
   même extension : le décodage Web Audio lit le contenu, pas le nom. Menu spectateur (`menu.ts`,
-  aperçu des équipes derrière), barre de contrôle qui s'efface pendant le combat (`controls.ts` : pause, vitesse, « Résultat », et un menu « ⋯ » aux actions nommées ; pas de nouvelle graine pour le défi du jour ni le défi d'un ami), installation
+  aperçu des équipes derrière), barre de contrôle qui s'efface pendant le combat (`controls.ts` : quitter (vers l'accueil, ou l'équipe pendant un défi), pause, vitesse, « Résultat », et un menu « ⋯ » aux actions nommées ; pas de nouvelle graine pour le défi du jour ni le défi d'un ami), installation
   de la PWA (`install.ts`, proposée seulement après une première victoire, fermable pour de bon), enregistrement vidéo (`recorder.ts`, `videoPanel.ts`) : le bouton ● rejoue le combat
   depuis le début en 1080 × 1920 quel que soit l'écran, s'arrête 4,5 s après la fin, puis propose de télécharger la
   vidéo (MP4 si le navigateur sait l'encoder, sinon WebM) ou, sur téléphone, de la partager vers une autre app. Les tailles suivent le petit côté de la scène (unités `cqmin`), dans les deux formats.

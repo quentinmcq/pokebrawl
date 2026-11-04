@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { openApp } from './helpers'
+import { openApp, skipToResult } from './helpers'
 
 const CHALLENGE = '/?defi=ids:25*3&de=Sacha&seed=42'
 
@@ -10,6 +10,15 @@ test.describe('Défi entre amis', () => {
     await expect(page.locator('[data-role="opponent-name"]')).toHaveText('Équipe de Sacha')
     await page.getByRole('button', { name: 'Retour' }).click()
     await expect(page.locator('[data-role="friend-title"]')).toHaveText('Équipe de Sacha')
+  })
+
+  test('après une défaite, propose de défier l’ami à son tour', async ({ page }) => {
+    await openApp(page, '/?a=ids:129&b=ids:25*3&seed=42&nb=Sacha')
+    await skipToResult(page)
+    const end = page.locator('#end-actions')
+    await expect(end.locator('[data-role="result"]')).toHaveText('L’équipe de Sacha a gagné. Change ton équipe !')
+    await expect(end.getByRole('button', { name: 'Défier Sacha à ton tour' })).toBeVisible()
+    await expect(end.getByRole('button', { name: 'Modifier mon équipe' })).toHaveClass(/primary/)
   })
 
   test('l’aperçu du lien dans les messageries nomme l’ami', async ({ request }) => {
