@@ -15,6 +15,14 @@ export async function showControls(page: Page) {
 
 /** Ends the battle on screen at once, as the « Result » button does: the outcome is the one the battle would reach. */
 export async function skipToResult(page: Page) {
-  await showControls(page)
-  await page.getByRole('button', { name: /Voir le résultat|Show the result/ }).click()
+  // The bar fades again 2.5 s after a touch: on a busy machine it can be gone before the click, so both are retried.
+  // A battle that ended on its own meanwhile shows the same result: its replay button, or a challenge's next steps.
+  await expect(async () => {
+    const over =
+      (await page.getByRole('button', { name: /Revoir le combat|Watch the battle again/ }).isVisible()) ||
+      (await page.locator('#end-actions').isVisible())
+    if (over) return
+    await showControls(page)
+    await page.getByRole('button', { name: /Voir le résultat|Show the result/ }).click({ timeout: 1000 })
+  }).toPass()
 }
