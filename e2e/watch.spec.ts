@@ -27,6 +27,18 @@ test.describe('Regarder un combat', () => {
     await expect(items).toContainText(['Nouveau combat', 'Changer les équipes'])
   })
 
+  test('se quitte à tout moment pour revenir à l’accueil', async ({ page }) => {
+    await openApp(page, '/?a=ids:25*5&b=ids:129*5&seed=7')
+    await showControls(page)
+    await page.getByRole('button', { name: 'Quitter le combat' }).click()
+    await expect(page.getByRole('button', { name: 'Jouer' })).toBeVisible()
+
+    await openApp(page, '/?a=ids:25*5&b=ids:129*5&seed=7')
+    await skipToResult(page)
+    await page.getByRole('button', { name: 'Quitter le combat' }).click()
+    await expect(page.getByRole('button', { name: 'Jouer' })).toBeVisible()
+  })
+
   test('un lien vers une équipe inconnue ouvre l’accueil plutôt qu’une erreur', async ({ page }) => {
     await openApp(page, '/?a=foo&b=gen1')
     await expect(page.getByRole('button', { name: 'Jouer' })).toBeVisible()

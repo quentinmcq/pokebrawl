@@ -280,6 +280,8 @@ async function start() {
 
   const videoPanel = createVideoPanel(element('recording'), element('video-ready'), () => void stopRecording())
   const controls = createControls(element('controls'), stage, {
+    // Back home after a watched battle, back to the team during a challenge.
+    onLeave: openComposer,
     onToggle: togglePlay,
     onSpeed: setSpeed,
     onNewBattle: () => {

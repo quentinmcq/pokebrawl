@@ -2,6 +2,7 @@ import { TEXT } from './i18n'
 
 // Stroke icons in a 24 × 24 grid, after the Lucide set.
 const ICONS = {
+  leave: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
   pause: '<path d="M8 5v14M16 5v14"/>',
   play: '<path d="M7 4.5v15l12-7.5z"/>',
   replay: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
@@ -25,6 +26,7 @@ const MOUSE_ZONE_SHARE = 0.25
 type PlayState = 'playing' | 'paused' | 'over'
 
 interface ControlHandlers {
+  onLeave: () => void
   onToggle: () => void
   onSpeed: (speed: number) => void
   onNewBattle: () => void
@@ -43,8 +45,8 @@ const setIcon = (target: HTMLButtonElement, name: keyof typeof ICONS) => {
 
 /**
  * The touch-friendly bar over the arena; it lives outside the canvas, so a recorded video never shows it. Only what a
- * battle needs at a glance sits in the bar (pause, speed, result); the rest goes in a menu where each action says
- * its name.
+ * battle needs at a glance sits in the bar (leave, pause, speed, result); the rest goes in a menu where each action
+ * says its name.
  */
 export function createControls(nav: HTMLElement, stage: HTMLElement, handlers: ControlHandlers) {
   const button = (action: string) => nav.querySelector<HTMLButtonElement>(`[data-action="${action}"]`)!
@@ -53,6 +55,7 @@ export function createControls(nav: HTMLElement, stage: HTMLElement, handlers: C
   const moreButton = button('more')
   const moreMenu = nav.querySelector<HTMLElement>('.more-menu')!
   const speedButtons = [...nav.querySelectorAll<HTMLButtonElement>('[data-speed]')]
+  setIcon(button('leave'), 'leave')
   setIcon(button('skip'), 'skip')
   setIcon(moreButton, 'more')
   setIcon(button('new'), 'shuffle')
@@ -73,6 +76,7 @@ export function createControls(nav: HTMLElement, stage: HTMLElement, handlers: C
     if (action === 'more') setMenuOpen(moreButton.ariaExpanded !== 'true')
     else setMenuOpen(false)
     if (target.dataset.speed) handlers.onSpeed(Number(target.dataset.speed))
+    else if (action === 'leave') handlers.onLeave()
     else if (action === 'toggle') handlers.onToggle()
     else if (action === 'new') handlers.onNewBattle()
     else if (action === 'menu') handlers.onMenu()
