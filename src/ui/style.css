@@ -491,19 +491,6 @@ input {
   text-align: left;
 }
 
-.install-offer {
-  flex-basis: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: calc(2 * var(--u));
-}
-
-.install-offer .hint {
-  margin: 0;
-  text-align: left;
-}
-
 .composer-side {
   display: grid;
   gap: calc(3 * var(--u));
@@ -1529,6 +1516,70 @@ button.type-chip {
 .lobby-row small {
   color: var(--muted);
   font-size: calc(3.1 * var(--u));
+}
+
+/* At the foot of the home screen, once a first win gives a reason to come back: a card like the other modes. */
+.install-offer {
+  display: flex;
+  align-items: center;
+  gap: calc(3 * var(--u));
+  padding: calc(3.5 * var(--u)) calc(2 * var(--u)) calc(3.5 * var(--u)) calc(4 * var(--u));
+  border-radius: calc(4 * var(--u));
+  background: #1a1c2c;
+}
+
+.install-offer > .fold-icon {
+  flex: none;
+  width: calc(6 * var(--u));
+  height: calc(6 * var(--u));
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.install-text {
+  flex: 1;
+  display: grid;
+  gap: calc(0.5 * var(--u));
+  margin: 0;
+}
+
+.install-text b {
+  font-size: calc(4 * var(--u));
+}
+
+.install-text small {
+  color: var(--muted);
+  font-size: calc(3.1 * var(--u));
+  line-height: 1.35;
+}
+
+.install-offer .secondary {
+  flex: none;
+}
+
+.install-close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: calc(10 * var(--u));
+  height: calc(10 * var(--u));
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.install-close svg {
+  width: calc(5 * var(--u));
+  height: calc(5 * var(--u));
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
 }
 
 .lobby-chevron {

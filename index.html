@@ -149,23 +149,6 @@
               >en</a
             >
           </nav>
-          <div class="install-offer" id="install-offer" hidden>
-            <button class="secondary" type="button" data-action="install" data-i18n="install" hidden>
-              Installer l'application
-            </button>
-            <p class="hint" data-role="ios-install" data-i18n="iosInstall" hidden>
-              Pour l'installer&nbsp;: Partager, puis « Sur l'écran d'accueil ».
-            </p>
-            <button
-              class="link"
-              type="button"
-              data-action="dismiss-install"
-              aria-label="Fermer"
-              data-i18n-aria-label="close"
-            >
-              ✕
-            </button>
-          </div>
         </header>
 
         <section class="lobby lobby-only" aria-label="Accueil" data-i18n-aria-label="homeLabel">
@@ -237,6 +220,32 @@
             </summary>
             <ul class="badges" data-role="badges"></ul>
           </details>
+          <aside class="install-offer" id="install-offer" aria-labelledby="install-title" hidden>
+            <svg class="fold-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="6" y="2" width="12" height="20" rx="2" />
+              <path d="M12 18h.01" />
+            </svg>
+            <p class="install-text">
+              <b id="install-title" data-i18n="installTitle">Installe PokéBrawl</b>
+              <small data-role="ios-install" data-i18n="iosInstall" hidden
+                >Dans Safari, touche le bouton Partager, puis «&nbsp;Sur l’écran d’accueil&nbsp;»&nbsp;: le défi du jour
+                sera à portée de doigt.</small
+              >
+              <small data-role="install-hint" data-i18n="installHint" hidden
+                >Le défi du jour à portée de doigt, même hors ligne.</small
+              >
+            </p>
+            <button class="secondary" type="button" data-action="install" data-i18n="install" hidden>Installer</button>
+            <button
+              class="install-close"
+              type="button"
+              data-action="dismiss-install"
+              aria-label="Fermer"
+              data-i18n-aria-label="close"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+            </button>
+          </aside>
         </section>
 
         <div class="composer-side builder-only">

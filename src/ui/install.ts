@@ -22,6 +22,7 @@ export function setUpInstall(offer: HTMLElement, hasWon: () => boolean) {
   }
   const installButton = offer.querySelector<HTMLButtonElement>('[data-action="install"]')!
   const iosHint = offer.querySelector<HTMLElement>('[data-role="ios-install"]')!
+  const installHint = offer.querySelector<HTMLElement>('[data-role="install-hint"]')!
   let deferredPrompt: InstallPromptEvent | null = null
   let dismissed = readStored(STORAGE_KEYS.installDismissed, false)
 
@@ -29,6 +30,7 @@ export function setUpInstall(offer: HTMLElement, hasWon: () => boolean) {
     const canInstall = deferredPrompt !== null || isAppleMobile()
     offer.hidden = isInstalled() || dismissed || !canInstall || !hasWon()
     installButton.hidden = deferredPrompt === null
+    installHint.hidden = deferredPrompt === null
     iosHint.hidden = deferredPrompt !== null
   }
 
