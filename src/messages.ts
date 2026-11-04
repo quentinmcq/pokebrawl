@@ -319,8 +319,9 @@ const french = {
   rankingUnreachable: 'Classement injoignable : ton score est gardé sur cet appareil.',
   rankingUnavailable: 'Classement indisponible pour le moment.',
   rankingUnavailableShort: 'Indisponible',
+  // Short enough for one line beside « Classement » on a phone; the points are already in the record just above.
   rankingSummary: (total: number, you: { rank: number; points: number } | null) =>
-    `${frenchPlural(total, 'joueur')}${you ? ` · toi : ${frenchOrdinal(you.rank)} avec ${you.points} points` : ''}`,
+    you ? `${frenchOrdinal(you.rank)} sur ${total}` : frenchPlural(total, 'joueur'),
   rankingEmptyToday: 'Personne n’a encore gagné le défi du jour\u00a0: sois le premier\u00a0!',
   rankingEmptyYesterday: 'Personne n’a gagné le défi d’hier.',
   rankingEntry: (points: number, size: number) => `${points} pts · ${size} Pokémon`,
@@ -463,9 +464,7 @@ const english: Messages = {
   rankingUnavailable: 'The ranking is unavailable for now.',
   rankingUnavailableShort: 'Unavailable',
   rankingSummary: (total, you) =>
-    total === 0
-      ? 'Be the first!'
-      : `${englishPlural(total, 'player')}${you ? ` · you ${englishOrdinal(you.rank)}` : ''}`,
+    total === 0 ? 'Be the first!' : you ? `${englishOrdinal(you.rank)} of ${total}` : englishPlural(total, 'player'),
   rankingEmptyToday: 'Nobody has won today’s challenge yet: be the first!',
   rankingEmptyYesterday: 'Nobody won yesterday’s challenge.',
   rankingEntry: (points, size) => `${points} pts · ${size} Pokémon`,
