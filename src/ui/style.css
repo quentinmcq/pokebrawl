@@ -910,6 +910,38 @@ input {
   padding-bottom: calc(4 * var(--u) + env(safe-area-inset-bottom));
 }
 
+/* On a phone, the sheet stays light: one line of report, the achievements as a badge rather than a button-like bar. */
+.stage[data-orientation='portrait'] .end-actions {
+  gap: calc(2 * var(--u));
+}
+
+.stage[data-orientation='portrait'] .end-result {
+  font-size: calc(4 * var(--u));
+}
+
+.stage[data-orientation='portrait'] .unlocked {
+  padding: calc(1 * var(--u)) calc(3 * var(--u));
+  border: 1px solid var(--accent);
+  background: rgb(255 210 63 / 0.12);
+  color: var(--accent);
+  font-size: calc(3 * var(--u));
+  font-weight: 700;
+}
+
+.stage[data-orientation='portrait'] .report li:nth-child(n + 2) {
+  display: none;
+}
+
+.stage[data-orientation='portrait'] .report,
+.stage[data-orientation='portrait'] .ranked-as {
+  font-size: calc(2.9 * var(--u));
+}
+
+.stage[data-orientation='portrait'] .end-buttons button {
+  padding-block: calc(2.4 * var(--u));
+  font-size: calc(3.6 * var(--u));
+}
+
 /* Side by side in equal columns rather than stacked, which would hide the end screen: a long label wraps. */
 .stage[data-orientation='portrait'] .end-buttons {
   display: grid;
