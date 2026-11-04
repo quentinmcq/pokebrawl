@@ -10,7 +10,7 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
 
 - `bun dev` : l'application sur http://localhost:5173/ (composition d'équipe), ou un combat direct avec
   `?a=gen1&b=gen3&seed=42&terrain=grass` (`&same=0` pour garder tous les Pokémon des deux équipes). Clavier : Espace pause, 1/2/4 vitesse, R nouveau combat (hors défi du jour et défi d'ami),
-  F plein écran, S résultat immédiat, C caméra (suivre la mêlée ou vue d'ensemble) ; au toucher, une barre de contrôle apparaît. Défis en ×2 par défaut, combats
+  F plein écran, S résultat immédiat ; au toucher, une barre de contrôle apparaît. Défis en ×2 par défaut, combats
   regardés en ×1, chaque mode retient sa vitesse ; ⏭ joue la fin du combat d'un coup (même résultat). `bun dev --host` pour tester sur le téléphone (Wi-Fi).
 - `bun run dev:api` (dans un second terminal) : le Worker et une base D1 locale sur le port 8787, pour le classement
   en développement (`bun dev` lui transmet `/api` par un proxy, voir `vite.config.ts`).
@@ -96,12 +96,6 @@ Bun, TypeScript, Vite, PixiJS, Vitest, oxlint, oxfmt, Lefthook.
   apparaître dans la vidéo est dessiné dans le canvas, jamais en HTML.
   - `layout.ts` : place l'arène selon l'orientation. En paysage, l'arène est simplement tournée d'un quart (premier
     camp à gauche) : la simulation reste 36 × 64, une graine donne le même combat dans les deux formats.
-  - `camera.ts` : sur téléphone, 270 Pokémon dans l'arène font environ 20 px chacun ; la caméra cadre la mêlée (80 % des
-    Pokémon debout, médiane au centre), jusqu'à ×2,5, en coupant au besoin la ligne de front sur les côtés
-    (`CROP_ALLOWANCE`), et revient à la vue d'ensemble pour l'alignement de départ et la fin. Ne lit que le combat :
-    même graine, mêmes plans, vidéo comprise. Réglage « Vue d'ensemble » dans le menu ⋯, retenu dans le navigateur. Le
-    masque n'est posé que quand il change : le réaffecter à chaque image reconstruit tout le rendu de PixiJS et figeait
-    les combats.
   - `scene.ts` : tout ce qui est dessiné pour un combat ; on en recrée une à chaque combat sans recharger la page
     (recharger ferait sortir du plein écran). Quand la fenêtre change d'orientation, la scène se redessine dans la
     nouvelle disposition sans interrompre le combat.

@@ -4,7 +4,6 @@ import { createBattle, type TeamSetup } from '../simulation/battle'
 import { checkNickname } from '../nickname'
 import { selectTeam, teamTitle, trimToSameSize } from '../simulation/teams'
 import { createArenaView } from './arenaView'
-import { createCamera } from './camera'
 import { createEffectsView } from './effects'
 import { createEndScreen } from './endScreen'
 import { createHud } from './hud'
@@ -33,8 +32,6 @@ export function createScene(
   initialLayout: Layout,
   /** Hears every event as the screen shows it, for the sound. */
   onEvents: (events: ShownEvent[]) => void = () => {},
-  /** Whether the camera follows the melee, or shows the whole arena. */
-  initiallyFollowing = true,
 ) {
   const battle = createBattle({ teams: buildTeams(params), seed: params.seed })
   const opponent = params.opponentName === null ? null : checkNickname(params.opponentName)
@@ -50,14 +47,10 @@ export function createScene(
     const effects = createEffectsView(playback, params.seed, layout)
     const hud = createHud(battle, teamTitles, layout)
     const endScreen = createEndScreen(battle, teamTitles, spritesheet, layout)
-    const camera = createCamera(playback, layout)
-    camera.content.addChild(arena.view, effects.view)
-    view.addChild(camera.view, hud.view, endScreen.view)
+    view.addChild(arena.view, effects.view, hud.view, endScreen.view)
     arena.update()
-    camera.snap(following)
-    return { arena, effects, hud, endScreen, camera }
+    return { arena, effects, hud, endScreen }
   }
-  let following = initiallyFollowing
   let parts = drawIn(initialLayout)
   let endScreenBesideActions = false
 
@@ -72,7 +65,6 @@ export function createScene(
     }
     advancePlayback(playback, remaining)
     parts.arena.update()
-    parts.camera.update(remaining, following)
     const events = takePendingEvents(playback)
     parts.effects.update(events)
     onEvents(events)
@@ -89,7 +81,6 @@ export function createScene(
     while (battle.outcome === null) advancePlayback(playback, 1)
     takePendingEvents(playback)
     parts.arena.update()
-    parts.camera.snap(following)
     parts.hud.update()
   }
 
@@ -110,11 +101,6 @@ export function createScene(
     parts.endScreen.setBesideActions(value)
   }
 
-  function setFollowing(value: boolean) {
-    following = value
-    parts.camera.update(0, following)
-  }
-
   function destroy() {
     clear()
     view.destroy()
@@ -128,7 +114,6 @@ export function createScene(
     skipToEnd,
     relayout,
     setEndScreenBesideActions,
-    setFollowing,
     destroy,
     isOver: () => battle.outcome !== null,
   }
