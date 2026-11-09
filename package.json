@@ -41,7 +41,7 @@
     "typescript": "^6.0.3",
     "vite": "^8.3.6",
     "vitest": "^5.0.5",
-    "wrangler": "^4.152.0"
+    "wrangler": "^4.158.0"
   },
   "packageManager": "bun@1.4.4"
 }
