@@ -64,7 +64,14 @@ function isPlayable(battle: BattleParams) {
 
 // Without a GPU the browser draws WebGL on the processor: a full-size, antialiased arena then runs at a few frames a
 // second, so it is drawn at half resolution and without antialiasing.
-const softwareRendering = !document.createElement('canvas').getContext('webgl2', { failIfMajorPerformanceCaveat: true })
+function isSoftwareRendering() {
+  const gl = document.createElement('canvas').getContext('webgl2')
+  if (!gl) return true
+  const renderer = gl.getParameter(gl.getExtension('WEBGL_debug_renderer_info')?.UNMASKED_RENDERER_WEBGL ?? gl.RENDERER)
+  gl.getExtension('WEBGL_lose_context')?.loseContext()
+  return /SwiftShader|llvmpipe|softpipe|Software|Basic Render/i.test(String(renderer))
+}
+const softwareRendering = isSoftwareRendering()
 
 async function start() {
   const spritesheet = await Assets.load<Spritesheet>(`${import.meta.env.BASE_URL}sprites.json`).catch(() => {
