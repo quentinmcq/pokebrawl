@@ -62,6 +62,10 @@ function isPlayable(battle: BattleParams) {
   }
 }
 
+// Without a GPU the browser draws WebGL on the processor: a full-size, antialiased arena then runs at a few frames a
+// second, so it is drawn at half resolution and without antialiasing.
+const softwareRendering = !document.createElement('canvas').getContext('webgl2', { failIfMajorPerformanceCaveat: true })
+
 async function start() {
   const spritesheet = await Assets.load<Spritesheet>(`${import.meta.env.BASE_URL}sprites.json`).catch(() => {
     throw new Error('Sprites introuvables : lance « bun run sprites » puis recharge la page.')
@@ -69,7 +73,13 @@ async function start() {
   let layout: Layout = windowLayout()
   stage.dataset.orientation = layout.orientation
   const app = new Application()
-  await app.init({ width: layout.width, height: layout.height, background: COLORS.background, antialias: true })
+  await app.init({
+    width: layout.width,
+    height: layout.height,
+    background: COLORS.background,
+    antialias: !softwareRendering,
+    resolution: softwareRendering ? 0.5 : 1,
+  })
   stage.querySelector('.loading')?.remove()
   stage.prepend(app.canvas)
 
